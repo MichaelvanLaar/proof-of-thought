@@ -63,9 +63,9 @@ async function buildAll() {
     });
     console.log('✅ Backends bundle complete\n');
 
-    // Build Browser bundle with WASM adapter
-    console.log('📦 Building browser bundle...');
-    await build({
+    // Build Browser bundle with WASM adapter (Development)
+    console.log('📦 Building browser bundle (development)...');
+    const browserDevResult = await build({
       entryPoints: ['src/browser.ts'],
       bundle: true,
       platform: 'browser',
@@ -76,8 +76,39 @@ async function buildAll() {
       sourcemap: true,
       minify: false,
       metafile: true,
+      treeShaking: true,
+      define: {
+        'process.env.NODE_ENV': '"development"',
+      },
     });
-    console.log('✅ Browser bundle complete\n');
+    console.log('✅ Browser bundle (development) complete');
+    console.log(`   Size: ${(browserDevResult.metafile.outputs['dist/browser.js'].bytes / 1024).toFixed(2)} KB\n`);
+
+    // Build Browser bundle (Production - Minified)
+    console.log('📦 Building browser bundle (production)...');
+    const browserProdResult = await build({
+      entryPoints: ['src/browser.ts'],
+      bundle: true,
+      platform: 'browser',
+      target: ['es2020', 'chrome90', 'firefox88', 'safari14'],
+      format: 'esm',
+      outfile: 'dist/browser.min.js',
+      external: ['openai'],
+      sourcemap: true,
+      minify: true,
+      minifyWhitespace: true,
+      minifyIdentifiers: true,
+      minifySyntax: true,
+      metafile: true,
+      treeShaking: true,
+      define: {
+        'process.env.NODE_ENV': '"production"',
+      },
+      legalComments: 'none',
+      charset: 'utf8',
+    });
+    console.log('✅ Browser bundle (production) complete');
+    console.log(`   Size: ${(browserProdResult.metafile.outputs['dist/browser.min.js'].bytes / 1024).toFixed(2)} KB\n`);
 
     console.log('✨ All builds completed successfully!');
   } catch (error) {
