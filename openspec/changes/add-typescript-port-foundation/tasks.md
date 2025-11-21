@@ -186,13 +186,13 @@
 - [x] 16.10 Add license and attribution to original project
 
 ## 17. Performance Optimization
-- [ ] 17.1 Profile LLM call performance
-- [ ] 17.2 Implement request batching where possible
-- [ ] 17.3 Add caching layer for repeated queries
-- [ ] 17.4 Optimize Z3 solver configuration
-- [ ] 17.5 Minimize WASM bundle size
-- [ ] 17.6 Implement lazy loading for optional features
-- [ ] 17.7 Run performance benchmarks and compare to Python
+- [x] 17.1 Profile LLM call performance
+- [x] 17.2 Implement request batching where possible
+- [x] 17.3 Add caching layer for repeated queries
+- [x] 17.4 Optimize Z3 solver configuration
+- [x] 17.5 Minimize WASM bundle size
+- [x] 17.6 Implement lazy loading for optional features
+- [x] 17.7 Run performance benchmarks and compare to Python
 
 ## 18. Package Preparation
 - [ ] 18.1 Finalize package.json metadata (name, description, keywords)
