@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ProofOfThought Browser Example</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        margin-top: 0;
+      }
+      .section {
+        margin: 2rem 0;
+      }
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #555;
+      }
+      textarea,
+      input[type='text'] {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 1rem;
+        box-sizing: border-box;
+      }
+      textarea {
+        min-height: 100px;
+        resize: vertical;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 1rem;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      button:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+      }
+      .status {
+        padding: 1rem;
+        margin-top: 1rem;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.9rem;
+      }
+      .status.info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+      .status.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .status.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .result {
+        margin-top: 2rem;
+        padding: 1.5rem;
+        background: #f8f9fa;
+        border-radius: 4px;
+        border-left: 4px solid #007bff;
+      }
+      .result h3 {
+        margin-top: 0;
+        color: #333;
+      }
+      .result pre {
+        background: #fff;
+        padding: 1rem;
+        border-radius: 4px;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      .note {
+        background: #fff3cd;
+        border: 1px solid #ffeeba;
+        color: #856404;
+        padding: 1rem;
+        border-radius: 4px;
+        margin: 1rem 0;
+      }
+      .note strong {
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧠 ProofOfThought Browser Example</h1>
+
+      <div class="note">
+        <strong>⚠️ Note: Z3 WASM Integration</strong>
+        This example demonstrates the browser API structure. Full Z3 WASM execution requires a
+        compatible Z3 WASM build. The library provides the framework for integration, but actual
+        theorem proving in the browser requires additional setup. See the README for details.
+      </div>
+
+      <div class="section">
+        <label for="apiKey">OpenAI API Key:</label>
+        <input type="text" id="apiKey" placeholder="sk-..." />
+      </div>
+
+      <div class="section">
+        <label for="question">Question:</label>
+        <input
+          type="text"
+          id="question"
+          value="Is Socrates mortal?"
+          placeholder="Enter your question"
+        />
+      </div>
+
+      <div class="section">
+        <label for="context">Context:</label>
+        <textarea
+          id="context"
+          placeholder="Enter context for the question"
+        >All humans are mortal. Socrates is human.</textarea>
+      </div>
+
+      <div class="section">
+        <button id="runButton" onclick="runReasoning()">Run Reasoning</button>
+      </div>
+
+      <div id="status"></div>
+      <div id="result"></div>
+    </div>
+
+    <script type="module">
+      // This would normally import from the browser bundle:
+      // import { ProofOfThought, Z3WASMAdapter, DEFAULT_Z3_WASM_URLS } from './dist/browser.js';
+
+      // For demonstration, we'll show the intended API usage:
+
+      window.runReasoning = async function () {
+        const statusEl = document.getElementById('status');
+        const resultEl = document.getElementById('result');
+        const button = document.getElementById('runButton');
+
+        const apiKey = document.getElementById('apiKey').value.trim();
+        const question = document.getElementById('question').value.trim();
+        const context = document.getElementById('context').value.trim();
+
+        if (!apiKey) {
+          statusEl.innerHTML = '<div class="status error">Please enter your OpenAI API key</div>';
+          return;
+        }
+
+        if (!question) {
+          statusEl.innerHTML = '<div class="status error">Please enter a question</div>';
+          return;
+        }
+
+        button.disabled = true;
+        statusEl.innerHTML = '<div class="status info">Initializing...</div>';
+        resultEl.innerHTML = '';
+
+        try {
+          // Example API usage (would work with actual imports):
+          /*
+          // Create OpenAI client
+          const client = new OpenAI({
+            apiKey: apiKey,
+            dangerouslyAllowBrowser: true // Required for browser usage
+          });
+
+          // Create Z3 WASM adapter with CDN
+          const z3Adapter = new Z3WASMAdapter({
+            wasmUrl: DEFAULT_Z3_WASM_URLS.jsdelivr,
+            timeout: 30000
+          });
+
+          // Create ProofOfThought instance
+          const pot = new ProofOfThought({
+            client,
+            z3Adapter,
+            backend: 'smt2',
+            postprocessing: ['self-refine'],
+            verbose: true
+          });
+
+          statusEl.innerHTML = '<div class="status info">Running reasoning...</div>';
+
+          // Execute query
+          const result = await pot.query(question, context);
+
+          // Display results
+          resultEl.innerHTML = `
+            <div class="result">
+              <h3>Result</h3>
+              <p><strong>Answer:</strong> ${result.answer}</p>
+              <p><strong>Verified:</strong> ${result.isVerified ? '✅ Yes' : '❌ No'}</p>
+              <p><strong>Backend:</strong> ${result.backend}</p>
+              <p><strong>Execution Time:</strong> ${result.executionTime}ms</p>
+              ${result.postprocessingMetrics ? `
+                <p><strong>Postprocessing:</strong> ${result.postprocessingMetrics.methodsApplied.join(', ')}</p>
+              ` : ''}
+              <details>
+                <summary><strong>Proof Steps:</strong></summary>
+                <pre>${JSON.stringify(result.proof, null, 2)}</pre>
+              </details>
+              <details>
+                <summary><strong>Full Response:</strong></summary>
+                <pre>${JSON.stringify(result, null, 2)}</pre>
+              </details>
+            </div>
+          `;
+
+          statusEl.innerHTML = '<div class="status success">✅ Reasoning completed!</div>';
+          */
+
+          // For now, show demo response
+          statusEl.innerHTML =
+            '<div class="status info">Demo mode - showing example structure</div>';
+          resultEl.innerHTML = `
+            <div class="result">
+              <h3>Example Response Structure</h3>
+              <p>This demonstrates the API that would be used with a fully integrated Z3 WASM build:</p>
+              <pre>
+// Create Z3 WASM adapter
+const z3Adapter = new Z3WASMAdapter({
+  wasmUrl: DEFAULT_Z3_WASM_URLS.jsdelivr,  // or .unpkg, or .local
+  timeout: 30000
+});
+
+// Create ProofOfThought instance
+const pot = new ProofOfThought({
+  client: openaiClient,
+  z3Adapter,
+  backend: 'smt2',
+  postprocessing: ['self-refine', 'self-consistency'],
+  verbose: true
+});
+
+// Run reasoning
+const result = await pot.query(
+  "${question}",
+  "${context}"
+);
+
+// Result will include:
+// - answer: string
+// - isVerified: boolean
+// - proof: ReasoningStep[]
+// - backend: 'smt2' | 'json'
+// - executionTime: number
+// - postprocessingMetrics: {...}
+              </pre>
+            </div>
+          `;
+        } catch (error) {
+          statusEl.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+          console.error('Reasoning error:', error);
+        } finally {
+          button.disabled = false;
+        }
+      };
+    </script>
+  </body>
+</html>

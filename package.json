@@ -1,0 +1,97 @@
+{
+  "name": "@proof-of-thought/core",
+  "version": "0.1.0",
+  "description": "TypeScript port of ProofOfThought - Neurosymbolic program synthesis combining LLMs with Z3 theorem proving",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "import": "./dist/browser.js"
+    },
+    "./backends": {
+      "types": "./dist/backends/index.d.ts",
+      "import": "./dist/backends/index.js",
+      "require": "./dist/backends/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run build:types && npm run build:bundle",
+    "build:types": "tsc --emitDeclarationOnly",
+    "build:bundle": "node scripts/build.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepare": "husky install || true",
+    "prepublishOnly": "npm run clean && npm run build && npm run test",
+    "ci": "npm run lint && npm run typecheck && npm run test:coverage && npm run build",
+    "validate": "npm run lint && npm run typecheck && npm run test"
+  },
+  "keywords": [
+    "neurosymbolic",
+    "reasoning",
+    "llm",
+    "z3",
+    "theorem-proving",
+    "smt",
+    "ai",
+    "logic",
+    "proof-of-thought",
+    "openai",
+    "typescript"
+  ],
+  "author": "ProofOfThought Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MichaelvanLaar/proof-of-thought.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MichaelvanLaar/proof-of-thought/issues"
+  },
+  "homepage": "https://github.com/MichaelvanLaar/proof-of-thought#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "openai": "^4.72.0",
+    "z3-solver": "^4.12.5",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "@typescript-eslint/eslint-plugin": "^8.16.0",
+    "@typescript-eslint/parser": "^8.16.0",
+    "@vitest/coverage-v8": "^2.1.8",
+    "@vitest/ui": "^2.1.8",
+    "esbuild": "^0.24.0",
+    "eslint": "^9.16.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "husky": "^9.1.7",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {}
+}

@@ -1,0 +1,49 @@
+# Source files
+src/
+tests/
+benchmarks/
+examples/
+
+# Config files
+tsconfig.json
+vitest.config.ts
+eslint.config.js
+.prettierrc.json
+.prettierignore
+
+# Build scripts
+scripts/
+
+# Development files
+*.test.ts
+*.spec.ts
+*.test.tsx
+*.spec.tsx
+
+# Git
+.git/
+.gitignore
+.github/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Environment
+.env
+.env.*
+
+# Misc
+*.tsbuildinfo
+.eslintcache
+.DS_Store
