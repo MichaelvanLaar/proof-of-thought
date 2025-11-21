@@ -10,6 +10,7 @@ export { ProofOfThought } from './reasoning/proof-of-thought.js';
 
 // Export postprocessing methods
 export { SelfRefine } from './postprocessing/self-refine.js';
+export { SelfConsistency } from './postprocessing/self-consistency.js';
 
 // Export types
 export type {

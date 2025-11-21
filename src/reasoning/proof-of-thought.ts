@@ -18,6 +18,7 @@ import { SMT2Backend } from '../backends/smt2-backend.js';
 import { JSONBackend } from '../backends/json-backend.js';
 import { createZ3Adapter } from '../adapters/utils.js';
 import { SelfRefine } from '../postprocessing/self-refine.js';
+import { SelfConsistency } from '../postprocessing/self-consistency.js';
 
 /**
  * Main ProofOfThought class for neurosymbolic reasoning
@@ -51,6 +52,7 @@ export class ProofOfThought {
   };
   private backend?: Backend;
   private selfRefine?: SelfRefine;
+  private selfConsistency?: SelfConsistency;
   private initialized = false;
 
   constructor(config: ProofOfThoughtConfig) {
@@ -126,9 +128,14 @@ export class ProofOfThought {
    *
    * @param question - The question to answer
    * @param context - Optional context for the question
+   * @param temperature - Optional temperature override for sampling
    * @returns Reasoning response with answer, proof, and verification
    */
-  async query(question: string, context?: string): Promise<ReasoningResponse> {
+  async query(
+    question: string,
+    context?: string,
+    temperature?: number
+  ): Promise<ReasoningResponse> {
     // Validate inputs
     if (!question || question.trim().length === 0) {
       throw new ValidationError('Question cannot be empty', 'question');
@@ -137,6 +144,23 @@ export class ProofOfThought {
     // Initialize if needed
     await this.initialize();
 
+    // Check if self-consistency is enabled
+    if (this.config.postprocessing.includes('self-consistency')) {
+      return this.queryWithSelfConsistency(question, context);
+    }
+
+    // Normal query flow
+    return this.queryInternal(question, context, temperature);
+  }
+
+  /**
+   * Internal query logic (without self-consistency)
+   */
+  private async queryInternal(
+    question: string,
+    context?: string,
+    temperature?: number
+  ): Promise<ReasoningResponse> {
     if (!this.backend) {
       throw new ConfigurationError('Backend not initialized');
     }
@@ -286,6 +310,50 @@ export class ProofOfThought {
       }
       throw error;
     }
+  }
+
+  /**
+   * Query with self-consistency (generates multiple paths and aggregates)
+   */
+  private async queryWithSelfConsistency(
+    question: string,
+    context?: string
+  ): Promise<ReasoningResponse> {
+    // Initialize Self-Consistency if needed
+    if (!this.selfConsistency) {
+      // Create reasoning engine wrapper that excludes self-consistency
+      const reasoningEngine = async (
+        q: string,
+        c: string,
+        temp?: number
+      ): Promise<ReasoningResponse> => {
+        // Temporarily exclude self-consistency from postprocessing to avoid recursion
+        const originalPostprocessing = this.config.postprocessing;
+        this.config.postprocessing = originalPostprocessing.filter(
+          (m) => m !== 'self-consistency'
+        );
+
+        try {
+          return await this.queryInternal(q, c, temp);
+        } finally {
+          this.config.postprocessing = originalPostprocessing;
+        }
+      };
+
+      this.selfConsistency = new SelfConsistency(
+        this.config.client,
+        reasoningEngine,
+        this.config.selfConsistencyConfig
+      );
+    }
+
+    if (this.config.verbose) {
+      console.log('\n=== Self-Consistency: Generating multiple reasoning paths ===');
+      const config = this.selfConsistency.getConfig();
+      console.log(`Samples: ${config.numSamples}, Voting: ${config.votingMethod}`);
+    }
+
+    return this.selfConsistency.apply(question, context ?? '');
   }
 
   /**

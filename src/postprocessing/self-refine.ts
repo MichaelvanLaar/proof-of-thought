@@ -10,10 +10,9 @@ import { PostprocessingError } from '../types/errors.js';
 /**
  * Default configuration for Self-Refine
  */
-const DEFAULT_CONFIG: Required<SelfRefineConfig> = {
+const DEFAULT_CONFIG = {
   maxIterations: 3,
   convergenceThreshold: 0.95,
-  critiquePrompt: undefined,
 };
 
 /**

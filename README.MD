@@ -121,6 +121,54 @@ console.log('Original:', response.answer);
 console.log('Refined:', refined.answer);
 ```
 
+### Postprocessing with Self-Consistency
+
+Self-Consistency improves answer reliability by generating multiple reasoning paths and using voting:
+
+```typescript
+import { ProofOfThought } from '@proof-of-thought/core';
+import OpenAI from 'openai';
+
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Enable Self-Consistency postprocessing
+const pot = new ProofOfThought({
+  client,
+  postprocessing: ['self-consistency'],
+  selfConsistencyConfig: {
+    numSamples: 5,
+    temperature: 0.7,
+    votingMethod: 'majority', // or 'weighted'
+  },
+});
+
+// Query will automatically apply Self-Consistency
+const response = await pot.query(
+  'Is Socrates mortal?',
+  'All humans are mortal. Socrates is human.'
+);
+
+// The answer is selected from multiple paths
+console.log('Answer:', response.answer);
+console.log('Confidence:', response.confidence); // 0.0 to 1.0
+```
+
+### Combining Multiple Postprocessing Methods
+
+You can chain multiple postprocessing methods together:
+
+```typescript
+const pot = new ProofOfThought({
+  client,
+  postprocessing: ['self-consistency', 'self-refine'],
+  selfConsistencyConfig: { numSamples: 5 },
+  selfRefineConfig: { maxIterations: 3 },
+});
+
+// Self-consistency generates multiple paths, then self-refine improves the answer
+const response = await pot.query('Complex question?', 'Context');
+```
+
 ### Batch Processing
 
 Process multiple queries efficiently:

@@ -49,11 +49,26 @@ Demonstrates Self-Refine postprocessing for iterative answer improvement:
 npx tsx examples/self-refine-usage.ts
 ```
 
+### self-consistency-usage.ts
+
+Demonstrates Self-Consistency postprocessing for answer reliability:
+- Generating multiple reasoning paths with temperature sampling
+- Using majority voting to select consistent answers
+- Using weighted voting based on verification and performance
+- Comparing voting methods
+- Understanding configuration options (numSamples, temperature, votingMethod)
+- Analyzing confidence scores
+
+**Run it**:
+```bash
+npx tsx examples/self-consistency-usage.ts
+```
+
 ## Coming Soon
 
 More examples will be added for:
 - Batch processing
-- Additional postprocessing methods (self-consistency, decomposed prompting)
+- Additional postprocessing methods (decomposed prompting, least-to-most)
 - Custom Z3 configuration
 - Browser usage
 - Advanced logical reasoning
