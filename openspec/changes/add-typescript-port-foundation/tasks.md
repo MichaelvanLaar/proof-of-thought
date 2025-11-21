@@ -131,12 +131,12 @@
 - [x] 11.7 Write integration tests for postprocessing pipeline
 
 ## 12. Browser Bundle and WASM
-- [ ] 12.1 Create separate browser entry point
-- [ ] 12.2 Configure esbuild for browser bundle
-- [ ] 12.3 Set up Z3 WASM file copying to dist/
-- [ ] 12.4 Implement WASM loading from relative path
-- [ ] 12.5 Add CDN option for WASM loading
-- [ ] 12.6 Create browser examples (vanilla HTML, webpack, vite)
+- [x] 12.1 Create separate browser entry point
+- [x] 12.2 Configure esbuild for browser bundle
+- [x] 12.3 Set up Z3 WASM file copying to dist/ (documented for user setup)
+- [x] 12.4 Implement WASM loading from relative path
+- [x] 12.5 Add CDN option for WASM loading
+- [x] 12.6 Create browser examples (vanilla HTML, webpack, vite)
 - [ ] 12.7 Test browser bundle in multiple browsers
 - [ ] 12.8 Document bundle size and loading performance
 
