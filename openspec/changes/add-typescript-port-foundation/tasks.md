@@ -141,14 +141,14 @@
 - [ ] 12.8 Document bundle size and loading performance
 
 ## 13. Testing Infrastructure
-- [ ] 13.1 Set up test fixtures from Python implementation
-- [ ] 13.2 Create test utilities and helpers
-- [ ] 13.3 Implement LLM response mocking for deterministic tests
-- [ ] 13.4 Write unit tests for all modules (target >80% coverage)
-- [ ] 13.5 Write integration tests for backend workflows
-- [ ] 13.6 Create compatibility tests validating TypeScript vs Python behavior
-- [ ] 13.7 Set up CI pipeline for automated testing
-- [ ] 13.8 Add test coverage reporting
+- [x] 13.1 Set up test fixtures from Python implementation
+- [x] 13.2 Create test utilities and helpers
+- [x] 13.3 Implement LLM response mocking for deterministic tests
+- [x] 13.4 Write unit tests for all modules (target >80% coverage)
+- [x] 13.5 Write integration tests for backend workflows
+- [x] 13.6 Create compatibility tests validating TypeScript vs Python behavior
+- [x] 13.7 Set up CI pipeline for automated testing
+- [x] 13.8 Add test coverage reporting
 
 ## 14. Benchmark Suite
 - [ ] 14.1 Create benchmark infrastructure in `benchmarks/`

@@ -1,0 +1,84 @@
+{
+  "testCases": [
+    {
+      "id": "basic_arithmetic",
+      "name": "Basic arithmetic comparison",
+      "question": "Is x greater than 10?",
+      "context": "x = 15",
+      "expectedAnswer": "Yes",
+      "expectedVerification": "unsat",
+      "category": "arithmetic",
+      "difficulty": "easy"
+    },
+    {
+      "id": "arithmetic_contradiction",
+      "name": "Arithmetic contradiction",
+      "question": "Can x satisfy both conditions?",
+      "context": "x is greater than 10. x is less than 5.",
+      "expectedAnswer": "No, this is impossible",
+      "expectedVerification": "unsat",
+      "category": "arithmetic",
+      "difficulty": "easy"
+    },
+    {
+      "id": "inequality_chain",
+      "name": "Chain of inequalities",
+      "question": "Is x greater than 0?",
+      "context": "x > y, y > z, z > 0",
+      "expectedAnswer": "Yes",
+      "expectedVerification": "unsat",
+      "category": "arithmetic",
+      "difficulty": "medium"
+    },
+    {
+      "id": "linear_equation",
+      "name": "Linear equation solving",
+      "question": "What is the value of x?",
+      "context": "2x + 5 = 15",
+      "expectedAnswer": "x = 5",
+      "expectedVerification": "sat",
+      "category": "arithmetic",
+      "difficulty": "medium"
+    },
+    {
+      "id": "even_odd",
+      "name": "Even/odd properties",
+      "question": "Is the sum even?",
+      "context": "a is even, b is even, sum = a + b",
+      "expectedAnswer": "Yes",
+      "expectedVerification": "unsat",
+      "category": "number_theory",
+      "difficulty": "medium"
+    },
+    {
+      "id": "divisibility",
+      "name": "Divisibility reasoning",
+      "question": "Is x divisible by 6?",
+      "context": "x is divisible by 2. x is divisible by 3.",
+      "expectedAnswer": "Yes",
+      "expectedVerification": "unsat",
+      "category": "number_theory",
+      "difficulty": "hard"
+    },
+    {
+      "id": "absolute_value",
+      "name": "Absolute value properties",
+      "question": "Is |x| non-negative?",
+      "context": "x is a real number",
+      "expectedAnswer": "Yes, absolute value is always non-negative",
+      "expectedVerification": "unsat",
+      "category": "arithmetic",
+      "difficulty": "easy"
+    },
+    {
+      "id": "max_min",
+      "name": "Maximum and minimum",
+      "question": "Is max(a, b) greater than or equal to both a and b?",
+      "context": "a and b are real numbers",
+      "expectedAnswer": "Yes",
+      "expectedVerification": "unsat",
+      "category": "arithmetic",
+      "difficulty": "medium"
+    }
+  ]
+}
