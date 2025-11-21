@@ -42,7 +42,6 @@ export class SelfRefine {
     critiquePrompt?: string;
   };
 
-  // eslint-disable-next-line no-unused-vars
   constructor(
     private client: OpenAI,
     config: SelfRefineConfig = {}

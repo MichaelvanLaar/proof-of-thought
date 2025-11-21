@@ -160,10 +160,7 @@ export class JSONBackend implements Backend {
       }
 
       // Extract JSON from response (handle markdown code blocks)
-      const jsonMatch = response.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || [
-        null,
-        response,
-      ];
+      const jsonMatch = response.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || [null, response];
       const jsonText = jsonMatch[1] || response;
 
       // Parse and validate JSON
