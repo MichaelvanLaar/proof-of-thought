@@ -45,6 +45,7 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
     "benchmark": "tsx benchmarks/cli.ts",
+    "benchmark:compare": "tsx benchmarks/compare.ts",
     "prepare": "husky install || true",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
     "ci": "npm run lint && npm run typecheck && npm run test:coverage && npm run build",
