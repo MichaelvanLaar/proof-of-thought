@@ -54,19 +54,19 @@
 - [ ] 4.13 Validate outputs against Python implementation (requires Python setup)
 
 ## 5. JSON DSL Backend Implementation
-- [ ] 5.1 Create JSONBackend class implementing Backend interface
-- [ ] 5.2 Define JSON DSL schema with TypeScript interfaces
-- [ ] 5.3 Implement natural language to JSON DSL translation using LLM
-- [ ] 5.4 Create JSON DSL schema validator (using Zod)
-- [ ] 5.5 Implement JSON DSL to Z3 API translator
-- [ ] 5.6 Add support for nested logical expressions
-- [ ] 5.7 Implement quantifier support in JSON DSL
-- [ ] 5.8 Create JSON DSL type system (sorts, functions, predicates)
-- [ ] 5.9 Implement Z3 API direct invocation
-- [ ] 5.10 Add JSON DSL extensibility mechanisms
-- [ ] 5.11 Write unit tests for JSON DSL translation
-- [ ] 5.12 Write integration tests matching Python JSON tests
-- [ ] 5.13 Validate outputs against Python implementation
+- [x] 5.1 Create JSONBackend class implementing Backend interface
+- [x] 5.2 Define JSON DSL schema with TypeScript interfaces
+- [x] 5.3 Implement natural language to JSON DSL translation using LLM
+- [x] 5.4 Create JSON DSL schema validator (using Zod)
+- [x] 5.5 Implement JSON DSL to Z3 API translator
+- [x] 5.6 Add support for nested logical expressions
+- [x] 5.7 Implement quantifier support in JSON DSL
+- [x] 5.8 Create JSON DSL type system (sorts, functions, predicates)
+- [x] 5.9 Implement Z3 API direct invocation
+- [x] 5.10 Add JSON DSL extensibility mechanisms
+- [x] 5.11 Write unit tests for JSON DSL translation
+- [ ] 5.12 Write integration tests matching Python JSON tests (deferred)
+- [ ] 5.13 Validate outputs against Python implementation (deferred)
 
 ## 6. High-Level Reasoning API
 - [x] 6.1 Create ProofOfThought class in `src/reasoning/proof-of-thought.ts`

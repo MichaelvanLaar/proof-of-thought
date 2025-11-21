@@ -58,6 +58,75 @@ console.log('Verified:', response.isVerified);
 console.log('Proof:', response.proof);
 ```
 
+### Choosing a Backend
+
+ProofOfThought supports two backend types for theorem proving:
+
+#### SMT2 Backend (Default)
+
+Uses SMT-LIB 2.0 format with Z3 CLI:
+
+```typescript
+const pot = new ProofOfThought({
+  client,
+  backend: 'smt2', // Text-based SMT-LIB 2.0 format
+});
+```
+
+**Pros:**
+- Mature and well-tested format
+- Direct Z3 CLI integration
+- Human-readable formulas
+
+**Cons:**
+- CLI subprocess overhead
+- Less flexible for extensions
+
+#### JSON Backend
+
+Uses structured JSON DSL with type system:
+
+```typescript
+const pot = new ProofOfThought({
+  client,
+  backend: 'json', // Structured JSON format
+});
+```
+
+**Pros:**
+- Structured and type-safe
+- Schema validation with Zod
+- More extensible
+- Better for complex type systems
+
+**Cons:**
+- Newer implementation
+- Requires JSON-to-SMT2 conversion
+
+**JSON DSL Example:**
+
+```json
+{
+  "sorts": {
+    "Entity": "DeclareSort"
+  },
+  "functions": {
+    "Human": {"domain": ["Entity"], "range": "Bool"},
+    "Mortal": {"domain": ["Entity"], "range": "Bool"}
+  },
+  "constants": {
+    "Socrates": "Entity"
+  },
+  "knowledge_base": [
+    "ForAll(x, Implies(Human(x), Mortal(x)))",
+    "Human(Socrates)"
+  ],
+  "verifications": {
+    "is_socrates_mortal": "Mortal(Socrates)"
+  }
+}
+```
+
 ## Advanced Usage
 
 ### Postprocessing with Self-Refine

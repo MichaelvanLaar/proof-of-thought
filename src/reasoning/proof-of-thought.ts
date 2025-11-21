@@ -15,6 +15,7 @@ import type {
 } from '../types/index.js';
 import { ConfigurationError, ValidationError } from '../types/errors.js';
 import { SMT2Backend } from '../backends/smt2-backend.js';
+import { JSONBackend } from '../backends/json-backend.js';
 import { createZ3Adapter } from '../adapters/utils.js';
 import { SelfRefine } from '../postprocessing/self-refine.js';
 import { SelfConsistency } from '../postprocessing/self-consistency.js';
@@ -113,10 +114,12 @@ export class ProofOfThought {
         verbose: this.config.verbose,
       });
     } else if (this.config.backend === 'json') {
-      // JSON backend will be implemented in Phase 5
-      throw new ConfigurationError(
-        'JSON backend not yet implemented. Please use "smt2" backend for now.'
-      );
+      this.backend = new JSONBackend(this.config.client, z3Adapter, {
+        model: this.config.model,
+        temperature: this.config.temperature,
+        maxTokens: this.config.maxTokens,
+        z3Timeout: this.config.z3Timeout,
+      });
     } else {
       throw new ConfigurationError(`Unknown backend type: ${this.config.backend}`);
     }

@@ -8,6 +8,10 @@
 // Export main class
 export { ProofOfThought } from './reasoning/proof-of-thought.js';
 
+// Export backends
+export { SMT2Backend } from './backends/smt2-backend.js';
+export { JSONBackend } from './backends/json-backend.js';
+
 // Export postprocessing methods
 export { SelfRefine } from './postprocessing/self-refine.js';
 export { SelfConsistency } from './postprocessing/self-consistency.js';
@@ -31,6 +35,16 @@ export type {
   Backend,
   Z3Adapter,
 } from './types/index.js';
+
+// Export JSON DSL types
+export type {
+  JSONProgram,
+  SortDefinition,
+  FunctionDeclaration,
+  Rule,
+  JSONExecutionResult,
+  Z3Operator,
+} from './backends/json-dsl-types.js';
 
 // Export errors
 export {
