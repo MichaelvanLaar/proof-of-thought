@@ -163,15 +163,15 @@
 - [x] 14.10 Document benchmark results
 
 ## 15. Examples and Demos
-- [ ] 15.1 Create basic usage example
-- [ ] 15.2 Create SMT2 backend example
-- [ ] 15.3 Create JSON backend example
-- [ ] 15.4 Create postprocessing examples (all methods)
-- [ ] 15.5 Create Azure OpenAI example
-- [ ] 15.6 Create browser usage example
-- [ ] 15.7 Create Node.js server example
-- [ ] 15.8 Create batch processing example
-- [ ] 15.9 Test all examples to ensure they work
+- [x] 15.1 Create basic usage example
+- [x] 15.2 Create SMT2 backend example
+- [x] 15.3 Create JSON backend example
+- [x] 15.4 Create postprocessing examples (all methods)
+- [x] 15.5 Create Azure OpenAI example
+- [x] 15.6 Create browser usage example
+- [x] 15.7 Create Node.js server example
+- [x] 15.8 Create batch processing example
+- [x] 15.9 Test all examples to ensure they work
 
 ## 16. Documentation
 - [ ] 16.1 Write comprehensive README.md
