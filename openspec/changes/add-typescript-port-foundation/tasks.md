@@ -105,13 +105,13 @@
 - [x] 8.7 Write tests for self-consistency logic
 
 ## 9. Postprocessing - Decomposed Prompting
-- [ ] 9.1 Create DecomposedPrompting class in `src/postprocessing/decomposed.ts`
-- [ ] 9.2 Implement question decomposition using LLM
-- [ ] 9.3 Create sub-problem solver
-- [ ] 9.4 Implement dependency tracking between sub-problems
-- [ ] 9.5 Add result combination logic
-- [ ] 9.6 Create configuration interface for decomposition
-- [ ] 9.7 Write tests for decomposed prompting
+- [x] 9.1 Create DecomposedPrompting class in `src/postprocessing/decomposed.ts`
+- [x] 9.2 Implement question decomposition using LLM
+- [x] 9.3 Create sub-problem solver
+- [x] 9.4 Implement dependency tracking between sub-problems
+- [x] 9.5 Add result combination logic
+- [x] 9.6 Create configuration interface for decomposition
+- [x] 9.7 Write tests for decomposed prompting
 
 ## 10. Postprocessing - Least-to-Most
 - [ ] 10.1 Create LeastToMost class in `src/postprocessing/least-to-most.ts`
@@ -122,9 +122,9 @@
 - [ ] 10.6 Write tests for least-to-most logic
 
 ## 11. Postprocessing Integration
-- [ ] 11.1 Create postprocessing pipeline in ProofOfThought class
-- [ ] 11.2 Implement method chaining for multiple postprocessors
-- [ ] 11.3 Add result passing between pipeline stages
+- [x] 11.1 Create postprocessing pipeline in ProofOfThought class
+- [x] 11.2 Implement method chaining for multiple postprocessors
+- [x] 11.3 Add result passing between pipeline stages
 - [ ] 11.4 Implement performance metrics collection
 - [ ] 11.5 Create comparative effectiveness tracking
 - [ ] 11.6 Add error handling with fallback to base result

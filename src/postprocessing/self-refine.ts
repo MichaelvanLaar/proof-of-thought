@@ -36,8 +36,13 @@ const DEFAULT_CONFIG = {
  * ```
  */
 export class SelfRefine {
-  private config: Required<SelfRefineConfig>;
+  private config: {
+    maxIterations: number;
+    convergenceThreshold: number;
+    critiquePrompt?: string;
+  };
 
+  // eslint-disable-next-line no-unused-vars
   constructor(
     private client: OpenAI,
     config: SelfRefineConfig = {}
@@ -323,7 +328,7 @@ Critique:`;
   /**
    * Get current configuration
    */
-  getConfig(): Readonly<Required<SelfRefineConfig>> {
+  getConfig(): Readonly<typeof this.config> {
     return { ...this.config };
   }
 }

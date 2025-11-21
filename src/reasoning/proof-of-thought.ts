@@ -3,7 +3,6 @@
  * High-level API for neurosymbolic reasoning
  */
 
-import type OpenAI from 'openai';
 import type {
   ProofOfThoughtConfig,
   ReasoningResponse,
@@ -12,13 +11,14 @@ import type {
   ReasoningStep,
   SelfRefineConfig,
   SelfConsistencyConfig,
+  DecomposedConfig,
 } from '../types/index.js';
 import { ConfigurationError, ValidationError } from '../types/errors.js';
 import { SMT2Backend } from '../backends/smt2-backend.js';
-import { JSONBackend } from '../backends/json-backend.js';
 import { createZ3Adapter } from '../adapters/utils.js';
 import { SelfRefine } from '../postprocessing/self-refine.js';
 import { SelfConsistency } from '../postprocessing/self-consistency.js';
+import { DecomposedPrompting } from '../postprocessing/decomposed.js';
 
 /**
  * Main ProofOfThought class for neurosymbolic reasoning
@@ -42,17 +42,23 @@ export class ProofOfThought {
   private readonly config: Required<
     Omit<
       ProofOfThoughtConfig,
-      'z3Path' | 'postprocessing' | 'selfRefineConfig' | 'selfConsistencyConfig'
+      | 'z3Path'
+      | 'postprocessing'
+      | 'selfRefineConfig'
+      | 'selfConsistencyConfig'
+      | 'decomposedConfig'
     >
   > & {
     z3Path?: string;
     postprocessing: PostprocessingMethod[];
     selfRefineConfig?: SelfRefineConfig;
     selfConsistencyConfig?: SelfConsistencyConfig;
+    decomposedConfig?: DecomposedConfig;
   };
   private backend?: Backend;
   private selfRefine?: SelfRefine;
   private selfConsistency?: SelfConsistency;
+  private decomposed?: DecomposedPrompting;
   private initialized = false;
 
   constructor(config: ProofOfThoughtConfig) {
@@ -74,6 +80,7 @@ export class ProofOfThought {
       z3Path: config.z3Path,
       selfRefineConfig: config.selfRefineConfig,
       selfConsistencyConfig: config.selfConsistencyConfig,
+      decomposedConfig: config.decomposedConfig,
     };
   }
 
@@ -159,7 +166,7 @@ export class ProofOfThought {
   private async queryInternal(
     question: string,
     context?: string,
-    temperature?: number
+    _temperature?: number
   ): Promise<ReasoningResponse> {
     if (!this.backend) {
       throw new ConfigurationError('Backend not initialized');
@@ -278,6 +285,41 @@ export class ProofOfThought {
             if (this.config.verbose) {
               console.log(`Refined answer: ${response.answer}`);
             }
+          } else if (method === 'decomposed') {
+            // Initialize Decomposed Prompting if needed
+            if (!this.decomposed) {
+              // Create reasoning engine wrapper that excludes decomposed
+              const reasoningEngine = async (q: string, c: string): Promise<ReasoningResponse> => {
+                // Temporarily exclude decomposed from postprocessing to avoid recursion
+                const originalPostprocessing = this.config.postprocessing;
+                this.config.postprocessing = originalPostprocessing.filter(
+                  (m) => m !== 'decomposed'
+                );
+
+                try {
+                  return await this.queryInternal(q, c);
+                } finally {
+                  this.config.postprocessing = originalPostprocessing;
+                }
+              };
+
+              this.decomposed = new DecomposedPrompting(
+                this.config.client,
+                reasoningEngine,
+                this.config.decomposedConfig
+              );
+            }
+
+            if (this.config.verbose) {
+              console.log('\nApplying Decomposed Prompting...');
+            }
+
+            // Decomposed prompting replaces the entire response
+            response = await this.decomposed.apply(question, context ?? '');
+
+            if (this.config.verbose) {
+              console.log(`Decomposed answer: ${response.answer}`);
+            }
           } else {
             // Other postprocessing methods not yet implemented
             response.proof.push({
@@ -329,9 +371,7 @@ export class ProofOfThought {
       ): Promise<ReasoningResponse> => {
         // Temporarily exclude self-consistency from postprocessing to avoid recursion
         const originalPostprocessing = this.config.postprocessing;
-        this.config.postprocessing = originalPostprocessing.filter(
-          (m) => m !== 'self-consistency'
-        );
+        this.config.postprocessing = originalPostprocessing.filter((m) => m !== 'self-consistency');
 
         try {
           return await this.queryInternal(q, c, temp);

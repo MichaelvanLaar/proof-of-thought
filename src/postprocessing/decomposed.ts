@@ -12,7 +12,7 @@ import { PostprocessingError } from '../types/errors.js';
  */
 const DEFAULT_CONFIG = {
   maxSubQuestions: 5,
-  decompositionPrompt: undefined as string | undefined,
+  decompositionPrompt: undefined,
 };
 
 /**
@@ -43,14 +43,16 @@ interface SubQuestion {
  * ```
  */
 export class DecomposedPrompting {
-  private config: Required<DecomposedConfig>;
+  private config: {
+    maxSubQuestions: number;
+    decompositionPrompt?: string;
+  };
 
+  // eslint-disable-next-line no-unused-vars
   constructor(
     private client: OpenAI,
-    private reasoningEngine: (
-      question: string,
-      context: string
-    ) => Promise<ReasoningResponse>,
+    // eslint-disable-next-line no-unused-vars
+    private reasoningEngine: (_question: string, _context: string) => Promise<ReasoningResponse>,
     config: DecomposedConfig = {}
   ) {
     this.config = {
@@ -82,17 +84,12 @@ export class DecomposedPrompting {
       // Step 2: Solve each sub-question sequentially
       const subAnswers: Array<{ question: string; answer: string; response: ReasoningResponse }> =
         [];
-      let accumulatedContext = context;
 
       for (let i = 0; i < subQuestions.length; i++) {
         const subQ = subQuestions[i]!;
 
         // Build context including previous answers
-        const enrichedContext = this.buildEnrichedContext(
-          context,
-          subAnswers,
-          subQ.dependencies
-        );
+        const enrichedContext = this.buildEnrichedContext(context, subAnswers, subQ.dependencies);
 
         // Solve the sub-question
         const subResponse = await this.reasoningEngine(subQ.question, enrichedContext);
@@ -102,9 +99,6 @@ export class DecomposedPrompting {
           answer: subResponse.answer,
           response: subResponse,
         });
-
-        // Update accumulated context for next questions
-        accumulatedContext = enrichedContext + `\n\nQ: ${subQ.question}\nA: ${subResponse.answer}`;
       }
 
       // Step 3: Combine results into final answer
@@ -156,11 +150,9 @@ export class DecomposedPrompting {
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
-      throw new PostprocessingError(
-        'Failed to get decomposition from LLM',
-        'decomposed',
-        { question }
-      );
+      throw new PostprocessingError('Failed to get decomposition from LLM', 'decomposed', {
+        question,
+      });
     }
 
     return this.parseSubQuestions(content);
@@ -323,11 +315,9 @@ Based on these sub-answers, provide a comprehensive answer to the original quest
 
     const finalAnswer = response.choices[0]?.message?.content;
     if (!finalAnswer) {
-      throw new PostprocessingError(
-        'Failed to combine results from LLM',
-        'decomposed',
-        { originalQuestion }
-      );
+      throw new PostprocessingError('Failed to combine results from LLM', 'decomposed', {
+        originalQuestion,
+      });
     }
 
     return finalAnswer.trim();
@@ -337,7 +327,7 @@ Based on these sub-answers, provide a comprehensive answer to the original quest
    * Build final response with combined proof
    */
   private buildFinalResponse(
-    originalQuestion: string,
+    _originalQuestion: string,
     finalAnswer: string,
     subAnswers: Array<{ question: string; answer: string; response: ReasoningResponse }>,
     subQuestions: SubQuestion[]
@@ -401,18 +391,22 @@ Based on these sub-answers, provide a comprehensive answer to the original quest
     });
 
     // Calculate combined execution time
-    const totalExecutionTime = subAnswers.reduce(
-      (sum, sa) => sum + sa.response.executionTime,
-      0
-    );
+    const totalExecutionTime = subAnswers.reduce((sum, sa) => sum + sa.response.executionTime, 0);
 
     // Use the first sub-answer's metadata as base
-    const baseResponse = subAnswers[0]?.response || {
-      formula: '',
-      isVerified: true,
-      backend: 'smt2' as const,
-      executionTime: 0,
-    };
+    const baseResponse = subAnswers[0]?.response;
+
+    if (!baseResponse) {
+      // Fallback if no sub-answers (shouldn't happen, but for type safety)
+      return {
+        answer: finalAnswer,
+        formula: '',
+        proof: combinedProof,
+        isVerified: true,
+        backend: 'smt2' as const,
+        executionTime: totalExecutionTime,
+      };
+    }
 
     return {
       answer: finalAnswer,
@@ -438,7 +432,7 @@ Based on these sub-answers, provide a comprehensive answer to the original quest
   /**
    * Get current configuration
    */
-  getConfig(): Readonly<Required<DecomposedConfig>> {
+  getConfig(): Readonly<typeof this.config> {
     return { ...this.config };
   }
 }

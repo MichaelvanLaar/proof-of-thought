@@ -153,9 +153,94 @@ console.log('Answer:', response.answer);
 console.log('Confidence:', response.confidence); // 0.0 to 1.0
 ```
 
+### Postprocessing with Decomposed Prompting
+
+Decomposed Prompting breaks complex questions into simpler sub-questions solved sequentially:
+
+```typescript
+import { ProofOfThought } from '@proof-of-thought/core';
+import OpenAI from 'openai';
+
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Enable Decomposed Prompting postprocessing
+const pot = new ProofOfThought({
+  client,
+  postprocessing: ['decomposed'],
+  decomposedConfig: {
+    maxSubQuestions: 5, // Limit number of sub-questions
+  },
+});
+
+// Query will automatically decompose complex questions
+const response = await pot.query(
+  'Alice has 12 apples. She gives 1/3 to Bob. Bob gives half to Carol. How many does Carol have?',
+  'Word problem involving fractions and sequential operations.'
+);
+
+// The answer is from solving sub-questions sequentially
+console.log('Answer:', response.answer);
+console.log('Sub-questions solved:', response.proof.filter(p => p.description.includes('Sub-question')).length);
+```
+
+### Using Decomposed Prompting Directly
+
+You can also use Decomposed Prompting as a standalone tool:
+
+```typescript
+import { ProofOfThought, DecomposedPrompting } from '@proof-of-thought/core';
+import OpenAI from 'openai';
+
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const pot = new ProofOfThought({ client });
+
+// Create reasoning engine wrapper
+const reasoningEngine = async (question: string, context: string) => {
+  return pot.query(question, context);
+};
+
+// Initialize Decomposed Prompting
+const decomposed = new DecomposedPrompting(client, reasoningEngine, {
+  maxSubQuestions: 4,
+});
+
+// First, decompose to see the sub-questions
+const subQuestions = await decomposed.decompose(
+  'What is the perimeter, area, and diagonal of a rectangle with length 8 and width 5?',
+  'Geometry problem.'
+);
+
+console.log('Sub-questions:');
+subQuestions.forEach((sq, idx) => {
+  console.log(`  ${idx + 1}. ${sq.question}`);
+});
+
+// Then apply to get the full solution
+const result = await decomposed.apply(
+  'What is the perimeter, area, and diagonal of a rectangle with length 8 and width 5?',
+  'Geometry problem.'
+);
+
+console.log('Final answer:', result.answer);
+```
+
 ### Combining Multiple Postprocessing Methods
 
 You can chain multiple postprocessing methods together:
+
+```typescript
+const pot = new ProofOfThought({
+  client,
+  postprocessing: ['decomposed', 'self-refine'],
+  decomposedConfig: { maxSubQuestions: 4 },
+  selfRefineConfig: { maxIterations: 3 },
+});
+
+// Decomposed prompting breaks down the question, then self-refine improves each sub-answer
+const response = await pot.query('Complex multi-part question?', 'Context');
+```
+
+You can also combine all three methods:
 
 ```typescript
 const pot = new ProofOfThought({
@@ -165,8 +250,8 @@ const pot = new ProofOfThought({
   selfRefineConfig: { maxIterations: 3 },
 });
 
-// Self-consistency generates multiple paths, then self-refine improves the answer
-const response = await pot.query('Complex question?', 'Context');
+// Self-consistency generates multiple paths, then self-refine improves the selected answer
+const response = await pot.query('Question requiring high confidence?', 'Context');
 ```
 
 ### Batch Processing

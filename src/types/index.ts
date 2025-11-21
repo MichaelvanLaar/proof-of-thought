@@ -89,6 +89,11 @@ export interface ProofOfThoughtConfig {
   selfConsistencyConfig?: SelfConsistencyConfig;
 
   /**
+   * Configuration for Decomposed Prompting postprocessing
+   */
+  decomposedConfig?: DecomposedConfig;
+
+  /**
    * Enable verbose logging
    * @default false
    */

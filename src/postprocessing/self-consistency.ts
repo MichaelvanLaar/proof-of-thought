@@ -108,11 +108,9 @@ export class SelfConsistency {
    */
   aggregate(paths: ReasoningResponse[]): { answer: string; confidence: number } {
     if (paths.length === 0) {
-      throw new PostprocessingError(
-        'Cannot aggregate empty paths',
-        'self-consistency',
-        { pathsLength: 0 }
-      );
+      throw new PostprocessingError('Cannot aggregate empty paths', 'self-consistency', {
+        pathsLength: 0,
+      });
     }
 
     if (this.config.votingMethod === 'majority') {
@@ -232,10 +230,7 @@ export class SelfConsistency {
   /**
    * Find the best response that matches the selected answer
    */
-  private findBestResponse(
-    paths: ReasoningResponse[],
-    selectedAnswer: string
-  ): ReasoningResponse {
+  private findBestResponse(paths: ReasoningResponse[], selectedAnswer: string): ReasoningResponse {
     const normalizedSelected = this.normalizeAnswer(selectedAnswer);
 
     // Find all responses with the selected answer

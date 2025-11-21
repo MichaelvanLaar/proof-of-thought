@@ -64,11 +64,27 @@ Demonstrates Self-Consistency postprocessing for answer reliability:
 npx tsx examples/self-consistency-usage.ts
 ```
 
+### decomposed-usage.ts
+
+Demonstrates Decomposed Prompting for breaking down complex questions:
+- Decomposing complex questions into simpler sub-questions
+- Sequential sub-question solving with context building
+- Tracking dependencies between sub-questions
+- Combining sub-answers into comprehensive final answers
+- Inspecting decomposition traces and proof steps
+- Understanding configuration options (maxSubQuestions, decompositionPrompt)
+- Comparing decomposed vs direct approaches
+
+**Run it**:
+```bash
+npx tsx examples/decomposed-usage.ts
+```
+
 ## Coming Soon
 
 More examples will be added for:
 - Batch processing
-- Additional postprocessing methods (decomposed prompting, least-to-most)
+- Additional postprocessing methods (least-to-most)
 - Custom Z3 configuration
 - Browser usage
 - Advanced logical reasoning
