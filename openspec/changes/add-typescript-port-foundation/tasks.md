@@ -69,22 +69,22 @@
 - [ ] 5.13 Validate outputs against Python implementation
 
 ## 6. High-Level Reasoning API
-- [ ] 6.1 Create ProofOfThought class in `src/reasoning/proof-of-thought.ts`
-- [ ] 6.2 Implement constructor with configuration validation
-- [ ] 6.3 Implement backend selection and initialization
-- [ ] 6.4 Create query() method with async/await pattern
-- [ ] 6.5 Implement question validation
-- [ ] 6.6 Add LLM integration using OpenAI SDK
-- [ ] 6.7 Implement Azure OpenAI support
-- [ ] 6.8 Create response formatting and type safety
-- [ ] 6.9 Implement comprehensive error handling
-- [ ] 6.10 Add timeout and cancellation support
-- [ ] 6.11 Implement reasoning trace collection
-- [ ] 6.12 Add verbose logging option
-- [ ] 6.13 Create batch processing method
-- [ ] 6.14 Implement parallel batch execution
-- [ ] 6.15 Write unit tests for ProofOfThought class
-- [ ] 6.16 Write integration tests for end-to-end reasoning
+- [x] 6.1 Create ProofOfThought class in `src/reasoning/proof-of-thought.ts`
+- [x] 6.2 Implement constructor with configuration validation
+- [x] 6.3 Implement backend selection and initialization
+- [x] 6.4 Create query() method with async/await pattern
+- [x] 6.5 Implement question validation
+- [x] 6.6 Add LLM integration using OpenAI SDK (via backends)
+- [x] 6.7 Implement Azure OpenAI support (OpenAI SDK handles both)
+- [x] 6.8 Create response formatting and type safety
+- [x] 6.9 Implement comprehensive error handling
+- [x] 6.10 Add timeout and cancellation support (via Z3 adapter)
+- [x] 6.11 Implement reasoning trace collection
+- [x] 6.12 Add verbose logging option
+- [x] 6.13 Create batch processing method
+- [x] 6.14 Implement parallel batch execution
+- [x] 6.15 Write unit tests for ProofOfThought class
+- [x] 6.16 Write integration tests for end-to-end reasoning
 
 ## 7. Postprocessing - Self-Refine
 - [ ] 7.1 Create SelfRefine class in `src/postprocessing/self-refine.ts`

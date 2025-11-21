@@ -3,13 +3,18 @@
  * High-level API for neurosymbolic reasoning
  */
 
+import type OpenAI from 'openai';
 import type {
   ProofOfThoughtConfig,
   ReasoningResponse,
   Backend,
   PostprocessingMethod,
+  ReasoningStep,
 } from '../types/index.js';
 import { ConfigurationError, ValidationError } from '../types/errors.js';
+import { SMT2Backend } from '../backends/smt2-backend.js';
+import { JSONBackend } from '../backends/json-backend.js';
+import { createZ3Adapter } from '../adapters/utils.js';
 
 /**
  * Main ProofOfThought class for neurosymbolic reasoning
@@ -22,7 +27,10 @@ import { ConfigurationError, ValidationError } from '../types/errors.js';
  * const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
  * const pot = new ProofOfThought({ client, backend: 'smt2' });
  *
- * const response = await pot.query('Is Socrates mortal?', 'All humans are mortal. Socrates is human.');
+ * const response = await pot.query(
+ *   'Is Socrates mortal?',
+ *   'All humans are mortal. Socrates is human.'
+ * );
  * console.log(response.answer);
  * ```
  */
@@ -65,9 +73,41 @@ export class ProofOfThought {
       return;
     }
 
-    // Backend initialization will be implemented in Phase 4-5
-    // For now, this is a placeholder
-    throw new Error('Backend initialization not yet implemented');
+    // Create Z3 adapter
+    const z3Adapter = createZ3Adapter({
+      timeout: this.config.z3Timeout,
+      z3Path: this.config.z3Path,
+    });
+
+    // Initialize Z3 adapter
+    await z3Adapter.initialize();
+
+    // Create backend based on configuration
+    if (this.config.backend === 'smt2') {
+      this.backend = new SMT2Backend({
+        client: this.config.client,
+        z3Adapter,
+        model: this.config.model,
+        temperature: this.config.temperature,
+        maxTokens: this.config.maxTokens,
+        verbose: this.config.verbose,
+      });
+    } else if (this.config.backend === 'json') {
+      // JSON backend will be implemented in Phase 5
+      throw new ConfigurationError(
+        'JSON backend not yet implemented. Please use "smt2" backend for now.'
+      );
+    } else {
+      throw new ConfigurationError(`Unknown backend type: ${this.config.backend}`);
+    }
+
+    this.initialized = true;
+
+    if (this.config.verbose) {
+      console.log(`ProofOfThought initialized with ${this.config.backend} backend`);
+      console.log(`Z3 adapter: ${z3Adapter.constructor.name}`);
+      console.log(`Model: ${this.config.model}`);
+    }
   }
 
   /**
@@ -86,8 +126,127 @@ export class ProofOfThought {
     // Initialize if needed
     await this.initialize();
 
-    // Implementation will be completed in Phase 6
-    throw new Error('Query execution not yet implemented');
+    if (!this.backend) {
+      throw new ConfigurationError('Backend not initialized');
+    }
+
+    const startTime = Date.now();
+    const proof: ReasoningStep[] = [];
+    let stepCounter = 0;
+
+    try {
+      // Step 1: Translate to formal logic
+      if (this.config.verbose) {
+        console.log('\n=== Step 1: Translation ===');
+        console.log(`Question: ${question}`);
+        console.log(`Context: ${context || 'None'}`);
+      }
+
+      proof.push({
+        step: ++stepCounter,
+        description: 'Translating natural language to formal logic',
+        prompt: question,
+      });
+
+      const formula = await this.backend.translate(question, context ?? '');
+
+      proof.push({
+        step: ++stepCounter,
+        description: 'Generated formal logic formula',
+        formula: String(formula),
+      });
+
+      if (this.config.verbose) {
+        console.log(`\nFormula:\n${String(formula).substring(0, 500)}...`);
+      }
+
+      // Step 2: Verify with Z3
+      if (this.config.verbose) {
+        console.log('\n=== Step 2: Verification ===');
+      }
+
+      proof.push({
+        step: ++stepCounter,
+        description: 'Verifying formula with Z3 theorem prover',
+      });
+
+      const verificationResult = await this.backend.verify(formula);
+
+      proof.push({
+        step: ++stepCounter,
+        description: `Verification complete: ${verificationResult.result.toUpperCase()}`,
+        solverOutput: verificationResult.rawOutput.substring(0, 200),
+      });
+
+      if (this.config.verbose) {
+        console.log(`Result: ${verificationResult.result}`);
+        if (verificationResult.model) {
+          console.log('Model:', verificationResult.model);
+        }
+      }
+
+      // Step 3: Generate explanation
+      if (this.config.verbose) {
+        console.log('\n=== Step 3: Explanation ===');
+      }
+
+      proof.push({
+        step: ++stepCounter,
+        description: 'Generating natural language explanation',
+      });
+
+      const answer = await this.backend.explain(verificationResult);
+
+      proof.push({
+        step: ++stepCounter,
+        description: 'Explanation generated',
+        response: answer,
+      });
+
+      if (this.config.verbose) {
+        console.log(`Answer: ${answer}`);
+      }
+
+      // Step 4: Apply postprocessing if configured
+      // Postprocessing will be implemented in Phases 7-10
+      if (this.config.postprocessing.length > 0) {
+        proof.push({
+          step: ++stepCounter,
+          description: `Postprocessing: ${this.config.postprocessing.join(', ')} (not yet implemented)`,
+        });
+      }
+
+      const executionTime = Date.now() - startTime;
+
+      if (this.config.verbose) {
+        console.log(`\n=== Execution Time: ${executionTime}ms ===\n`);
+      }
+
+      // Build response
+      return {
+        answer,
+        formula: String(formula),
+        proof,
+        isVerified: verificationResult.result === 'sat' || verificationResult.result === 'unsat',
+        backend: this.config.backend,
+        executionTime,
+        model: verificationResult.model,
+        tokensUsed: undefined, // Will be tracked in future enhancement
+      };
+    } catch (error) {
+      // Add error to proof trace
+      proof.push({
+        step: ++stepCounter,
+        description: `Error: ${error instanceof Error ? error.message : String(error)}`,
+      });
+
+      // Re-throw the error with execution time
+      const executionTime = Date.now() - startTime;
+      if (error instanceof Error) {
+        (error as Error & { executionTime?: number }).executionTime = executionTime;
+      }
+      throw error;
+    }
   }
 
   /**
@@ -105,12 +264,20 @@ export class ProofOfThought {
       return [];
     }
 
+    if (this.config.verbose) {
+      console.log(`\n=== Batch Processing: ${queries.length} queries (${parallel ? 'parallel' : 'sequential'}) ===\n`);
+    }
+
     if (parallel) {
       return Promise.all(queries.map(([q, c]) => this.query(q, c)));
     }
 
     const results: ReasoningResponse[] = [];
-    for (const [question, context] of queries) {
+    for (let i = 0; i < queries.length; i++) {
+      const [question, context] = queries[i]!;
+      if (this.config.verbose) {
+        console.log(`\n--- Query ${i + 1}/${queries.length} ---`);
+      }
       results.push(await this.query(question, context));
     }
     return results;
@@ -121,5 +288,19 @@ export class ProofOfThought {
    */
   getConfig(): Readonly<typeof this.config> {
     return { ...this.config };
+  }
+
+  /**
+   * Check if the reasoning engine is initialized
+   */
+  isInitialized(): boolean {
+    return this.initialized;
+  }
+
+  /**
+   * Get the backend type
+   */
+  getBackendType(): 'smt2' | 'json' {
+    return this.config.backend;
   }
 }
