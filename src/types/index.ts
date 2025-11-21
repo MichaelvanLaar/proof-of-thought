@@ -43,10 +43,10 @@ export interface ProofOfThoughtConfig {
   client: OpenAI;
 
   /**
-   * Backend type to use for theorem proving
+   * Backend type to use for theorem proving, or a Backend instance
    * @default 'smt2'
    */
-  backend?: BackendType;
+  backend?: BackendType | Backend;
 
   /**
    * LLM model to use for reasoning
@@ -196,6 +196,104 @@ export interface ReasoningResponse {
     prompt: number;
     completion: number;
     total: number;
+  };
+
+  /**
+   * Postprocessing metrics (if postprocessing was applied)
+   */
+  postprocessingMetrics?: PostprocessingMetrics;
+}
+
+/**
+ * Metrics collected during postprocessing
+ */
+export interface PostprocessingMetrics {
+  /**
+   * Methods applied in order
+   */
+  methodsApplied: PostprocessingMethod[];
+
+  /**
+   * Execution time for each method in milliseconds
+   */
+  methodExecutionTimes: Record<string, number>;
+
+  /**
+   * Method-specific metrics
+   */
+  methodMetrics?: {
+    /**
+     * Self-refine iterations performed
+     */
+    selfRefineIterations?: number;
+
+    /**
+     * Self-consistency samples generated
+     */
+    selfConsistencySamples?: number;
+
+    /**
+     * Decomposed sub-questions count
+     */
+    decomposedSubQuestions?: number;
+
+    /**
+     * Least-to-most progression levels
+     */
+    leastToMostLevels?: number;
+  };
+
+  /**
+   * Base reasoning time (before postprocessing)
+   */
+  baseReasoningTime: number;
+
+  /**
+   * Total postprocessing time
+   */
+  totalPostprocessingTime: number;
+
+  /**
+   * Base result before postprocessing
+   */
+  baseResult: {
+    answer: string;
+    isVerified: boolean;
+    proofSteps: number;
+  };
+
+  /**
+   * Final result after postprocessing
+   */
+  finalResult: {
+    answer: string;
+    isVerified: boolean;
+    proofSteps: number;
+  };
+
+  /**
+   * Improvement indicators
+   */
+  improvements: {
+    /**
+     * Whether the answer text changed
+     */
+    answerChanged: boolean;
+
+    /**
+     * Whether verification status improved (false -> true)
+     */
+    verificationImproved: boolean;
+
+    /**
+     * Whether verification status worsened (true -> false)
+     */
+    verificationWorsened: boolean;
+
+    /**
+     * Whether the proof expanded with more steps
+     */
+    proofExpanded: boolean;
   };
 }
 

@@ -100,34 +100,41 @@ export class ProofOfThought {
       return;
     }
 
-    // Create Z3 adapter
-    const z3Adapter = createZ3Adapter({
-      timeout: this.config.z3Timeout,
-      z3Path: this.config.z3Path,
-    });
-
-    // Initialize Z3 adapter
-    await z3Adapter.initialize();
-
-    // Create backend based on configuration
-    if (this.config.backend === 'smt2') {
-      this.backend = new SMT2Backend({
-        client: this.config.client,
-        z3Adapter,
-        model: this.config.model,
-        temperature: this.config.temperature,
-        maxTokens: this.config.maxTokens,
-        verbose: this.config.verbose,
-      });
-    } else if (this.config.backend === 'json') {
-      this.backend = new JSONBackend(this.config.client, z3Adapter, {
-        model: this.config.model,
-        temperature: this.config.temperature,
-        maxTokens: this.config.maxTokens,
-        z3Timeout: this.config.z3Timeout,
-      });
+    // Check if backend is already a Backend instance
+    if (typeof this.config.backend === 'object' && this.config.backend !== null) {
+      // Backend instance provided directly
+      this.backend = this.config.backend;
     } else {
-      throw new ConfigurationError(`Unknown backend type: ${this.config.backend}`);
+      // Create backend from type string
+      // Create Z3 adapter
+      const z3Adapter = createZ3Adapter({
+        timeout: this.config.z3Timeout,
+        z3Path: this.config.z3Path,
+      });
+
+      // Initialize Z3 adapter
+      await z3Adapter.initialize();
+
+      // Create backend based on configuration
+      if (this.config.backend === 'smt2') {
+        this.backend = new SMT2Backend({
+          client: this.config.client,
+          z3Adapter,
+          model: this.config.model,
+          temperature: this.config.temperature,
+          maxTokens: this.config.maxTokens,
+          verbose: this.config.verbose,
+        });
+      } else if (this.config.backend === 'json') {
+        this.backend = new JSONBackend(this.config.client, z3Adapter, {
+          model: this.config.model,
+          temperature: this.config.temperature,
+          maxTokens: this.config.maxTokens,
+          z3Timeout: this.config.z3Timeout,
+        });
+      } else {
+        throw new ConfigurationError(`Unknown backend type: ${this.config.backend}`);
+      }
     }
 
     this.initialized = true;
@@ -271,6 +278,9 @@ export class ProofOfThought {
       };
 
       // Step 4: Apply postprocessing if configured
+      const baseResponse = { ...response }; // Save base response for fallback
+      const baseReasoningTime = response.executionTime;
+
       if (this.config.postprocessing.length > 0) {
         if (this.config.verbose) {
           console.log(
@@ -278,100 +288,198 @@ export class ProofOfThought {
           );
         }
 
+        // Initialize metrics tracking
+        const methodsApplied: PostprocessingMethod[] = [];
+        const methodExecutionTimes: Record<string, number> = {};
+        const methodMetrics: {
+          selfRefineIterations?: number;
+          selfConsistencySamples?: number;
+          decomposedSubQuestions?: number;
+          leastToMostLevels?: number;
+        } = {};
+
         for (const method of this.config.postprocessing) {
-          if (method === 'self-refine') {
-            // Initialize Self-Refine if needed
-            if (!this.selfRefine) {
-              this.selfRefine = new SelfRefine(this.config.client, this.config.selfRefineConfig);
-            }
+          const methodStartTime = Date.now();
 
-            if (this.config.verbose) {
-              console.log('\nApplying Self-Refine...');
-            }
+          try {
+            if (method === 'self-refine') {
+              // Initialize Self-Refine if needed
+              if (!this.selfRefine) {
+                this.selfRefine = new SelfRefine(this.config.client, this.config.selfRefineConfig);
+              }
 
-            response = await this.selfRefine.refine(response, question, context ?? '');
+              if (this.config.verbose) {
+                console.log('\nApplying Self-Refine...');
+              }
 
-            if (this.config.verbose) {
-              console.log(`Refined answer: ${response.answer}`);
-            }
-          } else if (method === 'decomposed') {
-            // Initialize Decomposed Prompting if needed
-            if (!this.decomposed) {
-              // Create reasoning engine wrapper that excludes decomposed
-              const reasoningEngine = async (q: string, c: string): Promise<ReasoningResponse> => {
-                // Temporarily exclude decomposed from postprocessing to avoid recursion
-                const originalPostprocessing = this.config.postprocessing;
-                this.config.postprocessing = originalPostprocessing.filter(
-                  (m) => m !== 'decomposed'
+              response = await this.selfRefine.refine(response, question, context ?? '');
+
+              // Extract metrics: count refinement iterations from proof
+              const refinementSteps = response.proof.filter((p) =>
+                p.description.includes('Refinement iteration')
+              );
+              methodMetrics.selfRefineIterations = refinementSteps.length;
+
+              if (this.config.verbose) {
+                console.log(`Refined answer: ${response.answer}`);
+              }
+
+              methodsApplied.push(method);
+              methodExecutionTimes[method] = Date.now() - methodStartTime;
+            } else if (method === 'decomposed') {
+              // Initialize Decomposed Prompting if needed
+              if (!this.decomposed) {
+                // Create reasoning engine wrapper that excludes decomposed
+                const reasoningEngine = async (
+                  q: string,
+                  c: string
+                ): Promise<ReasoningResponse> => {
+                  // Temporarily exclude decomposed from postprocessing to avoid recursion
+                  const originalPostprocessing = this.config.postprocessing;
+                  this.config.postprocessing = originalPostprocessing.filter(
+                    (m) => m !== 'decomposed'
+                  );
+
+                  try {
+                    return await this.queryInternal(q, c);
+                  } finally {
+                    this.config.postprocessing = originalPostprocessing;
+                  }
+                };
+
+                this.decomposed = new DecomposedPrompting(
+                  this.config.client,
+                  reasoningEngine,
+                  this.config.decomposedConfig
                 );
+              }
 
-                try {
-                  return await this.queryInternal(q, c);
-                } finally {
-                  this.config.postprocessing = originalPostprocessing;
-                }
-              };
+              if (this.config.verbose) {
+                console.log('\nApplying Decomposed Prompting...');
+              }
 
-              this.decomposed = new DecomposedPrompting(
-                this.config.client,
-                reasoningEngine,
-                this.config.decomposedConfig
+              // Decomposed prompting replaces the entire response
+              response = await this.decomposed.apply(question, context ?? '');
+
+              // Extract metrics: count sub-questions from proof
+              const subQuestionSteps = response.proof.filter((p) =>
+                p.description.includes('Sub-question')
+              );
+              methodMetrics.decomposedSubQuestions = subQuestionSteps.length;
+
+              if (this.config.verbose) {
+                console.log(`Decomposed answer: ${response.answer}`);
+              }
+
+              methodsApplied.push(method);
+              methodExecutionTimes[method] = Date.now() - methodStartTime;
+            } else if (method === 'least-to-most') {
+              // Initialize Least-to-Most if needed
+              if (!this.leastToMost) {
+                // Create reasoning engine wrapper that excludes least-to-most
+                const reasoningEngine = async (
+                  q: string,
+                  c: string
+                ): Promise<ReasoningResponse> => {
+                  // Temporarily exclude least-to-most from postprocessing to avoid recursion
+                  const originalPostprocessing = this.config.postprocessing;
+                  this.config.postprocessing = originalPostprocessing.filter(
+                    (m) => m !== 'least-to-most'
+                  );
+
+                  try {
+                    return await this.queryInternal(q, c);
+                  } finally {
+                    this.config.postprocessing = originalPostprocessing;
+                  }
+                };
+
+                this.leastToMost = new LeastToMost(
+                  this.config.client,
+                  reasoningEngine,
+                  this.config.leastToMostConfig
+                );
+              }
+
+              if (this.config.verbose) {
+                console.log('\nApplying Least-to-Most Prompting...');
+              }
+
+              // Least-to-most replaces the entire response
+              response = await this.leastToMost.apply(question, context ?? '');
+
+              // Extract metrics: count progression levels from proof
+              const levelSteps = response.proof.filter((p) => p.description.includes('Level '));
+              methodMetrics.leastToMostLevels = levelSteps.length;
+
+              if (this.config.verbose) {
+                console.log(`Least-to-Most answer: ${response.answer}`);
+              }
+
+              methodsApplied.push(method);
+              methodExecutionTimes[method] = Date.now() - methodStartTime;
+            } else {
+              // Other postprocessing methods not yet implemented
+              response.proof.push({
+                step: response.proof.length + 1,
+                description: `Postprocessing: ${method} (not yet implemented)`,
+              });
+            }
+          } catch (error) {
+            // Error handling: fallback to base result
+            if (this.config.verbose) {
+              console.error(`\nError in ${method} postprocessing:`, error);
+              console.log(
+                `Falling back to ${methodsApplied.length > 0 ? 'previous' : 'base'} result`
               );
             }
 
-            if (this.config.verbose) {
-              console.log('\nApplying Decomposed Prompting...');
-            }
-
-            // Decomposed prompting replaces the entire response
-            response = await this.decomposed.apply(question, context ?? '');
-
-            if (this.config.verbose) {
-              console.log(`Decomposed answer: ${response.answer}`);
-            }
-          } else if (method === 'least-to-most') {
-            // Initialize Least-to-Most if needed
-            if (!this.leastToMost) {
-              // Create reasoning engine wrapper that excludes least-to-most
-              const reasoningEngine = async (q: string, c: string): Promise<ReasoningResponse> => {
-                // Temporarily exclude least-to-most from postprocessing to avoid recursion
-                const originalPostprocessing = this.config.postprocessing;
-                this.config.postprocessing = originalPostprocessing.filter(
-                  (m) => m !== 'least-to-most'
-                );
-
-                try {
-                  return await this.queryInternal(q, c);
-                } finally {
-                  this.config.postprocessing = originalPostprocessing;
-                }
-              };
-
-              this.leastToMost = new LeastToMost(
-                this.config.client,
-                reasoningEngine,
-                this.config.leastToMostConfig
-              );
-            }
-
-            if (this.config.verbose) {
-              console.log('\nApplying Least-to-Most Prompting...');
-            }
-
-            // Least-to-most replaces the entire response
-            response = await this.leastToMost.apply(question, context ?? '');
-
-            if (this.config.verbose) {
-              console.log(`Least-to-Most answer: ${response.answer}`);
-            }
-          } else {
-            // Other postprocessing methods not yet implemented
+            // Add error to proof trace
             response.proof.push({
               step: response.proof.length + 1,
-              description: `Postprocessing: ${method} (not yet implemented)`,
+              description: `Postprocessing error in ${method}: ${error instanceof Error ? error.message : 'Unknown error'}. Using fallback result.`,
             });
+
+            // Continue with next method (don't fail entire query)
           }
         }
+
+        // Add postprocessing metrics to response
+        const totalPostprocessingTime = Object.values(methodExecutionTimes).reduce(
+          (sum, time) => sum + time,
+          0
+        );
+
+        // Calculate comparative effectiveness
+        const baseResultInfo = {
+          answer: baseResponse.answer,
+          isVerified: baseResponse.isVerified,
+          proofSteps: baseResponse.proof.length,
+        };
+
+        const finalResultInfo = {
+          answer: response.answer,
+          isVerified: response.isVerified,
+          proofSteps: response.proof.length,
+        };
+
+        const improvements = {
+          answerChanged: baseResponse.answer !== response.answer,
+          verificationImproved: !baseResponse.isVerified && response.isVerified,
+          verificationWorsened: baseResponse.isVerified && !response.isVerified,
+          proofExpanded: response.proof.length > baseResponse.proof.length,
+        };
+
+        response.postprocessingMetrics = {
+          methodsApplied,
+          methodExecutionTimes,
+          methodMetrics,
+          baseReasoningTime,
+          totalPostprocessingTime,
+          baseResult: baseResultInfo,
+          finalResult: finalResultInfo,
+          improvements,
+        };
       }
 
       // Update execution time after postprocessing
