@@ -16,11 +16,7 @@ export type RuntimeEnvironment = 'node' | 'browser' | 'unknown';
  */
 export function detectEnvironment(): RuntimeEnvironment {
   // Check for Node.js
-  if (
-    typeof process !== 'undefined' &&
-    process.versions != null &&
-    process.versions.node != null
-  ) {
+  if (typeof process !== 'undefined' && process.versions != null && process.versions.node != null) {
     return 'node';
   }
 
@@ -52,10 +48,7 @@ export function isBrowser(): boolean {
  * @param config - Configuration options
  * @returns Z3 adapter instance for the current environment
  */
-export function createZ3Adapter(config?: {
-  timeout?: number;
-  z3Path?: string;
-}): Z3Adapter {
+export function createZ3Adapter(config?: { timeout?: number; z3Path?: string }): Z3Adapter {
   const env = detectEnvironment();
 
   switch (env) {

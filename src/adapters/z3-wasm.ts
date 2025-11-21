@@ -89,4 +89,3 @@ export class Z3WASMAdapter extends AbstractZ3Adapter {
     this.initialized = false;
   }
 }
-

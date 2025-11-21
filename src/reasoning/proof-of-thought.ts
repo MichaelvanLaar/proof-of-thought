@@ -39,7 +39,10 @@ import { SelfRefine } from '../postprocessing/self-refine.js';
  */
 export class ProofOfThought {
   private readonly config: Required<
-    Omit<ProofOfThoughtConfig, 'z3Path' | 'postprocessing' | 'selfRefineConfig' | 'selfConsistencyConfig'>
+    Omit<
+      ProofOfThoughtConfig,
+      'z3Path' | 'postprocessing' | 'selfRefineConfig' | 'selfConsistencyConfig'
+    >
   > & {
     z3Path?: string;
     postprocessing: PostprocessingMethod[];
@@ -230,17 +233,16 @@ export class ProofOfThought {
       // Step 4: Apply postprocessing if configured
       if (this.config.postprocessing.length > 0) {
         if (this.config.verbose) {
-          console.log(`\n=== Step 4: Postprocessing (${this.config.postprocessing.join(', ')}) ===`);
+          console.log(
+            `\n=== Step 4: Postprocessing (${this.config.postprocessing.join(', ')}) ===`
+          );
         }
 
         for (const method of this.config.postprocessing) {
           if (method === 'self-refine') {
             // Initialize Self-Refine if needed
             if (!this.selfRefine) {
-              this.selfRefine = new SelfRefine(
-                this.config.client,
-                this.config.selfRefineConfig
-              );
+              this.selfRefine = new SelfRefine(this.config.client, this.config.selfRefineConfig);
             }
 
             if (this.config.verbose) {
@@ -293,16 +295,15 @@ export class ProofOfThought {
    * @param parallel - Whether to process queries in parallel
    * @returns Array of reasoning responses
    */
-  async batch(
-    queries: Array<[string, string?]>,
-    parallel = false
-  ): Promise<ReasoningResponse[]> {
+  async batch(queries: Array<[string, string?]>, parallel = false): Promise<ReasoningResponse[]> {
     if (queries.length === 0) {
       return [];
     }
 
     if (this.config.verbose) {
-      console.log(`\n=== Batch Processing: ${queries.length} queries (${parallel ? 'parallel' : 'sequential'}) ===\n`);
+      console.log(
+        `\n=== Batch Processing: ${queries.length} queries (${parallel ? 'parallel' : 'sequential'}) ===\n`
+      );
     }
 
     if (parallel) {

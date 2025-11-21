@@ -5,12 +5,7 @@
 import type OpenAI from 'openai';
 import type { Backend, Formula, VerificationResult, SMT2Formula } from '../types/index.js';
 import type { Z3Adapter } from '../types/index.js';
-import {
-  BackendError,
-  TranslationError,
-  ValidationError,
-  LLMError,
-} from '../types/errors.js';
+import { BackendError, TranslationError, ValidationError, LLMError } from '../types/errors.js';
 
 /**
  * Configuration for SMT2 Backend
@@ -333,4 +328,3 @@ Result: ${result.result.toUpperCase()}
     }
   }
 }
-

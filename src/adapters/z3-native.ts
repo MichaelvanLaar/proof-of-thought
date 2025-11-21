@@ -333,4 +333,3 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
     this.initialized = false;
   }
 }
-
