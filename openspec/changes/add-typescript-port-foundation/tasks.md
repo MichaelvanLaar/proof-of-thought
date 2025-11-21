@@ -151,16 +151,16 @@
 - [x] 13.8 Add test coverage reporting
 
 ## 14. Benchmark Suite
-- [ ] 14.1 Create benchmark infrastructure in `benchmarks/`
-- [ ] 14.2 Port ProntoQA benchmark from Python
-- [ ] 14.3 Port FOLIO benchmark from Python
-- [ ] 14.4 Port ProofWriter benchmark from Python
-- [ ] 14.5 Port ConditionalQA benchmark from Python
-- [ ] 14.6 Port StrategyQA benchmark from Python
-- [ ] 14.7 Implement benchmark data loading
-- [ ] 14.8 Create benchmark result reporting
-- [ ] 14.9 Run accuracy validation against Python results
-- [ ] 14.10 Document benchmark results
+- [x] 14.1 Create benchmark infrastructure in `benchmarks/`
+- [x] 14.2 Port ProntoQA benchmark from Python
+- [x] 14.3 Port FOLIO benchmark from Python
+- [x] 14.4 Port ProofWriter benchmark from Python
+- [x] 14.5 Port ConditionalQA benchmark from Python
+- [x] 14.6 Port StrategyQA benchmark from Python
+- [x] 14.7 Implement benchmark data loading
+- [x] 14.8 Create benchmark result reporting
+- [x] 14.9 Run accuracy validation against Python results
+- [x] 14.10 Document benchmark results
 
 ## 15. Examples and Demos
 - [ ] 15.1 Create basic usage example
