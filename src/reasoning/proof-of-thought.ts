@@ -12,6 +12,7 @@ import type {
   SelfRefineConfig,
   SelfConsistencyConfig,
   DecomposedConfig,
+  LeastToMostConfig,
 } from '../types/index.js';
 import { ConfigurationError, ValidationError } from '../types/errors.js';
 import { SMT2Backend } from '../backends/smt2-backend.js';
@@ -20,6 +21,7 @@ import { createZ3Adapter } from '../adapters/utils.js';
 import { SelfRefine } from '../postprocessing/self-refine.js';
 import { SelfConsistency } from '../postprocessing/self-consistency.js';
 import { DecomposedPrompting } from '../postprocessing/decomposed.js';
+import { LeastToMost } from '../postprocessing/least-to-most.js';
 
 /**
  * Main ProofOfThought class for neurosymbolic reasoning
@@ -48,6 +50,7 @@ export class ProofOfThought {
       | 'selfRefineConfig'
       | 'selfConsistencyConfig'
       | 'decomposedConfig'
+      | 'leastToMostConfig'
     >
   > & {
     z3Path?: string;
@@ -55,11 +58,13 @@ export class ProofOfThought {
     selfRefineConfig?: SelfRefineConfig;
     selfConsistencyConfig?: SelfConsistencyConfig;
     decomposedConfig?: DecomposedConfig;
+    leastToMostConfig?: LeastToMostConfig;
   };
   private backend?: Backend;
   private selfRefine?: SelfRefine;
   private selfConsistency?: SelfConsistency;
   private decomposed?: DecomposedPrompting;
+  private leastToMost?: LeastToMost;
   private initialized = false;
 
   constructor(config: ProofOfThoughtConfig) {
@@ -82,6 +87,7 @@ export class ProofOfThought {
       selfRefineConfig: config.selfRefineConfig,
       selfConsistencyConfig: config.selfConsistencyConfig,
       decomposedConfig: config.decomposedConfig,
+      leastToMostConfig: config.leastToMostConfig,
     };
   }
 
@@ -322,6 +328,41 @@ export class ProofOfThought {
 
             if (this.config.verbose) {
               console.log(`Decomposed answer: ${response.answer}`);
+            }
+          } else if (method === 'least-to-most') {
+            // Initialize Least-to-Most if needed
+            if (!this.leastToMost) {
+              // Create reasoning engine wrapper that excludes least-to-most
+              const reasoningEngine = async (q: string, c: string): Promise<ReasoningResponse> => {
+                // Temporarily exclude least-to-most from postprocessing to avoid recursion
+                const originalPostprocessing = this.config.postprocessing;
+                this.config.postprocessing = originalPostprocessing.filter(
+                  (m) => m !== 'least-to-most'
+                );
+
+                try {
+                  return await this.queryInternal(q, c);
+                } finally {
+                  this.config.postprocessing = originalPostprocessing;
+                }
+              };
+
+              this.leastToMost = new LeastToMost(
+                this.config.client,
+                reasoningEngine,
+                this.config.leastToMostConfig
+              );
+            }
+
+            if (this.config.verbose) {
+              console.log('\nApplying Least-to-Most Prompting...');
+            }
+
+            // Least-to-most replaces the entire response
+            response = await this.leastToMost.apply(question, context ?? '');
+
+            if (this.config.verbose) {
+              console.log(`Least-to-Most answer: ${response.answer}`);
             }
           } else {
             // Other postprocessing methods not yet implemented

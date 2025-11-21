@@ -94,6 +94,11 @@ export interface ProofOfThoughtConfig {
   decomposedConfig?: DecomposedConfig;
 
   /**
+   * Configuration for Least-to-Most postprocessing
+   */
+  leastToMostConfig?: LeastToMostConfig;
+
+  /**
    * Enable verbose logging
    * @default false
    */

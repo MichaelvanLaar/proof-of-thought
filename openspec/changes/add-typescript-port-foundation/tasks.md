@@ -114,12 +114,12 @@
 - [x] 9.7 Write tests for decomposed prompting
 
 ## 10. Postprocessing - Least-to-Most
-- [ ] 10.1 Create LeastToMost class in `src/postprocessing/least-to-most.ts`
-- [ ] 10.2 Implement problem progression identification
-- [ ] 10.3 Create incremental solution builder
-- [ ] 10.4 Implement solution history management
-- [ ] 10.5 Add configuration interface for least-to-most
-- [ ] 10.6 Write tests for least-to-most logic
+- [x] 10.1 Create LeastToMost class in `src/postprocessing/least-to-most.ts`
+- [x] 10.2 Implement problem progression identification
+- [x] 10.3 Create incremental solution builder
+- [x] 10.4 Implement solution history management
+- [x] 10.5 Add configuration interface for least-to-most
+- [x] 10.6 Write tests for least-to-most logic
 
 ## 11. Postprocessing Integration
 - [x] 11.1 Create postprocessing pipeline in ProofOfThought class

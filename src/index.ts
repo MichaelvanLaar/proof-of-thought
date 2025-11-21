@@ -16,6 +16,7 @@ export { JSONBackend } from './backends/json-backend.js';
 export { SelfRefine } from './postprocessing/self-refine.js';
 export { SelfConsistency } from './postprocessing/self-consistency.js';
 export { DecomposedPrompting } from './postprocessing/decomposed.js';
+export { LeastToMost } from './postprocessing/least-to-most.js';
 
 // Export types
 export type {
