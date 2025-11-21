@@ -96,13 +96,13 @@
 - [x] 7.7 Write tests for self-refine logic
 
 ## 8. Postprocessing - Self-Consistency
-- [ ] 8.1 Create SelfConsistency class in `src/postprocessing/self-consistency.ts`
-- [ ] 8.2 Implement multiple reasoning path generation
-- [ ] 8.3 Add temperature-based sampling
-- [ ] 8.4 Implement majority voting mechanism
-- [ ] 8.5 Create confidence score calculation
-- [ ] 8.6 Add configuration interface for self-consistency
-- [ ] 8.7 Write tests for self-consistency logic
+- [x] 8.1 Create SelfConsistency class in `src/postprocessing/self-consistency.ts`
+- [x] 8.2 Implement multiple reasoning path generation
+- [x] 8.3 Add temperature-based sampling
+- [x] 8.4 Implement majority voting mechanism
+- [x] 8.5 Create confidence score calculation
+- [x] 8.6 Add configuration interface for self-consistency
+- [x] 8.7 Write tests for self-consistency logic
 
 ## 9. Postprocessing - Decomposed Prompting
 - [ ] 9.1 Create DecomposedPrompting class in `src/postprocessing/decomposed.ts`
