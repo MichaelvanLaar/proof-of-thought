@@ -87,13 +87,13 @@
 - [x] 6.16 Write integration tests for end-to-end reasoning
 
 ## 7. Postprocessing - Self-Refine
-- [ ] 7.1 Create SelfRefine class in `src/postprocessing/self-refine.ts`
-- [ ] 7.2 Implement iterative refinement loop
-- [ ] 7.3 Create critique generation using LLM
-- [ ] 7.4 Implement convergence detection
-- [ ] 7.5 Add maximum iteration limits
-- [ ] 7.6 Create configuration interface for self-refine
-- [ ] 7.7 Write tests for self-refine logic
+- [x] 7.1 Create SelfRefine class in `src/postprocessing/self-refine.ts`
+- [x] 7.2 Implement iterative refinement loop
+- [x] 7.3 Create critique generation using LLM
+- [x] 7.4 Implement convergence detection
+- [x] 7.5 Add maximum iteration limits
+- [x] 7.6 Create configuration interface for self-refine
+- [x] 7.7 Write tests for self-refine logic
 
 ## 8. Postprocessing - Self-Consistency
 - [ ] 8.1 Create SelfConsistency class in `src/postprocessing/self-consistency.ts`
