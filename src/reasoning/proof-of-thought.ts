@@ -10,11 +10,14 @@ import type {
   Backend,
   PostprocessingMethod,
   ReasoningStep,
+  SelfRefineConfig,
+  SelfConsistencyConfig,
 } from '../types/index.js';
 import { ConfigurationError, ValidationError } from '../types/errors.js';
 import { SMT2Backend } from '../backends/smt2-backend.js';
 import { JSONBackend } from '../backends/json-backend.js';
 import { createZ3Adapter } from '../adapters/utils.js';
+import { SelfRefine } from '../postprocessing/self-refine.js';
 
 /**
  * Main ProofOfThought class for neurosymbolic reasoning
@@ -36,12 +39,15 @@ import { createZ3Adapter } from '../adapters/utils.js';
  */
 export class ProofOfThought {
   private readonly config: Required<
-    Omit<ProofOfThoughtConfig, 'z3Path' | 'postprocessing'>
+    Omit<ProofOfThoughtConfig, 'z3Path' | 'postprocessing' | 'selfRefineConfig' | 'selfConsistencyConfig'>
   > & {
     z3Path?: string;
     postprocessing: PostprocessingMethod[];
+    selfRefineConfig?: SelfRefineConfig;
+    selfConsistencyConfig?: SelfConsistencyConfig;
   };
   private backend?: Backend;
+  private selfRefine?: SelfRefine;
   private initialized = false;
 
   constructor(config: ProofOfThoughtConfig) {
@@ -61,6 +67,8 @@ export class ProofOfThought {
       postprocessing: config.postprocessing ?? [],
       verbose: config.verbose ?? false,
       z3Path: config.z3Path,
+      selfRefineConfig: config.selfRefineConfig,
+      selfConsistencyConfig: config.selfConsistencyConfig,
     };
   }
 
@@ -207,32 +215,61 @@ export class ProofOfThought {
         console.log(`Answer: ${answer}`);
       }
 
-      // Step 4: Apply postprocessing if configured
-      // Postprocessing will be implemented in Phases 7-10
-      if (this.config.postprocessing.length > 0) {
-        proof.push({
-          step: ++stepCounter,
-          description: `Postprocessing: ${this.config.postprocessing.join(', ')} (not yet implemented)`,
-        });
-      }
-
-      const executionTime = Date.now() - startTime;
-
-      if (this.config.verbose) {
-        console.log(`\n=== Execution Time: ${executionTime}ms ===\n`);
-      }
-
-      // Build response
-      return {
+      // Build initial response
+      let response: ReasoningResponse = {
         answer,
         formula: String(formula),
         proof,
         isVerified: verificationResult.result === 'sat' || verificationResult.result === 'unsat',
         backend: this.config.backend,
-        executionTime,
+        executionTime: Date.now() - startTime,
         model: verificationResult.model,
         tokensUsed: undefined, // Will be tracked in future enhancement
       };
+
+      // Step 4: Apply postprocessing if configured
+      if (this.config.postprocessing.length > 0) {
+        if (this.config.verbose) {
+          console.log(`\n=== Step 4: Postprocessing (${this.config.postprocessing.join(', ')}) ===`);
+        }
+
+        for (const method of this.config.postprocessing) {
+          if (method === 'self-refine') {
+            // Initialize Self-Refine if needed
+            if (!this.selfRefine) {
+              this.selfRefine = new SelfRefine(
+                this.config.client,
+                this.config.selfRefineConfig
+              );
+            }
+
+            if (this.config.verbose) {
+              console.log('\nApplying Self-Refine...');
+            }
+
+            response = await this.selfRefine.refine(response, question, context ?? '');
+
+            if (this.config.verbose) {
+              console.log(`Refined answer: ${response.answer}`);
+            }
+          } else {
+            // Other postprocessing methods not yet implemented
+            response.proof.push({
+              step: response.proof.length + 1,
+              description: `Postprocessing: ${method} (not yet implemented)`,
+            });
+          }
+        }
+      }
+
+      // Update execution time after postprocessing
+      response.executionTime = Date.now() - startTime;
+
+      if (this.config.verbose) {
+        console.log(`\n=== Total Execution Time: ${response.executionTime}ms ===\n`);
+      }
+
+      return response;
     } catch (error) {
       // Add error to proof trace
       proof.push({

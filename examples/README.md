@@ -35,11 +35,25 @@ Demonstrates the fundamental usage of ProofOfThought:
 npx tsx examples/basic-usage.ts
 ```
 
+### self-refine-usage.ts
+
+Demonstrates Self-Refine postprocessing for iterative answer improvement:
+- Setting up Self-Refine with custom configuration
+- Refining reasoning responses through LLM critique
+- Monitoring convergence and satisfaction detection
+- Inspecting refinement traces and evolution
+- Understanding configuration options (maxIterations, convergenceThreshold)
+
+**Run it**:
+```bash
+npx tsx examples/self-refine-usage.ts
+```
+
 ## Coming Soon
 
 More examples will be added for:
 - Batch processing
-- Postprocessing methods (self-refine, self-consistency)
+- Additional postprocessing methods (self-consistency, decomposed prompting)
 - Custom Z3 configuration
 - Browser usage
 - Advanced logical reasoning

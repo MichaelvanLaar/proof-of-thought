@@ -8,6 +8,9 @@
 // Export main class
 export { ProofOfThought } from './reasoning/proof-of-thought.js';
 
+// Export postprocessing methods
+export { SelfRefine } from './postprocessing/self-refine.js';
+
 // Export types
 export type {
   BackendType,

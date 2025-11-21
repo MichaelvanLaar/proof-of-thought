@@ -58,6 +58,87 @@ console.log('Verified:', response.isVerified);
 console.log('Proof:', response.proof);
 ```
 
+## Advanced Usage
+
+### Postprocessing with Self-Refine
+
+Self-Refine iteratively improves reasoning answers through LLM critique and refinement:
+
+```typescript
+import { ProofOfThought } from '@proof-of-thought/core';
+import OpenAI from 'openai';
+
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Enable Self-Refine postprocessing
+const pot = new ProofOfThought({
+  client,
+  postprocessing: ['self-refine'],
+  selfRefineConfig: {
+    maxIterations: 3,
+    convergenceThreshold: 0.95,
+  },
+});
+
+// Query will automatically apply Self-Refine
+const response = await pot.query(
+  'Is Socrates mortal?',
+  'All humans are mortal. Socrates is human.'
+);
+
+// The answer has been iteratively refined
+console.log('Refined answer:', response.answer);
+console.log('Refinement steps:', response.proof.length);
+```
+
+### Using Self-Refine Directly
+
+You can also use Self-Refine as a standalone postprocessing step:
+
+```typescript
+import { ProofOfThought, SelfRefine } from '@proof-of-thought/core';
+import OpenAI from 'openai';
+
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const pot = new ProofOfThought({ client });
+
+// Get initial reasoning result
+const response = await pot.query('Is Socrates mortal?', 'All humans are mortal.');
+
+// Apply Self-Refine manually
+const selfRefine = new SelfRefine(client, {
+  maxIterations: 5,
+  convergenceThreshold: 0.90,
+});
+
+const refined = await selfRefine.refine(
+  response,
+  'Is Socrates mortal?',
+  'All humans are mortal. Socrates is human.'
+);
+
+console.log('Original:', response.answer);
+console.log('Refined:', refined.answer);
+```
+
+### Batch Processing
+
+Process multiple queries efficiently:
+
+```typescript
+const queries = [
+  ['Is Socrates mortal?', 'All humans are mortal. Socrates is human.'],
+  ['Is 2+2=4?', 'Basic arithmetic.'],
+  ['Is the sky blue?', 'Observable fact about Earth.'],
+];
+
+// Process sequentially
+const results = await pot.batch(queries, false);
+
+// Or process in parallel for better performance
+const results = await pot.batch(queries, true);
+```
+
 ## Documentation
 
 - [Installation Guide](docs/installation.md) - Coming soon

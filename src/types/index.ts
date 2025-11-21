@@ -79,6 +79,16 @@ export interface ProofOfThoughtConfig {
   postprocessing?: PostprocessingMethod[];
 
   /**
+   * Configuration for Self-Refine postprocessing
+   */
+  selfRefineConfig?: SelfRefineConfig;
+
+  /**
+   * Configuration for Self-Consistency postprocessing
+   */
+  selfConsistencyConfig?: SelfConsistencyConfig;
+
+  /**
    * Enable verbose logging
    * @default false
    */
