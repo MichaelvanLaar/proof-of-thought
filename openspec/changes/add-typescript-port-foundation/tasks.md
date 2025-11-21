@@ -39,19 +39,19 @@
 - [x] 3.12 Write integration tests for Z3 solver operations
 
 ## 4. SMT2 Backend Implementation
-- [ ] 4.1 Create SMT2Backend class implementing Backend interface
-- [ ] 4.2 Implement natural language to SMT-LIB 2.0 translation using LLM
-- [ ] 4.3 Create SMT2 formula validation logic
-- [ ] 4.4 Implement Z3 CLI execution for SMT2 formulas
-- [ ] 4.5 Create SMT2 output parser (sat/unsat/unknown)
-- [ ] 4.6 Implement model extraction for satisfiable formulas
-- [ ] 4.7 Create model-to-natural-language explanation converter
-- [ ] 4.8 Add support for quantifiers and multiple data types
-- [ ] 4.9 Implement Z3 path configuration
-- [ ] 4.10 Add SMT2 formula caching for performance
-- [ ] 4.11 Write unit tests for SMT2 translation
-- [ ] 4.12 Write integration tests matching Python SMT2 tests
-- [ ] 4.13 Validate outputs against Python implementation
+- [x] 4.1 Create SMT2Backend class implementing Backend interface
+- [x] 4.2 Implement natural language to SMT-LIB 2.0 translation using LLM
+- [x] 4.3 Create SMT2 formula validation logic
+- [x] 4.4 Implement Z3 CLI execution for SMT2 formulas (via Z3 adapter)
+- [x] 4.5 Create SMT2 output parser (sat/unsat/unknown) (in Z3 adapter)
+- [x] 4.6 Implement model extraction for satisfiable formulas (in Z3 adapter)
+- [x] 4.7 Create model-to-natural-language explanation converter
+- [x] 4.8 Add support for quantifiers and multiple data types (via prompts)
+- [x] 4.9 Implement Z3 path configuration (in Z3 adapter)
+- [ ] 4.10 Add SMT2 formula caching for performance (deferred)
+- [x] 4.11 Write unit tests for SMT2 translation
+- [x] 4.12 Write integration tests matching Python SMT2 tests
+- [ ] 4.13 Validate outputs against Python implementation (requires Python setup)
 
 ## 5. JSON DSL Backend Implementation
 - [ ] 5.1 Create JSONBackend class implementing Backend interface

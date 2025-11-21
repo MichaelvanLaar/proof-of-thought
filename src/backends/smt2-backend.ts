@@ -2,32 +2,335 @@
  * SMT2 Backend - SMT-LIB 2.0 format backend
  */
 
+import type OpenAI from 'openai';
 import type { Backend, Formula, VerificationResult, SMT2Formula } from '../types/index.js';
-import { BackendError } from '../types/errors.js';
+import type { Z3Adapter } from '../types/index.js';
+import {
+  BackendError,
+  TranslationError,
+  ValidationError,
+  LLMError,
+} from '../types/errors.js';
+
+/**
+ * Configuration for SMT2 Backend
+ */
+export interface SMT2BackendConfig {
+  /**
+   * OpenAI client for LLM translation
+   */
+  client: OpenAI;
+
+  /**
+   * Z3 adapter for formula verification
+   */
+  z3Adapter: Z3Adapter;
+
+  /**
+   * LLM model to use
+   * @default 'gpt-4o'
+   */
+  model?: string;
+
+  /**
+   * Temperature for LLM sampling
+   * @default 0.0
+   */
+  temperature?: number;
+
+  /**
+   * Maximum tokens for LLM response
+   * @default 2048
+   */
+  maxTokens?: number;
+
+  /**
+   * Enable verbose logging
+   * @default false
+   */
+  verbose?: boolean;
+}
 
 /**
  * SMT2 Backend implementation using SMT-LIB 2.0 format
- * Executes formulas via Z3 CLI
+ * Translates natural language to SMT2 formulas using LLMs and verifies with Z3
  */
 export class SMT2Backend implements Backend {
   readonly type = 'smt2' as const;
 
-  constructor() {
-    // Implementation in Phase 4
+  private config: Required<SMT2BackendConfig>;
+
+  constructor(config: SMT2BackendConfig) {
+    this.config = {
+      client: config.client,
+      z3Adapter: config.z3Adapter,
+      model: config.model ?? 'gpt-4o',
+      temperature: config.temperature ?? 0.0,
+      maxTokens: config.maxTokens ?? 2048,
+      verbose: config.verbose ?? false,
+    };
   }
 
+  /**
+   * Translate natural language question and context to SMT-LIB 2.0 formula
+   */
   async translate(question: string, context: string): Promise<Formula> {
-    // Implementation in Phase 4: Task 4.2
-    throw new BackendError('SMT2 translation not yet implemented', 'smt2');
+    if (!question || question.trim().length === 0) {
+      throw new ValidationError('Question cannot be empty', 'question');
+    }
+
+    const prompt = this.buildTranslationPrompt(question, context);
+
+    try {
+      const response = await this.config.client.chat.completions.create({
+        model: this.config.model,
+        messages: [
+          {
+            role: 'system',
+            content: this.getSystemPrompt(),
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: this.config.temperature,
+        max_tokens: this.config.maxTokens,
+      });
+
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new TranslationError('LLM returned empty response');
+      }
+
+      // Extract SMT2 formula from response (handle code blocks)
+      const formula = this.extractSMT2Formula(content);
+
+      // Validate the formula
+      this.validateSMT2Formula(formula);
+
+      return formula as SMT2Formula;
+    } catch (error) {
+      if (error instanceof TranslationError || error instanceof ValidationError) {
+        throw error;
+      }
+
+      if (error && typeof error === 'object' && 'status' in error) {
+        throw new LLMError(
+          `OpenAI API error: ${error instanceof Error ? error.message : String(error)}`,
+          (error as { status?: number }).status,
+          (error as { status?: number }).status === 429 || // Rate limit
+            (error as { status?: number }).status === 503 // Service unavailable
+        );
+      }
+
+      throw new TranslationError(
+        `Failed to translate to SMT2: ${error instanceof Error ? error.message : String(error)}`,
+        question
+      );
+    }
   }
 
+  /**
+   * Verify an SMT2 formula using Z3 solver
+   */
   async verify(formula: Formula): Promise<VerificationResult> {
-    // Implementation in Phase 4: Task 4.4
-    throw new BackendError('SMT2 verification not yet implemented', 'smt2');
+    const smt2Formula = formula as string;
+
+    // Validate formula before verification
+    this.validateSMT2Formula(smt2Formula);
+
+    try {
+      // Use Z3 adapter to execute the formula
+      const result = await this.config.z3Adapter.executeSMT2(smt2Formula);
+      return result;
+    } catch (error) {
+      throw new BackendError(
+        `SMT2 verification failed: ${error instanceof Error ? error.message : String(error)}`,
+        'smt2',
+        { formula: smt2Formula.substring(0, 200) }
+      );
+    }
   }
 
+  /**
+   * Explain verification result in natural language
+   */
   async explain(result: VerificationResult): Promise<string> {
-    // Implementation in Phase 4: Task 4.7
-    throw new BackendError('SMT2 explanation not yet implemented', 'smt2');
+    const explanationPrompt = this.buildExplanationPrompt(result);
+
+    try {
+      const response = await this.config.client.chat.completions.create({
+        model: this.config.model,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are an expert at explaining logical reasoning results in simple, clear language.',
+          },
+          {
+            role: 'user',
+            content: explanationPrompt,
+          },
+        ],
+        temperature: 0.3,
+        max_tokens: 500,
+      });
+
+      return response.choices[0]?.message?.content ?? 'Unable to generate explanation';
+    } catch (error) {
+      // If explanation fails, return a basic explanation
+      return this.generateBasicExplanation(result);
+    }
+  }
+
+  /**
+   * Get system prompt for SMT2 translation
+   */
+  private getSystemPrompt(): string {
+    return `You are an expert at translating natural language logical statements into SMT-LIB 2.0 format for Z3 solver.
+
+Your task is to:
+1. Analyze the given question and context
+2. Identify all entities, properties, and logical relationships
+3. Generate a complete SMT-LIB 2.0 formula that represents the logical problem
+4. Ensure the formula can be checked for satisfiability
+
+Guidelines:
+- Use appropriate SMT-LIB 2.0 syntax
+- Declare all constants and functions
+- Use proper types (Int, Bool, String, etc.)
+- Add assertions for all given facts
+- Add the query as a final assertion (possibly negated for checking validity)
+- Include (check-sat) and (get-model) commands
+- Be precise and complete
+- Return ONLY the SMT2 formula, wrapped in a code block
+
+Example format:
+\`\`\`smt2
+(declare-const x Int)
+(assert (> x 0))
+(check-sat)
+(get-model)
+\`\`\``;
+  }
+
+  /**
+   * Build translation prompt from question and context
+   */
+  private buildTranslationPrompt(question: string, context: string): string {
+    return `Translate the following logical problem into SMT-LIB 2.0 format:
+
+Context:
+${context || 'No additional context provided.'}
+
+Question:
+${question}
+
+Generate a complete SMT-LIB 2.0 formula that can be checked with Z3 solver.`;
+  }
+
+  /**
+   * Build explanation prompt from verification result
+   */
+  private buildExplanationPrompt(result: VerificationResult): string {
+    let prompt = `Explain this logical reasoning result in simple terms:
+
+Result: ${result.result.toUpperCase()}
+`;
+
+    if (result.model && Object.keys(result.model).length > 0) {
+      prompt += `\nModel values:\n`;
+      for (const [key, value] of Object.entries(result.model)) {
+        prompt += `  ${key} = ${JSON.stringify(value)}\n`;
+      }
+    }
+
+    prompt += `\nProvide a clear, concise explanation of what this means.`;
+
+    return prompt;
+  }
+
+  /**
+   * Extract SMT2 formula from LLM response (handle code blocks)
+   */
+  private extractSMT2Formula(content: string): string {
+    // Try to extract from code block first
+    const codeBlockMatch = content.match(/```(?:smt2?|lisp)?\s*\n([\s\S]*?)\n```/);
+    if (codeBlockMatch) {
+      return codeBlockMatch[1]?.trim() ?? '';
+    }
+
+    // If no code block, look for SMT2-like content
+    const smt2Match = content.match(/\(declare-[\s\S]*?\(check-sat\)/);
+    if (smt2Match) {
+      return smt2Match[0];
+    }
+
+    // Return the whole content if it looks like SMT2
+    if (content.includes('(declare-') || content.includes('(assert')) {
+      return content.trim();
+    }
+
+    throw new TranslationError('Could not extract SMT2 formula from LLM response', content);
+  }
+
+  /**
+   * Validate SMT2 formula syntax
+   */
+  private validateSMT2Formula(formula: string): void {
+    if (!formula || formula.trim().length === 0) {
+      throw new ValidationError('SMT2 formula is empty', 'formula');
+    }
+
+    // Basic syntax validation
+    const openParens = (formula.match(/\(/g) || []).length;
+    const closeParens = (formula.match(/\)/g) || []).length;
+
+    if (openParens !== closeParens) {
+      throw new ValidationError(
+        `Unbalanced parentheses in SMT2 formula: ${openParens} open, ${closeParens} close`,
+        'formula'
+      );
+    }
+
+    // Check for required commands
+    if (!formula.includes('check-sat')) {
+      throw new ValidationError('SMT2 formula must include (check-sat) command', 'formula');
+    }
+
+    // Check for at least one declaration or assertion
+    if (!formula.includes('declare-') && !formula.includes('assert')) {
+      throw new ValidationError(
+        'SMT2 formula must include at least one declaration or assertion',
+        'formula'
+      );
+    }
+  }
+
+  /**
+   * Generate basic explanation when LLM explanation fails
+   */
+  private generateBasicExplanation(result: VerificationResult): string {
+    switch (result.result) {
+      case 'sat':
+        if (result.model && Object.keys(result.model).length > 0) {
+          const modelStr = Object.entries(result.model)
+            .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
+            .join(', ');
+          return `The logical statement is satisfiable. Found solution: ${modelStr}`;
+        }
+        return 'The logical statement is satisfiable (a solution exists).';
+
+      case 'unsat':
+        return 'The logical statement is unsatisfiable (no solution exists, or the conclusion is logically valid).';
+
+      case 'unknown':
+        return 'Z3 could not determine satisfiability (the problem may be too complex or require more time).';
+
+      default:
+        return `Verification result: ${result.result}`;
+    }
   }
 }
+

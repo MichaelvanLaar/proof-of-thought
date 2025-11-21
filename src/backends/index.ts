@@ -4,7 +4,7 @@
  * @packageDocumentation
  */
 
-export { SMT2Backend } from './smt2-backend.js';
+export { SMT2Backend, type SMT2BackendConfig } from './smt2-backend.js';
 export { JSONBackend } from './json-backend.js';
 
 export type { Backend } from '../types/index.js';
