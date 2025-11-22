@@ -23,12 +23,38 @@
       "types": "./dist/backends/index.d.ts",
       "import": "./dist/backends/index.js",
       "require": "./dist/backends/index.cjs"
-    }
+    },
+    "./utils/performance": {
+      "types": "./dist/utils/performance.d.ts",
+      "import": "./dist/utils/performance.js"
+    },
+    "./utils/cache": {
+      "types": "./dist/utils/cache.d.ts",
+      "import": "./dist/utils/cache.js"
+    },
+    "./utils/batching": {
+      "types": "./dist/utils/batching.d.ts",
+      "import": "./dist/utils/batching.js"
+    },
+    "./utils/z3-config": {
+      "types": "./dist/utils/z3-config.d.ts",
+      "import": "./dist/utils/z3-config.js"
+    },
+    "./utils/lazy-loader": {
+      "types": "./dist/utils/lazy-loader.d.ts",
+      "import": "./dist/utils/lazy-loader.js"
+    },
+    "./utils/wasm-loader": {
+      "types": "./dist/utils/wasm-loader.d.ts",
+      "import": "./dist/utils/wasm-loader.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "npm run build:types && npm run build:bundle",
@@ -56,13 +82,26 @@
     "reasoning",
     "llm",
     "z3",
+    "z3-solver",
     "theorem-proving",
+    "formal-verification",
     "smt",
+    "smt2",
+    "smt-lib",
     "ai",
+    "artificial-intelligence",
     "logic",
+    "first-order-logic",
+    "symbolic-reasoning",
     "proof-of-thought",
     "openai",
-    "typescript"
+    "gpt-4",
+    "language-model",
+    "automated-reasoning",
+    "program-synthesis",
+    "typescript",
+    "nodejs",
+    "browser"
   ],
   "author": "ProofOfThought Contributors",
   "license": "MIT",
@@ -74,8 +113,25 @@
     "url": "https://github.com/MichaelvanLaar/proof-of-thought/issues"
   },
   "homepage": "https://github.com/MichaelvanLaar/proof-of-thought#readme",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/MichaelvanLaar"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "openai": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "openai": {
+      "optional": false
+    }
   },
   "dependencies": {
     "openai": "^4.72.0",

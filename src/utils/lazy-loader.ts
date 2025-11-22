@@ -127,11 +127,11 @@ export const backends = {
  */
 export const postprocessing = {
   /**
-   * Lazy load Chain of Thought
+   * Lazy load Self Refine
    */
-  chainOfThought: lazy(async () => {
-    const mod = await import('../postprocessing/chain-of-thought.js');
-    return mod.chainOfThought;
+  selfRefine: lazy(async () => {
+    const mod = await import('../postprocessing/self-refine.js');
+    return mod.SelfRefine;
   }),
 
   /**
@@ -139,7 +139,7 @@ export const postprocessing = {
    */
   selfConsistency: lazy(async () => {
     const mod = await import('../postprocessing/self-consistency.js');
-    return mod.selfConsistency;
+    return mod.SelfConsistency;
   }),
 
   /**
@@ -147,15 +147,15 @@ export const postprocessing = {
    */
   leastToMost: lazy(async () => {
     const mod = await import('../postprocessing/least-to-most.js');
-    return mod.leastToMost;
+    return mod.LeastToMost;
   }),
 
   /**
-   * Lazy load Critique Revision
+   * Lazy load Decomposed Prompting
    */
-  critiqueRevision: lazy(async () => {
-    const mod = await import('../postprocessing/critique-revision.js');
-    return mod.critiqueRevision;
+  decomposed: lazy(async () => {
+    const mod = await import('../postprocessing/decomposed.js');
+    return mod.DecomposedPrompting;
   }),
 };
 
@@ -432,10 +432,10 @@ export function createPreloadManager(): PreloadManager {
   manager.add(backends.json, 'idle', 10);
 
   // Add postprocessing with interaction loading
-  manager.add(postprocessing.chainOfThought, 'interaction', 5);
+  manager.add(postprocessing.selfRefine, 'interaction', 5);
   manager.add(postprocessing.selfConsistency, 'interaction', 5);
   manager.add(postprocessing.leastToMost, 'interaction', 5);
-  manager.add(postprocessing.critiqueRevision, 'interaction', 5);
+  manager.add(postprocessing.decomposed, 'interaction', 5);
 
   // Add utilities with manual loading
   manager.add(utils.performance, 'manual', 1);

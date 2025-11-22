@@ -1,9 +1,13 @@
 # ProofOfThought - TypeScript Edition
 
 [![npm version](https://badge.fury.io/js/@proof-of-thought%2Fcore.svg)](https://www.npmjs.com/package/@proof-of-thought/core)
+[![CI](https://github.com/MichaelvanLaar/proof-of-thought/actions/workflows/ci.yml/badge.svg)](https://github.com/MichaelvanLaar/proof-of-thought/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/MichaelvanLaar/proof-of-thought/branch/main/graph/badge.svg)](https://codecov.io/gh/MichaelvanLaar/proof-of-thought)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)
+[![npm downloads](https://img.shields.io/npm/dm/@proof-of-thought/core.svg)](https://www.npmjs.com/package/@proof-of-thought/core)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@proof-of-thought/core)](https://bundlephobia.com/package/@proof-of-thought/core)
 
 > Neurosymbolic program synthesis combining Large Language Models with Z3 theorem proving for robust and interpretable reasoning.
 

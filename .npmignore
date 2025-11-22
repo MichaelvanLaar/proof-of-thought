@@ -3,6 +3,7 @@ src/
 tests/
 benchmarks/
 examples/
+openspec/
 
 # Config files
 tsconfig.json

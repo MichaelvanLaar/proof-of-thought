@@ -8,8 +8,7 @@
  */
 
 import type OpenAI from 'openai';
-import type { Z3Adapter } from '../adapters/z3-adapter.js';
-import type { VerificationResult } from '../types/index.js';
+import type { Z3Adapter, VerificationResult } from '../types/index.js';
 
 /**
  * Batch configuration options
