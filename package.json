@@ -14,18 +14,47 @@
     },
     "./browser": {
       "types": "./dist/browser.d.ts",
-      "import": "./dist/browser.js"
+      "development": "./dist/browser.js",
+      "production": "./dist/browser.min.js",
+      "import": "./dist/browser.js",
+      "default": "./dist/browser.min.js"
     },
     "./backends": {
       "types": "./dist/backends/index.d.ts",
       "import": "./dist/backends/index.js",
       "require": "./dist/backends/index.cjs"
-    }
+    },
+    "./utils/performance": {
+      "types": "./dist/utils/performance.d.ts",
+      "import": "./dist/utils/performance.js"
+    },
+    "./utils/cache": {
+      "types": "./dist/utils/cache.d.ts",
+      "import": "./dist/utils/cache.js"
+    },
+    "./utils/batching": {
+      "types": "./dist/utils/batching.d.ts",
+      "import": "./dist/utils/batching.js"
+    },
+    "./utils/z3-config": {
+      "types": "./dist/utils/z3-config.d.ts",
+      "import": "./dist/utils/z3-config.js"
+    },
+    "./utils/lazy-loader": {
+      "types": "./dist/utils/lazy-loader.d.ts",
+      "import": "./dist/utils/lazy-loader.js"
+    },
+    "./utils/wasm-loader": {
+      "types": "./dist/utils/wasm-loader.d.ts",
+      "import": "./dist/utils/wasm-loader.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "npm run build:types && npm run build:bundle",
@@ -41,6 +70,8 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
+    "benchmark": "tsx benchmarks/cli.ts",
+    "benchmark:compare": "tsx benchmarks/compare.ts",
     "prepare": "husky install || true",
     "prepublishOnly": "npm run clean && npm run build && npm run test",
     "ci": "npm run lint && npm run typecheck && npm run test:coverage && npm run build",
@@ -51,13 +82,26 @@
     "reasoning",
     "llm",
     "z3",
+    "z3-solver",
     "theorem-proving",
+    "formal-verification",
     "smt",
+    "smt2",
+    "smt-lib",
     "ai",
+    "artificial-intelligence",
     "logic",
+    "first-order-logic",
+    "symbolic-reasoning",
     "proof-of-thought",
     "openai",
-    "typescript"
+    "gpt-4",
+    "language-model",
+    "automated-reasoning",
+    "program-synthesis",
+    "typescript",
+    "nodejs",
+    "browser"
   ],
   "author": "ProofOfThought Contributors",
   "license": "MIT",
@@ -69,8 +113,25 @@
     "url": "https://github.com/MichaelvanLaar/proof-of-thought/issues"
   },
   "homepage": "https://github.com/MichaelvanLaar/proof-of-thought#readme",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/MichaelvanLaar"
+  },
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "openai": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "openai": {
+      "optional": false
+    }
   },
   "dependencies": {
     "openai": "^4.72.0",
@@ -83,15 +144,15 @@
     "@typescript-eslint/parser": "^8.16.0",
     "@vitest/coverage-v8": "^2.1.8",
     "@vitest/ui": "^2.1.8",
+    "commander": "^14.0.2",
     "esbuild": "^0.24.0",
     "eslint": "^9.16.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "husky": "^9.1.7",
     "prettier": "^3.4.2",
+    "tsx": "^4.20.6",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
-  },
-  "peerDependencies": {},
-  "optionalDependencies": {}
+  }
 }

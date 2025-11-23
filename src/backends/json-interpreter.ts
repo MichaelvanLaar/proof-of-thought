@@ -154,7 +154,9 @@ export class Z3JSONInterpreter {
 
         if (rule.variables && rule.variables.length > 0) {
           // Wrap in ForAll if variables provided
-          const varBindings = rule.variables.map((v) => `(${v} ${program.sorts[v] || 'Bool'})`).join(' ');
+          const varBindings = rule.variables
+            .map((v) => `(${v} ${program.sorts[v] || 'Bool'})`)
+            .join(' ');
           smt2Lines.push(`(assert (forall (${varBindings}) ${implication}))`);
         } else {
           smt2Lines.push(`(assert ${implication})`);
@@ -244,7 +246,11 @@ export class Z3JSONInterpreter {
 
     // For now, treat all verifications as having the same result
     // More sophisticated parsing would check individual assertions
-    const overallResult: 'sat' | 'unsat' | 'unknown' = isSat ? 'sat' : isUnsat ? 'unsat' : 'unknown';
+    const overallResult: 'sat' | 'unsat' | 'unknown' = isSat
+      ? 'sat'
+      : isUnsat
+        ? 'unsat'
+        : 'unknown';
 
     const verifications: Record<string, 'sat' | 'unsat' | 'unknown'> = {};
     for (const queryName of Object.keys(program.verifications)) {

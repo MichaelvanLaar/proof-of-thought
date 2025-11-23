@@ -48,7 +48,6 @@ export class DecomposedPrompting {
     decompositionPrompt?: string;
   };
 
-  // eslint-disable-next-line no-unused-vars
   constructor(
     private client: OpenAI,
     // eslint-disable-next-line no-unused-vars

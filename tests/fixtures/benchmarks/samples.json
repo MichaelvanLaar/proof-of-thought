@@ -1,0 +1,64 @@
+{
+  "prontoqa": [
+    {
+      "id": "prontoqa_001",
+      "question": "Is Wumpus fruity?",
+      "context": "Every jompus is fruity. Every wumpus is a jompus.",
+      "answer": "true",
+      "source": "ProntoQA"
+    },
+    {
+      "id": "prontoqa_002",
+      "question": "Is Polly transparent?",
+      "context": "Every animal is transparent. Polly is an animal.",
+      "answer": "true",
+      "source": "ProntoQA"
+    }
+  ],
+  "folio": [
+    {
+      "id": "folio_001",
+      "question": "Does the conclusion follow from the premises?",
+      "context": "All students are people. All people who study are smart. John is a student who studies.",
+      "conclusion": "John is smart.",
+      "answer": "true",
+      "source": "FOLIO"
+    }
+  ],
+  "proofwriter": [
+    {
+      "id": "proofwriter_001",
+      "question": "Is Charlie green?",
+      "context": "Charlie is cold. If something is cold then it is green.",
+      "answer": "true",
+      "proof_required": true,
+      "source": "ProofWriter"
+    }
+  ],
+  "conditionalqa": [
+    {
+      "id": "conditionalqa_001",
+      "question": "Will Mary go to the party?",
+      "context": "If it rains, Mary will not go to the party. If it does not rain, Mary will go to the party.",
+      "condition": "It is not raining.",
+      "answer": "true",
+      "source": "ConditionalQA"
+    }
+  ],
+  "strategyqa": [
+    {
+      "id": "strategyqa_001",
+      "question": "Could a dolphin live in the Sahara Desert?",
+      "reasoning": "Dolphins are aquatic mammals that require water to survive. The Sahara Desert is an arid region with very little water.",
+      "answer": "false",
+      "source": "StrategyQA"
+    },
+    {
+      "id": "strategyqa_002",
+      "question": "Did Julius Caesar know about the Roman Empire?",
+      "reasoning": "Julius Caesar lived during the time of the Roman Republic and played a role in events leading to the Roman Empire, but the Empire was established after his death.",
+      "answer": "false",
+      "source": "StrategyQA"
+    }
+  ]
+}

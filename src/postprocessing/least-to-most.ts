@@ -61,7 +61,6 @@ export class LeastToMost {
     progressionPrompt?: string;
   };
 
-  // eslint-disable-next-line no-unused-vars
   constructor(
     private client: OpenAI,
     // eslint-disable-next-line no-unused-vars
@@ -89,11 +88,9 @@ export class LeastToMost {
       const levels = await this.identifyProgression(question, context);
 
       if (levels.length === 0) {
-        throw new PostprocessingError(
-          'least-to-most',
-          'Failed to identify progression levels',
-          { question }
-        );
+        throw new PostprocessingError('least-to-most', 'Failed to identify progression levels', {
+          question,
+        });
       }
 
       // Step 2: Solve each level progressively
@@ -103,11 +100,7 @@ export class LeastToMost {
         const level = levels[i]!;
 
         // Build context including previous solutions
-        const enrichedContext = this.buildProgressiveContext(
-          context,
-          solutions,
-          level
-        );
+        const enrichedContext = this.buildProgressiveContext(context, solutions, level);
 
         // Solve this level
         const levelResponse = await this.reasoningEngine(level.question, enrichedContext);
@@ -126,13 +119,7 @@ export class LeastToMost {
       const executionTime = Date.now() - startTime;
 
       // Step 4: Build final response
-      return this.buildFinalResponse(
-        question,
-        finalAnswer,
-        solutions,
-        levels,
-        executionTime
-      );
+      return this.buildFinalResponse(question, finalAnswer, solutions, levels, executionTime);
     } catch (error) {
       if (error instanceof PostprocessingError) {
         throw error;
@@ -253,9 +240,7 @@ Output ONLY the numbered list, no explanations.`;
     solutions: LevelSolution[]
   ): Promise<string> {
     const solutionSummary = solutions
-      .map(
-        (sol) => `Level ${sol.level}: ${sol.question}\nAnswer: ${sol.answer}`
-      )
+      .map((sol) => `Level ${sol.level}: ${sol.question}\nAnswer: ${sol.answer}`)
       .join('\n\n');
 
     const synthesisPrompt = `You have solved a complex problem by breaking it down into progressive levels.

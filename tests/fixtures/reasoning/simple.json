@@ -1,0 +1,84 @@
+{
+  "testCases": [
+    {
+      "id": "socrates_mortality",
+      "name": "Socrates is mortal (classic syllogism)",
+      "question": "Is Socrates mortal?",
+      "context": "All humans are mortal. Socrates is human.",
+      "expectedAnswer": "Yes",
+      "expectedVerification": "unsat",
+      "category": "logical",
+      "difficulty": "easy"
+    },
+    {
+      "id": "rain_ground_wet",
+      "name": "Rain makes ground wet (implication)",
+      "question": "Is the ground wet?",
+      "context": "If it rains, the ground is wet. It is raining.",
+      "expectedAnswer": "Yes",
+      "expectedVerification": "unsat",
+      "category": "logical",
+      "difficulty": "easy"
+    },
+    {
+      "id": "contrapositive",
+      "name": "Contrapositive reasoning",
+      "question": "Is it dry outside?",
+      "context": "If it rains, the ground is wet. The ground is not wet.",
+      "expectedAnswer": "Yes, it must be dry outside (not raining)",
+      "expectedVerification": "unsat",
+      "category": "logical",
+      "difficulty": "medium"
+    },
+    {
+      "id": "transitivity",
+      "name": "Transitive property",
+      "question": "Is A greater than C?",
+      "context": "A is greater than B. B is greater than C.",
+      "expectedAnswer": "Yes",
+      "expectedVerification": "unsat",
+      "category": "mathematical",
+      "difficulty": "easy"
+    },
+    {
+      "id": "invalid_conclusion",
+      "name": "Invalid conclusion (affirming consequent)",
+      "question": "Is it raining?",
+      "context": "If it rains, the ground is wet. The ground is wet.",
+      "expectedAnswer": "Cannot be determined",
+      "expectedVerification": "sat",
+      "category": "logical",
+      "difficulty": "medium"
+    },
+    {
+      "id": "contradiction",
+      "name": "Contradiction detection",
+      "question": "Can both statements be true?",
+      "context": "John is taller than Mary. Mary is taller than John.",
+      "expectedAnswer": "No, this is a contradiction",
+      "expectedVerification": "unsat",
+      "category": "logical",
+      "difficulty": "easy"
+    },
+    {
+      "id": "multiple_quantifiers",
+      "name": "Multiple universal quantifiers",
+      "question": "Is every student hardworking?",
+      "context": "Every person who studies is hardworking. Every student studies.",
+      "expectedAnswer": "Yes",
+      "expectedVerification": "unsat",
+      "category": "logical",
+      "difficulty": "medium"
+    },
+    {
+      "id": "existential_quantifier",
+      "name": "Existential quantifier",
+      "question": "Does there exist a prime number greater than 10?",
+      "context": "11 is a prime number.",
+      "expectedAnswer": "Yes",
+      "expectedVerification": "sat",
+      "category": "mathematical",
+      "difficulty": "easy"
+    }
+  ]
+}
