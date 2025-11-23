@@ -43,10 +43,10 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
   private validateZ3Path(path: string): void {
     // Disallow paths with shell metacharacters or command chains
     const dangerousPatterns = [
-      /[;&|`$()]/,          // Shell metacharacters
-      /\.\./,                 // Directory traversal
-      /[\r\n]/,               // Line breaks
-      /\s+(&&|\|\||;)\s+/,   // Command chains
+      /[;&|`$()]/, // Shell metacharacters
+      /\.\./, // Directory traversal
+      /[\r\n]/, // Line breaks
+      /\s+(&&|\|\||;)\s+/, // Command chains
     ];
 
     for (const pattern of dangerousPatterns) {

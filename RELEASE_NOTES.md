@@ -1,18 +1,18 @@
-# ProofOfThought TypeScript v0.1.0 Release Notes
+# proof-of-thought TypeScript v0.1.0 Release Notes
 
 ## 🎉 First Beta Release
 
-We're excited to announce the first beta release of ProofOfThought for TypeScript! This is a complete port of the original Python implementation, bringing powerful neurosymbolic reasoning to the Node.js and browser ecosystems.
+We're excited to announce the first beta release of **proof-of-thought** for TypeScript! This is an unofficial, community-driven port of the original ProofOfThought Python library, bringing powerful neurosymbolic reasoning to the Node.js and browser ecosystems.
 
 ## 📦 Installation
 
 ```bash
-npm install @proof-of-thought/core
+npm install @michaelvanlaar/proof-of-thought
 ```
 
 ## 🌟 Highlights
 
-### Complete Feature Parity
+### Complete Feature Parity with Original ProofOfThought
 - ✅ Full implementation of neurosymbolic reasoning combining LLMs with Z3 theorem proving
 - ✅ SMT2 and JSON DSL backends
 - ✅ All four postprocessing methods (Self-Refine, Self-Consistency, Decomposed Prompting, Least-to-Most)
@@ -41,7 +41,7 @@ npm install @proof-of-thought/core
 
 ```typescript
 import OpenAI from 'openai';
-import { ProofOfThought } from '@proof-of-thought/core';
+import { ProofOfThought } from '@michaelvanlaar/proof-of-thought';
 
 // Initialize
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -135,7 +135,7 @@ Comprehensive benchmark suite with state-of-the-art datasets:
 ### Performance Profiling
 
 ```typescript
-import { PerformanceProfiler } from '@proof-of-thought/core/utils/performance';
+import { PerformanceProfiler } from '@michaelvanlaar/proof-of-thought/utils/performance';
 
 const profiler = new PerformanceProfiler();
 // ... run queries ...
@@ -145,7 +145,7 @@ console.log(profiler.generateReport());
 ### Caching
 
 ```typescript
-import { CacheManager } from '@proof-of-thought/core/utils/cache';
+import { CacheManager } from '@michaelvanlaar/proof-of-thought/utils/cache';
 
 const cacheManager = new CacheManager({
   maxSize: 100,
@@ -156,7 +156,7 @@ const cacheManager = new CacheManager({
 ### Request Batching
 
 ```typescript
-import { LLMBatcher } from '@proof-of-thought/core/utils/batching';
+import { LLMBatcher } from '@michaelvanlaar/proof-of-thought/utils/batching';
 
 const batcher = new LLMBatcher(client, {
   maxBatchSize: 10,
@@ -167,7 +167,7 @@ const batcher = new LLMBatcher(client, {
 ### Lazy Loading
 
 ```typescript
-import { initLazyLoading } from '@proof-of-thought/core/utils/lazy-loader';
+import { initLazyLoading } from '@michaelvanlaar/proof-of-thought/utils/lazy-loader';
 
 // Initialize lazy loading with smart preload strategies
 initLazyLoading();
@@ -180,7 +180,7 @@ initLazyLoading();
 <html>
 <head>
   <script type="module">
-    import { ProofOfThought } from '@proof-of-thought/core/browser';
+    import { ProofOfThought } from '@michaelvanlaar/proof-of-thought/browser';
 
     // Use Z3 WASM adapter automatically
     const pot = new ProofOfThought({ client });
@@ -192,7 +192,7 @@ initLazyLoading();
 
 Production build (minified):
 ```javascript
-import { ProofOfThought } from '@proof-of-thought/core/browser';
+import { ProofOfThought } from '@michaelvanlaar/proof-of-thought/browser';
 // Uses dist/browser.min.js automatically in production
 ```
 
@@ -284,7 +284,7 @@ Special thanks to:
 
 ## 🎯 Next Steps
 
-1. **Install**: `npm install @proof-of-thought/core`
+1. **Install**: `npm install @michaelvanlaar/proof-of-thought`
 2. **Read the docs**: Start with [README.md](./README.md)
 3. **Try examples**: Check out [examples/](./examples/)
 4. **Run benchmarks**: See [benchmarks/BENCHMARKING.md](./benchmarks/BENCHMARKING.md)

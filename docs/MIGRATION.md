@@ -1,6 +1,6 @@
 # Migration Guide: Python to TypeScript
 
-This guide helps you migrate from the [Python ProofOfThought implementation](https://github.com/DebarghaG/proofofthought) to the TypeScript version.
+This guide helps you migrate from the original [ProofOfThought Python library](https://github.com/DebarghaG/proofofthought) to the **proof-of-thought** TypeScript implementation.
 
 ## Table of Contents
 
@@ -19,7 +19,7 @@ This guide helps you migrate from the [Python ProofOfThought implementation](htt
 
 ## Overview
 
-The TypeScript port maintains conceptual compatibility with the Python version while adopting TypeScript/Node.js conventions and type safety. The core reasoning algorithm and approach remain the same.
+The **proof-of-thought** TypeScript library maintains conceptual compatibility with the original ProofOfThought Python library while adopting TypeScript/Node.js conventions and type safety. The core reasoning algorithm and approach remain the same.
 
 ### Key Similarities
 
@@ -39,23 +39,23 @@ The TypeScript port maintains conceptual compatibility with the Python version w
 
 ## Installation
 
-### Python
+### Original Python Library
 
 ```python
-pip install proof-of-thought
+pip install proofofthought
 ```
 
-### TypeScript/Node.js
+### TypeScript Implementation
 
 ```bash
-npm install @proof-of-thought/core
+npm install @michaelvanlaar/proof-of-thought
 ```
 
 ### Browser
 
 ```html
 <script type="module">
-  import { ProofOfThought } from '@proof-of-thought/core/browser';
+  import { ProofOfThought } from '@michaelvanlaar/proof-of-thought/browser';
 </script>
 ```
 
@@ -80,7 +80,7 @@ pot = ProofOfThought(
 
 ```typescript
 import OpenAI from 'openai';
-import { ProofOfThought } from '@proof-of-thought/core';
+import { ProofOfThought } from '@michaelvanlaar/proof-of-thought';
 
 // Initialize OpenAI client first
 const client = new OpenAI({
@@ -230,7 +230,7 @@ print(f"Execution time: {result.execution_time}ms")
 
 ```typescript
 import OpenAI from 'openai';
-import { ProofOfThought } from '@proof-of-thought/core';
+import { ProofOfThought } from '@michaelvanlaar/proof-of-thought';
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const pot = new ProofOfThought({ client });
@@ -383,7 +383,7 @@ import {
   ProofOfThoughtError,
   LLMError,
   Z3Error,
-} from '@proof-of-thought/core';
+} from '@michaelvanlaar/proof-of-thought';
 
 try {
   const result = await pot.query(question, context);
@@ -463,7 +463,7 @@ interface ProofOfThoughtConfig {
 TypeScript version runs in Node.js 18+ with full Z3 support:
 
 ```typescript
-import { ProofOfThought } from '@proof-of-thought/core';
+import { ProofOfThought } from '@michaelvanlaar/proof-of-thought';
 
 const pot = new ProofOfThought({ client });
 const result = await pot.query(question, context);
@@ -474,7 +474,7 @@ const result = await pot.query(question, context);
 TypeScript version supports browsers via WASM:
 
 ```typescript
-import { ProofOfThought, Z3WASMAdapter } from '@proof-of-thought/core/browser';
+import { ProofOfThought, Z3WASMAdapter } from '@michaelvanlaar/proof-of-thought/browser';
 
 const z3Adapter = new Z3WASMAdapter({
   wasmUrl: 'https://cdn.jsdelivr.net/npm/z3-solver@4.12.2/build/z3-built.wasm'
@@ -498,7 +498,7 @@ pip install z3-solver
 **TypeScript/Node.js:**
 ```bash
 # Included as dependency
-npm install @proof-of-thought/core
+npm install @michaelvanlaar/proof-of-thought
 
 # Or install z3-solver separately if needed
 npm install z3-solver
@@ -629,7 +629,7 @@ try {
 ### Q: How do I migrate a large codebase?
 
 **A:**
-1. Start by installing `@proof-of-thought/core`
+1. Start by installing `@michaelvanlaar/proof-of-thought`
 2. Create a wrapper function that mimics the Python API
 3. Gradually migrate modules, testing each one
 4. Use TypeScript's type system to catch issues early

@@ -1,5 +1,5 @@
 {
-  "name": "@proof-of-thought/core",
+  "name": "@michaelvanlaar/proof-of-thought",
   "version": "0.1.0",
   "description": "TypeScript port of ProofOfThought - Neurosymbolic program synthesis combining LLMs with Z3 theorem proving",
   "type": "module",
@@ -103,7 +103,13 @@
     "nodejs",
     "browser"
   ],
-  "author": "ProofOfThought Contributors",
+  "author": "Michael van Laar <michael@van-laar.de>",
+  "contributors": [
+    {
+      "name": "Debargha Ganguly",
+      "url": "https://github.com/DebarghaG"
+    }
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -113,10 +119,6 @@
     "url": "https://github.com/MichaelvanLaar/proof-of-thought/issues"
   },
   "homepage": "https://github.com/MichaelvanLaar/proof-of-thought#readme",
-  "funding": {
-    "type": "github",
-    "url": "https://github.com/sponsors/MichaelvanLaar"
-  },
   "sideEffects": false,
   "publishConfig": {
     "access": "public",

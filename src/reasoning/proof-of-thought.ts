@@ -25,11 +25,12 @@ import { DecomposedPrompting } from '../postprocessing/decomposed.js';
 import { LeastToMost } from '../postprocessing/least-to-most.js';
 
 /**
- * Main ProofOfThought class for neurosymbolic reasoning
+ * Main class for neurosymbolic reasoning
+ * Part of the proof-of-thought TypeScript library
  *
  * @example
  * ```typescript
- * import { ProofOfThought } from '@proof-of-thought/core';
+ * import { ProofOfThought } from '@michaelvanlaar/proof-of-thought';
  * import OpenAI from 'openai';
  *
  * const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });

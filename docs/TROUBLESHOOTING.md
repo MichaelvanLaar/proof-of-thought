@@ -1,6 +1,6 @@
 # Troubleshooting Guide
 
-This guide helps you diagnose and resolve common issues when using ProofOfThought.
+This guide helps you diagnose and resolve common issues when using the **proof-of-thought** TypeScript library.
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ This guide helps you diagnose and resolve common issues when using ProofOfThough
 
 ### Package Installation Fails
 
-**Problem:** `npm install @proof-of-thought/core` fails
+**Problem:** `npm install @michaelvanlaar/proof-of-thought` fails
 
 **Solutions:**
 
@@ -55,10 +55,10 @@ This guide helps you diagnose and resolve common issues when using ProofOfThough
 **Solution:**
 ```bash
 # Use --legacy-peer-deps flag
-npm install @proof-of-thought/core --legacy-peer-deps
+npm install @michaelvanlaar/proof-of-thought --legacy-peer-deps
 
 # Or use --force (last resort)
-npm install @proof-of-thought/core --force
+npm install @michaelvanlaar/proof-of-thought --force
 ```
 
 ### TypeScript Definition Errors
@@ -71,7 +71,7 @@ npm install @proof-of-thought/core --force
 npm install -D typescript@latest
 
 # Reinstall package
-npm install @proof-of-thought/core
+npm install @michaelvanlaar/proof-of-thought
 ```
 
 ## Z3 Solver Issues
@@ -562,27 +562,27 @@ const pot = new ProofOfThought({
 
 3. **Import types explicitly:**
    ```typescript
-   import type { ReasoningResponse } from '@proof-of-thought/core';
+   import type { ReasoningResponse } from '@michaelvanlaar/proof-of-thought';
    ```
 
 ### Module Resolution Errors
 
-**Error:** `Cannot find module '@proof-of-thought/core'`
+**Error:** `Cannot find module '@michaelvanlaar/proof-of-thought'`
 
 **Solutions:**
 
 1. **Check package installation:**
    ```bash
-   npm list @proof-of-thought/core
+   npm list @michaelvanlaar/proof-of-thought
    ```
 
 2. **Use correct import path:**
    ```typescript
    // Node.js
-   import { ProofOfThought } from '@proof-of-thought/core';
+   import { ProofOfThought } from '@michaelvanlaar/proof-of-thought';
 
    // Browser
-   import { ProofOfThought } from '@proof-of-thought/core/browser';
+   import { ProofOfThought } from '@michaelvanlaar/proof-of-thought/browser';
    ```
 
 3. **Check module resolution:**
@@ -603,7 +603,7 @@ const pot = new ProofOfThought({
 
 1. **Use mocks:**
    ```typescript
-   import { createMockOpenAIClient } from '@proof-of-thought/core/test-utils';
+   import { createMockOpenAIClient } from '@michaelvanlaar/proof-of-thought/test-utils';
 
    const mockClient = createMockOpenAIClient();
    const pot = new ProofOfThought({ client: mockClient });
@@ -733,7 +733,7 @@ result.proof.forEach(step => {
 
 ```typescript
 // Test backend directly
-import { SMT2Backend } from '@proof-of-thought/core';
+import { SMT2Backend } from '@michaelvanlaar/proof-of-thought';
 
 const backend = new SMT2Backend({ client, z3Adapter });
 
@@ -790,7 +790,7 @@ When reporting issues, include:
    ```typescript
    console.log('Node:', process.version);
    console.log('OS:', process.platform);
-   console.log('Package version:', require('@proof-of-thought/core/package.json').version);
+   console.log('Package version:', require('@michaelvanlaar/proof-of-thought/package.json').version);
    ```
 4. **Configuration:** Sanitized config (remove API keys!)
 5. **Steps to reproduce:** Clear instructions

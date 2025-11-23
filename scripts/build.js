@@ -26,7 +26,7 @@ const sharedConfig = {
 };
 
 async function buildAll() {
-  console.log('🏗️  Building @proof-of-thought/core...\n');
+  console.log('🏗️  Building @michaelvanlaar/proof-of-thought...\n');
 
   try {
     // Build ESM

@@ -1,6 +1,6 @@
 # Z3 Solver Installation Guide
 
-This guide provides platform-specific instructions for installing the Z3 theorem prover, which is required for ProofOfThought's formal verification capabilities.
+This guide provides platform-specific instructions for installing the Z3 theorem prover, which is required for **proof-of-thought**'s formal verification capabilities.
 
 ## Table of Contents
 
@@ -22,7 +22,7 @@ Z3 is a high-performance theorem prover from Microsoft Research. ProofOfThought 
 
 ### Installation Options
 
-ProofOfThought supports multiple Z3 installation methods:
+The **proof-of-thought** library supports multiple Z3 installation methods:
 
 1. **npm package (z3-solver)** - Recommended for Node.js
 2. **System package manager** - For native CLI access
@@ -59,7 +59,7 @@ This package includes:
 When you install ProofOfThought, z3-solver is included as a dependency:
 
 ```bash
-npm install @proof-of-thought/core
+npm install @michaelvanlaar/proof-of-thought
 # z3-solver is automatically installed
 ```
 
@@ -291,7 +291,7 @@ For browser environments, ProofOfThought uses Z3 compiled to WebAssembly (WASM).
 ProofOfThought handles WASM loading automatically:
 
 ```typescript
-import { ProofOfThought, Z3WASMAdapter } from '@proof-of-thought/core/browser';
+import { ProofOfThought, Z3WASMAdapter } from '@michaelvanlaar/proof-of-thought/browser';
 
 const z3Adapter = new Z3WASMAdapter({
   wasmUrl: 'https://cdn.jsdelivr.net/npm/z3-solver@4.12.2/build/z3-built.wasm'
@@ -462,7 +462,7 @@ echo "(declare-const x Int) (assert (> x 0)) (check-sat)" | z3 -in
 ### Test with ProofOfThought
 
 ```typescript
-import { ProofOfThought } from '@proof-of-thought/core';
+import { ProofOfThought } from '@michaelvanlaar/proof-of-thought';
 import OpenAI from 'openai';
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -490,7 +490,7 @@ testZ3();
 ### Check Z3 Adapter
 
 ```typescript
-import { createZ3Adapter } from '@proof-of-thought/core';
+import { createZ3Adapter } from '@michaelvanlaar/proof-of-thought';
 
 async function checkZ3() {
   const adapter = createZ3Adapter();
@@ -656,7 +656,7 @@ python3 scripts/mk_make.py
 ### Check Your Version
 
 ```typescript
-import { createZ3Adapter } from '@proof-of-thought/core';
+import { createZ3Adapter } from '@michaelvanlaar/proof-of-thought';
 
 async function checkVersion() {
   const adapter = createZ3Adapter();

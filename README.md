@@ -1,21 +1,21 @@
-# ProofOfThought - TypeScript Edition
+# proof-of-thought - TypeScript Edition
 
-[![npm version](https://badge.fury.io/js/@proof-of-thought%2Fcore.svg)](https://www.npmjs.com/package/@proof-of-thought/core)
+[![npm version](https://badge.fury.io/js/@michaelvanlaar%2Fproof-of-thought.svg)](https://www.npmjs.com/package/@michaelvanlaar/proof-of-thought)
 [![CI](https://github.com/MichaelvanLaar/proof-of-thought/actions/workflows/ci.yml/badge.svg)](https://github.com/MichaelvanLaar/proof-of-thought/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/MichaelvanLaar/proof-of-thought/branch/main/graph/badge.svg)](https://codecov.io/gh/MichaelvanLaar/proof-of-thought)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)
-[![npm downloads](https://img.shields.io/npm/dm/@proof-of-thought/core.svg)](https://www.npmjs.com/package/@proof-of-thought/core)
-[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@proof-of-thought/core)](https://bundlephobia.com/package/@proof-of-thought/core)
+[![npm downloads](https://img.shields.io/npm/dm/@michaelvanlaar/proof-of-thought.svg)](https://www.npmjs.com/package/@michaelvanlaar/proof-of-thought)
+[![Bundle Size](https://img.shields.io/bundlephobia/minzip/@michaelvanlaar/proof-of-thought)](https://bundlephobia.com/package/@michaelvanlaar/proof-of-thought)
 
 > Neurosymbolic program synthesis combining Large Language Models with Z3 theorem proving for robust and interpretable reasoning.
 
-TypeScript/JavaScript port of the [ProofOfThought](https://github.com/DebarghaG/proofofthought) framework, bringing powerful neurosymbolic reasoning to the Node.js and browser ecosystems.
+A TypeScript/JavaScript port of the [ProofOfThought](https://github.com/DebarghaG/proofofthought) Python library, bringing powerful neurosymbolic reasoning to the Node.js and browser ecosystems.
 
 ## 🎉 **v0.1.0 Beta Release Now Available!**
 
-We're excited to announce the first beta release of ProofOfThought for TypeScript! This release brings complete feature parity with the Python implementation, including:
+We're excited to announce the first beta release of **proof-of-thought** for TypeScript! This release brings complete feature parity with the original ProofOfThought Python implementation, including:
 
 - ✨ Full neurosymbolic reasoning with Z3 theorem prover integration
 - 🎯 94% test coverage with comprehensive test suite
@@ -27,7 +27,7 @@ We're excited to announce the first beta release of ProofOfThought for TypeScrip
 
 ## 📖 Overview
 
-ProofOfThought is a neurosymbolic reasoning framework that combines the natural language understanding of Large Language Models (LLMs) with the formal verification capabilities of the Z3 theorem prover. This approach enables:
+**proof-of-thought** is a neurosymbolic reasoning library that combines the natural language understanding of Large Language Models (LLMs) with the formal verification capabilities of the Z3 theorem prover. This TypeScript implementation is a port of the original ProofOfThought Python library. The approach enables:
 
 - ✅ **Formal Verification**: Logical conclusions verified by Z3 solver
 - 🧠 **Natural Language**: Intuitive question-and-answer interface
@@ -40,14 +40,14 @@ ProofOfThought is a neurosymbolic reasoning framework that combines the natural 
 ### Installation
 
 ```bash
-npm install @proof-of-thought/core
+npm install @michaelvanlaar/proof-of-thought
 ```
 
 ### Basic Usage
 
 ```typescript
 import OpenAI from 'openai';
-import { ProofOfThought } from '@proof-of-thought/core';
+import { ProofOfThought } from '@michaelvanlaar/proof-of-thought';
 
 // Initialize OpenAI client
 const client = new OpenAI({
@@ -75,7 +75,7 @@ console.log(response.proof);       // [...proof steps...]
 
 ```html
 <script type="module">
-  import { ProofOfThought } from '@proof-of-thought/core/browser';
+  import { ProofOfThought } from '@michaelvanlaar/proof-of-thought/browser';
   // Same API as Node.js!
 </script>
 ```
@@ -183,7 +183,7 @@ const response = await pot.query(
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     ProofOfThought                          │
+│                   proof-of-thought                          │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │              Natural Language Query                  │   │
 │  └──────────────────┬──────────────────────────────────┘   │
@@ -219,7 +219,7 @@ See [Architecture Documentation](docs/ARCHITECTURE.md) for details.
 
 ## 📊 Benchmarks
 
-ProofOfThought achieves state-of-the-art results on logical reasoning benchmarks:
+The **proof-of-thought** TypeScript implementation achieves results comparable to the original Python version on logical reasoning benchmarks:
 
 | Benchmark | Python (SMT2) | TypeScript (SMT2) | Accuracy |
 |-----------|---------------|-------------------|----------|
@@ -240,7 +240,7 @@ See [Benchmarks Documentation](benchmarks/README.md) for details.
 
 - **Node.js**: 18.x or higher
 - **OpenAI API Key**: For LLM operations
-- **Z3 Solver**: For formal verification (auto-installed with npm package)
+- **Z3 Solver**: For formal verification (included as dependency)
 
 ### Optional Requirements
 
@@ -252,7 +252,7 @@ See [Benchmarks Documentation](benchmarks/README.md) for details.
 ### NPM Package
 
 ```bash
-npm install @proof-of-thought/core
+npm install @michaelvanlaar/proof-of-thought
 ```
 
 ### From Source
@@ -343,7 +343,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-This TypeScript port is based on the original [ProofOfThought](https://github.com/DebarghaG/proofofthought) Python implementation by Debargha Ganguly and colleagues.
+This **proof-of-thought** TypeScript library is an unofficial, community-driven port of the original [ProofOfThought](https://github.com/DebarghaG/proofofthought) Python implementation by Debargha Ganguly and colleagues.
 
 **Original Paper:**
 > Ganguly, D., et al. (2024). "Proof of Thought: Neurosymbolic Program Synthesis allows Robust and Interpretable Reasoning." [arXiv:xxxx.xxxxx](https://arxiv.org/abs/xxxx.xxxxx)
@@ -366,17 +366,17 @@ This TypeScript port is based on the original [ProofOfThought](https://github.co
 - **Original Python Version**: https://github.com/DebarghaG/proofofthought
 - **Paper**: https://arxiv.org/abs/xxxx.xxxxx
 - **Issues**: https://github.com/MichaelvanLaar/proof-of-thought/issues
-- **NPM Package**: https://www.npmjs.com/package/@proof-of-thought/core
+- **NPM Package**: https://www.npmjs.com/package/@michaelvanlaar/proof-of-thought
 
 ## 📞 Support
 
 - **Issues**: [GitHub Issues](https://github.com/MichaelvanLaar/proof-of-thought/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/MichaelvanLaar/proof-of-thought/discussions)
-- **Email**: [your-email@example.com]
+- **Email**: michael@van-laar.de
 
 ## 🌟 Star History
 
-If you find ProofOfThought useful, please consider giving it a star ⭐️
+If you find **proof-of-thought** useful, please consider giving it a star ⭐️
 
 ## 📈 Roadmap
 
@@ -392,4 +392,4 @@ See [ROADMAP.md](ROADMAP.md) for details.
 
 ---
 
-Built with ❤️ by the ProofOfThought community
+Built with ❤️ by the proof-of-thought community

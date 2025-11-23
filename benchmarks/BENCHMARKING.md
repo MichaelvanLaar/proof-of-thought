@@ -1,6 +1,6 @@
 # Performance Benchmarking Guide
 
-This guide explains how to run performance benchmarks and compare the TypeScript implementation with the Python baseline.
+This guide explains how to run performance benchmarks and compare the **proof-of-thought** TypeScript implementation with the original ProofOfThought Python library.
 
 ## Quick Start
 
@@ -252,7 +252,7 @@ npm run benchmark:compare -- --baseline smt2.json --current json.json
 ### Enable Performance Profiling
 
 ```typescript
-import { getGlobalProfiler } from '@proof-of-thought/core/utils/performance';
+import { getGlobalProfiler } from '@michaelvanlaar/proof-of-thought/utils/performance';
 
 const profiler = getGlobalProfiler();
 profiler.enable();
@@ -266,7 +266,7 @@ console.log(profiler.generateReport());
 ### Analyze Cache Performance
 
 ```typescript
-import { getGlobalCacheManager } from '@proof-of-thought/core/utils/cache';
+import { getGlobalCacheManager } from '@michaelvanlaar/proof-of-thought/utils/cache';
 
 const cacheManager = getGlobalCacheManager();
 

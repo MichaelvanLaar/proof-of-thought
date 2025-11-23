@@ -1,6 +1,6 @@
 # Browser Example
 
-This example demonstrates how to use ProofOfThought in a browser environment with Z3 WASM.
+This example demonstrates how to use **proof-of-thought** in a browser environment with Z3 WASM.
 
 ## Quick Start
 
@@ -23,12 +23,12 @@ Navigate to `http://localhost:8000/examples/browser/`
 
 ## Integration Steps
 
-To use ProofOfThought in your browser application:
+To use **proof-of-thought** in your browser application:
 
 ### 1. Install the package
 
 ```bash
-npm install @proof-of-thought/core
+npm install @michaelvanlaar/proof-of-thought
 ```
 
 ### 2. Import the browser bundle
@@ -38,7 +38,7 @@ import {
   ProofOfThought,
   Z3WASMAdapter,
   DEFAULT_Z3_WASM_URLS,
-} from '@proof-of-thought/core/browser';
+} from '@michaelvanlaar/proof-of-thought/browser';
 ```
 
 ### 3. Create Z3 WASM adapter
@@ -139,7 +139,7 @@ The resulting `z3.wasm` file can be used with this library.
 // vite.config.ts
 export default {
   optimizeDeps: {
-    exclude: ['@proof-of-thought/core'],
+    exclude: ['@michaelvanlaar/proof-of-thought'],
   },
 };
 ```
@@ -151,7 +151,7 @@ export default {
 module.exports = {
   resolve: {
     alias: {
-      '@proof-of-thought/core': '@proof-of-thought/core/browser',
+      '@michaelvanlaar/proof-of-thought': '@michaelvanlaar/proof-of-thought/browser',
     },
   },
 };

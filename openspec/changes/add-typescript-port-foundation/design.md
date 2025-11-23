@@ -377,7 +377,7 @@ src/
    **Status**: Out of scope, can be community contribution
 
 5. **Q**: What's the package name and organization?
-   **Status**: To be determined - suggest `@proof-of-thought/core` or similar
+   **Status**: Decided - using `@michaelvanlaar/proof-of-thought`
 
 6. **Q**: Should we implement caching for repeated queries?
    **Status**: Yes, but as opt-in feature with configurable cache backend

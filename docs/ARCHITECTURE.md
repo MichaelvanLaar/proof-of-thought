@@ -1,6 +1,6 @@
-# ProofOfThought Architecture
+# proof-of-thought Architecture
 
-This document describes the architecture and design of the ProofOfThought TypeScript implementation.
+This document describes the architecture and design of the **proof-of-thought** TypeScript implementation.
 
 ## Table of Contents
 
@@ -20,7 +20,7 @@ This document describes the architecture and design of the ProofOfThought TypeSc
 
 ## Overview
 
-ProofOfThought is a neurosymbolic reasoning framework that combines:
+**proof-of-thought** is a TypeScript neurosymbolic reasoning library (a port of the original ProofOfThought Python library) that combines:
 
 1. **LLM Translation** - Natural language → Formal logic (via GPT-4/GPT-4o)
 2. **Formal Verification** - Theorem proving (via Z3 solver)
@@ -33,7 +33,7 @@ The architecture follows a modular, pipeline-based design with clear separation 
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│                    ProofOfThought                        │
+│                  proof-of-thought                        │
 │                   (Main Orchestrator)                    │
 └───────────────────┬──────────────────────────────────────┘
                     │
@@ -746,7 +746,7 @@ Future optimization points:
 ```
 Browser Application
     ↓
-Import from '@proof-of-thought/core/browser'
+Import from '@michaelvanlaar/proof-of-thought/browser'
     ↓
 Z3WASMAdapter
     ↓

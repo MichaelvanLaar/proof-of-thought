@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial TypeScript port of ProofOfThought
+- Initial TypeScript port of the ProofOfThought Python library
 - Core reasoning engine with neurosymbolic program synthesis
 - SMT2 backend for first-order logic reasoning
 - JSON DSL backend for structured reasoning
@@ -103,7 +103,7 @@ print(result.is_verified)
 
 **TypeScript:**
 ```typescript
-import { ProofOfThought } from '@proof-of-thought/core';
+import { ProofOfThought } from '@michaelvanlaar/proof-of-thought';
 import OpenAI from 'openai';
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });

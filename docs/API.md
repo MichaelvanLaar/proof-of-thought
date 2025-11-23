@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API documentation for ProofOfThought TypeScript library.
+Complete API documentation for the **proof-of-thought** TypeScript library.
 
 ## Table of Contents
 
@@ -13,7 +13,7 @@ Complete API documentation for ProofOfThought TypeScript library.
 
 ## ProofOfThought Class
 
-The main class for neurosymbolic reasoning.
+The main class for neurosymbolic reasoning. Note: The class name uses PascalCase following TypeScript conventions, while the package is named `@michaelvanlaar/proof-of-thought`.
 
 ### Constructor
 
@@ -31,7 +31,7 @@ new ProofOfThought(config: ProofOfThoughtConfig)
 
 ```typescript
 import OpenAI from 'openai';
-import { ProofOfThought } from '@proof-of-thought/core';
+import { ProofOfThought } from '@michaelvanlaar/proof-of-thought';
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -333,7 +333,7 @@ import {
   ValidationError,
   BackendError,
   Z3Error,
-} from '@proof-of-thought/core';
+} from '@michaelvanlaar/proof-of-thought';
 
 try {
   const response = await pot.query(question, context);
