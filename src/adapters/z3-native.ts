@@ -30,6 +30,37 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
       memoryLimit: config.memoryLimit,
       z3Path: config.z3Path,
     };
+
+    // Validate z3Path if provided to prevent command injection
+    if (this.config.z3Path) {
+      this.validateZ3Path(this.config.z3Path);
+    }
+  }
+
+  /**
+   * Validate z3Path to prevent command injection attacks
+   */
+  private validateZ3Path(path: string): void {
+    // Disallow paths with shell metacharacters or command chains
+    const dangerousPatterns = [
+      /[;&|`$()]/,          // Shell metacharacters
+      /\.\./,                 // Directory traversal
+      /[\r\n]/,               // Line breaks
+      /\s+(&&|\|\||;)\s+/,   // Command chains
+    ];
+
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(path)) {
+        throw new Z3NotAvailableError(
+          `Invalid z3Path: contains potentially dangerous characters. Path must be a simple executable path.`
+        );
+      }
+    }
+
+    // Path should be reasonable length
+    if (path.length > 500) {
+      throw new Z3NotAvailableError(`Invalid z3Path: path too long (max 500 characters)`);
+    }
   }
 
   async initialize(): Promise<void> {

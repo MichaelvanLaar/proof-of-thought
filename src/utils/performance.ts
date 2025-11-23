@@ -117,9 +117,11 @@ export class PerformanceProfiler {
   private llmCalls: LLMCallMetrics[] = [];
   private z3Calls: Z3CallMetrics[] = [];
   private enabled: boolean;
+  private readonly maxMetrics: number;
 
-  constructor(enabled: boolean = true) {
+  constructor(enabled: boolean = true, maxMetrics: number = 10000) {
     this.enabled = enabled;
+    this.maxMetrics = maxMetrics;
   }
 
   /**
@@ -128,6 +130,11 @@ export class PerformanceProfiler {
   recordLLMCall(metrics: LLMCallMetrics): void {
     if (!this.enabled) return;
     this.llmCalls.push(metrics);
+
+    // Implement circular buffer: remove oldest if limit exceeded
+    if (this.llmCalls.length > this.maxMetrics) {
+      this.llmCalls.shift();
+    }
   }
 
   /**
@@ -136,6 +143,11 @@ export class PerformanceProfiler {
   recordZ3Call(metrics: Z3CallMetrics): void {
     if (!this.enabled) return;
     this.z3Calls.push(metrics);
+
+    // Implement circular buffer: remove oldest if limit exceeded
+    if (this.z3Calls.length > this.maxMetrics) {
+      this.z3Calls.shift();
+    }
   }
 
   /**
@@ -346,6 +358,21 @@ Performance Breakdown:
   clear(): void {
     this.llmCalls = [];
     this.z3Calls = [];
+  }
+
+  /**
+   * Clean up metrics older than specified age
+   * @param maxAgeMs - Maximum age in milliseconds (default: 24 hours)
+   * @returns Number of metrics removed
+   */
+  cleanupOldMetrics(maxAgeMs: number = 24 * 60 * 60 * 1000): number {
+    const cutoff = Date.now() - maxAgeMs;
+    const initialCount = this.llmCalls.length + this.z3Calls.length;
+
+    this.llmCalls = this.llmCalls.filter((m) => m.endTime > cutoff);
+    this.z3Calls = this.z3Calls.filter((m) => m.endTime > cutoff);
+
+    return initialCount - (this.llmCalls.length + this.z3Calls.length);
   }
 
   /**

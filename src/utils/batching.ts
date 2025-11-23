@@ -75,6 +75,7 @@ export class BatchProcessor<T, R> {
   private processing = false;
   private timer: NodeJS.Timeout | null = null;
   private activeBatches = 0;
+  private concurrencySemaphore: Array<() => void> = [];
 
   // Statistics
   private totalItems = 0;
@@ -91,6 +92,30 @@ export class BatchProcessor<T, R> {
       maxConcurrency: config.maxConcurrency || 5,
       enableStats: config.enableStats !== false,
     };
+  }
+
+  /**
+   * Acquire a slot for batch processing (concurrency control)
+   */
+  private async acquireBatchSlot(): Promise<void> {
+    if (this.activeBatches < this.config.maxConcurrency) {
+      return;
+    }
+
+    return new Promise<void>((resolve) => {
+      this.concurrencySemaphore.push(resolve);
+    });
+  }
+
+  /**
+   * Release a batch processing slot
+   */
+  private releaseBatchSlot(): void {
+    this.activeBatches--;
+    const next = this.concurrencySemaphore.shift();
+    if (next) {
+      next();
+    }
   }
 
   /**
@@ -134,10 +159,8 @@ export class BatchProcessor<T, R> {
       return;
     }
 
-    // Wait if max concurrency reached
-    while (this.activeBatches >= this.config.maxConcurrency) {
-      await new Promise((resolve) => setTimeout(resolve, 10));
-    }
+    // Wait for available concurrency slot (non-blocking)
+    await this.acquireBatchSlot();
 
     this.processing = true;
 
@@ -168,7 +191,7 @@ export class BatchProcessor<T, R> {
         item.reject(error instanceof Error ? error : new Error(String(error)));
       });
     } finally {
-      this.activeBatches--;
+      this.releaseBatchSlot();
       this.processing = false;
 
       // Process next batch if queue has items
