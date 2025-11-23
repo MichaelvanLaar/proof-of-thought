@@ -1,6 +1,6 @@
-# Contributing to ProofOfThought
+# Contributing to proof-of-thought - TypeScript Edition
 
-Thank you for your interest in contributing to ProofOfThought! This document provides guidelines and instructions for contributing to the project.
+Thank you for your interest in contributing to proof-of-thought - TypeScript Edition! This document provides guidelines and instructions for contributing to the project.
 
 ## Table of Contents
 
@@ -20,9 +20,9 @@ Thank you for your interest in contributing to ProofOfThought! This document pro
 
 ## Code of Conduct
 
-### Our Pledge
+### Pledge
 
-We are committed to providing a welcoming and inspiring community for all. Please be respectful and constructive in all interactions.
+This project is committed to providing a welcoming and inspiring community for all. Please be respectful and constructive in all interactions.
 
 ### Expected Behavior
 
@@ -160,7 +160,7 @@ git checkout -b fix/bug-description
 
 ### 2. Make Changes
 
-- Write code following our [coding standards](#coding-standards)
+- Write code following the [coding standards](#coding-standards)
 - Add tests for new functionality
 - Update documentation as needed
 - Ensure all tests pass
@@ -168,7 +168,7 @@ git checkout -b fix/bug-description
 
 ### 3. Commit Changes
 
-Follow our [commit message guidelines](#commit-message-guidelines):
+Follow the [commit message guidelines](#commit-message-guidelines):
 
 ```bash
 git add .
@@ -213,7 +213,7 @@ git push origin feature/your-feature-name
 
 #### Code Formatting
 
-We use ESLint and Prettier for code formatting:
+This project uses ESLint and Prettier for code formatting:
 
 ```bash
 # Format code
@@ -224,6 +224,7 @@ npm run format:check
 ```
 
 **Key Rules:**
+
 - 2 spaces for indentation
 - Single quotes for strings
 - Semicolons required
@@ -273,8 +274,8 @@ async function query() {
 // Bad
 function query() {
   return translate(question)
-    .then(formula => verify(formula))
-    .then(result => result);
+    .then((formula) => verify(formula))
+    .then((result) => result);
 }
 ```
 
@@ -372,7 +373,7 @@ open docs/generated/index.html
 
 ## Commit Message Guidelines
 
-We follow [Conventional Commits](https://www.conventionalcommits.org/) with gitmoji:
+This project follows [Conventional Commits](https://www.conventionalcommits.org/) with gitmoji:
 
 ### Format
 
@@ -449,18 +450,22 @@ methods with examples and parameter descriptions.
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Testing
+
 Describe testing performed
 
 ## Checklist
+
 - [ ] Tests added/updated
 - [ ] Documentation updated
 - [ ] All tests passing
@@ -513,7 +518,7 @@ Use appropriate issue templates:
 
 ## OpenSpec Methodology
 
-ProofOfThought uses [OpenSpec](https://openspec.dev) for spec-driven development.
+proof-of-thought TypeScript Edition uses [OpenSpec](https://openspec.dev) for spec-driven development.
 
 ### OpenSpec Workflow
 
@@ -534,6 +539,7 @@ ProofOfThought uses [OpenSpec](https://openspec.dev) for spec-driven development
 ### OpenSpec Commands
 
 Available slash commands:
+
 - `/openspec:proposal` - Create new proposal
 - `/openspec:apply` - Implement approved proposal
 - `/openspec:archive` - Archive completed proposal
@@ -542,7 +548,7 @@ Available slash commands:
 
 ### Version Numbering
 
-We follow [Semantic Versioning](https://semver.org/):
+This project follows [Semantic Versioning](https://semver.org/):
 
 - **Major (1.0.0):** Breaking changes
 - **Minor (0.1.0):** New features (backward compatible)
@@ -582,8 +588,9 @@ npm publish
 ## Recognition
 
 Contributors are recognized in:
+
 - GitHub contributors page
 - Release notes
 - Project README
 
-Thank you for contributing to ProofOfThought! 🎉
+Thank you for contributing to proof-of-thought - TypeScript Edition! 🎉

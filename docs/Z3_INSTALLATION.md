@@ -18,7 +18,7 @@ This guide provides platform-specific instructions for installing the Z3 theorem
 
 ## Overview
 
-Z3 is a high-performance theorem prover from Microsoft Research. ProofOfThought uses Z3 for formal verification of logical formulas.
+Z3 is a high-performance theorem prover from Microsoft Research. **proof-of-thought** uses Z3 for formal verification of logical formulas.
 
 ### Installation Options
 
@@ -54,9 +54,9 @@ This package includes:
 - ❌ Larger package size (~50MB)
 - ❌ May not be latest Z3 version
 
-### ProofOfThought Installation
+### proof-of-thought Installation
 
-When you install ProofOfThought, z3-solver is included as a dependency:
+When you install **proof-of-thought**, z3-solver is included as a dependency:
 
 ```bash
 npm install @michaelvanlaar/proof-of-thought
@@ -284,11 +284,11 @@ nmake
 
 ## Browser Installation
 
-For browser environments, ProofOfThought uses Z3 compiled to WebAssembly (WASM).
+For browser environments, **proof-of-thought** uses Z3 compiled to WebAssembly (WASM).
 
 ### Automatic (Recommended)
 
-ProofOfThought handles WASM loading automatically:
+**proof-of-thought** handles WASM loading automatically:
 
 ```typescript
 import { ProofOfThought, Z3WASMAdapter } from '@michaelvanlaar/proof-of-thought/browser';
@@ -329,7 +329,7 @@ npm install z3-solver
 cp node_modules/z3-solver/build/z3-built.wasm public/
 ```
 
-2. Configure ProofOfThought:
+2. Configure proof-of-thought:
 ```typescript
 const z3Adapter = new Z3WASMAdapter({
   wasmUrl: '/z3-built.wasm',
@@ -373,7 +373,7 @@ RUN apt-get update && \
     apt-get install -y z3 && \
     rm -rf /var/lib/apt/lists/*
 
-# Install ProofOfThought
+# Install proof-of-thought
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
@@ -459,7 +459,7 @@ echo "(declare-const x Int) (assert (> x 0)) (check-sat)" | z3 -in
 # Expected output: sat
 ```
 
-### Test with ProofOfThought
+### Test with proof-of-thought
 
 ```typescript
 import { ProofOfThought } from '@michaelvanlaar/proof-of-thought';
@@ -542,7 +542,7 @@ export PATH="/path/to/z3/bin:$PATH"
 $env:Path += ";C:\path\to\z3\bin"
 ```
 
-3. **Specify Z3 path in ProofOfThought:**
+3. **Specify Z3 path in proof-of-thought:**
 ```typescript
 const pot = new ProofOfThought({
   client,

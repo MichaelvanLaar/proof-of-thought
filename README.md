@@ -15,7 +15,7 @@ A TypeScript/JavaScript port of the [ProofOfThought](https://github.com/Debargha
 
 ## 🎉 **v0.1.0 Beta Release Now Available!**
 
-We're excited to announce the first beta release of **proof-of-thought** for TypeScript! This release brings complete feature parity with the original ProofOfThought Python implementation, including:
+I'm excited to announce the first beta release of **proof-of-thought** for TypeScript! This release brings complete feature parity with the original ProofOfThought Python implementation, including:
 
 - ✨ Full neurosymbolic reasoning with Z3 theorem prover integration
 - 🎯 94% test coverage with comprehensive test suite
@@ -23,7 +23,7 @@ We're excited to announce the first beta release of **proof-of-thought** for Typ
 - 📦 All four postprocessing methods (Self-Refine, Self-Consistency, Decomposed, Least-to-Most)
 - ⚡ Performance optimizations (caching, batching, lazy loading)
 
-**[See Release Notes](./GITHUB_RELEASE.md)** | **[View Roadmap](./ROADMAP.md)** | **[Migration Guide](./docs/MIGRATION.md)**
+**[See Release Notes](./RELEASE_NOTES.md)** | **[View Roadmap](./ROADMAP.md)** | **[Migration Guide](./docs/MIGRATION.md)**
 
 ## 📖 Overview
 
@@ -129,7 +129,6 @@ const pot = new ProofOfThought({ client });
 
 ## 📚 Documentation
 
-- **[Getting Started Guide](docs/GETTING_STARTED.md)** - Installation and first steps
 - **[API Reference](docs/API.md)** - Complete API documentation
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - System design and internals
 - **[Migration Guide](docs/MIGRATION.md)** - Migrating from Python version
@@ -315,7 +314,7 @@ npm run test:watch
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+I welcome contributions! Please see the [Contributing Guide](CONTRIBUTING.md) for details.
 
 ### Development Setup
 

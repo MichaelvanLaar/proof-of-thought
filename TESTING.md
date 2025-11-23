@@ -1,6 +1,6 @@
 # Testing Guide
 
-This document describes the testing infrastructure and best practices for the ProofOfThought TypeScript library.
+This document describes the testing infrastructure and best practices for the **proof-of-thought** TypeScript library.
 
 ## Test Setup
 

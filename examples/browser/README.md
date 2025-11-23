@@ -72,7 +72,7 @@ const client = new OpenAI({
 });
 ```
 
-### 5. Initialize ProofOfThought
+### 5. Initialize proof-of-thought
 
 ```typescript
 const pot = new ProofOfThought({

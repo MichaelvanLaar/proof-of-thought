@@ -459,7 +459,6 @@ console.log(`LLM time: ${totalTime - response.executionTime}ms`);
 
 ## See Also
 
-- [Getting Started Guide](GETTING_STARTED.md)
 - [Architecture Documentation](ARCHITECTURE.md)
 - [Migration Guide](MIGRATION.md)
 - [Examples](../examples/README.md)

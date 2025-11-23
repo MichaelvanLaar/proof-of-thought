@@ -641,7 +641,6 @@ try {
 ## Additional Resources
 
 - [API Reference](./API.md)
-- [Getting Started Guide](./GETTING_STARTED.md)
 - [Architecture Documentation](./ARCHITECTURE.md)
 - [TypeScript Examples](../examples/)
 - [Original Python Documentation](https://github.com/DebarghaG/proofofthought)

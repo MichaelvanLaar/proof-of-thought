@@ -1,6 +1,6 @@
-# ProofOfThought Examples
+# proof-of-thought Examples
 
-This directory contains usage examples demonstrating different features of the ProofOfThought library.
+This directory contains usage examples demonstrating different features of the **proof-of-thought** library.
 
 ## Prerequisites
 
@@ -24,7 +24,7 @@ This directory contains usage examples demonstrating different features of the P
 
 ### basic-usage.ts
 
-Demonstrates the fundamental usage of ProofOfThought:
+Demonstrates the fundamental usage of **proof-of-thought**:
 - Setting up the instance
 - Executing reasoning queries
 - Accessing results and proof traces
