@@ -114,45 +114,28 @@ export function createMockJSONClient(customDSL?: string): OpenAI {
   const defaultDSL = `\`\`\`json
 {
   "sorts": {
-    "Person": {"type": "uninterpreted"}
-  },
-  "constants": {
-    "Socrates": {"sort": "Person"}
+    "Entity": "DeclareSort"
   },
   "functions": {
-    "human": {
-      "params": [{"name": "x", "sort": "Person"}],
-      "return": "Bool"
+    "Human": {
+      "domain": ["Entity"],
+      "range": "Bool"
     },
-    "mortal": {
-      "params": [{"name": "x", "sort": "Person"}],
-      "return": "Bool"
+    "Mortal": {
+      "domain": ["Entity"],
+      "range": "Bool"
     }
   },
-  "assertions": [
-    {
-      "type": "forall",
-      "variables": [{"name": "x", "sort": "Person"}],
-      "body": {
-        "type": "implies",
-        "left": {"type": "app", "name": "human", "args": [{"type": "var", "name": "x"}]},
-        "right": {"type": "app", "name": "mortal", "args": [{"type": "var", "name": "x"}]}
-      }
-    },
-    {
-      "type": "app",
-      "name": "human",
-      "args": [{"type": "const", "value": "Socrates"}]
-    },
-    {
-      "type": "not",
-      "arg": {
-        "type": "app",
-        "name": "mortal",
-        "args": [{"type": "const", "value": "Socrates"}]
-      }
-    }
-  ]
+  "constants": {
+    "Socrates": "Entity"
+  },
+  "knowledge_base": [
+    "ForAll(x, Implies(Human(x), Mortal(x)))",
+    "Human(Socrates)"
+  ],
+  "verifications": {
+    "is_socrates_mortal": "Mortal(Socrates)"
+  }
 }
 \`\`\``;
 

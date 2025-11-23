@@ -40,7 +40,7 @@ export class MockZ3Adapter implements Z3Adapter {
     }
   }
 
-  async verify(formula: SMT2Formula): Promise<VerificationResult> {
+  async executeSMT2(formula: string): Promise<VerificationResult> {
     if (this.options.delay) {
       await new Promise((resolve) => setTimeout(resolve, this.options.delay));
     }
@@ -51,15 +51,36 @@ export class MockZ3Adapter implements Z3Adapter {
 
     const result: VerificationResult = {
       result: this.options.result || 'unsat',
-      model: this.options.model,
+      rawOutput: this.options.model || (this.options.result || 'unsat'),
       executionTime: this.options.delay || 10,
-      z3Version: '4.12.5',
     };
 
     return result;
   }
 
-  async checkAvailability(): Promise<boolean> {
+  async executeJSON(formula: object): Promise<VerificationResult> {
+    if (this.options.delay) {
+      await new Promise((resolve) => setTimeout(resolve, this.options.delay));
+    }
+
+    if (this.options.shouldFail) {
+      throw new Error(this.options.failureMessage);
+    }
+
+    const result: VerificationResult = {
+      result: this.options.result || 'unsat',
+      rawOutput: this.options.model || (this.options.result || 'unsat'),
+      executionTime: this.options.delay || 10,
+    };
+
+    return result;
+  }
+
+  async verify(formula: SMT2Formula): Promise<VerificationResult> {
+    return this.executeSMT2(formula);
+  }
+
+  async isAvailable(): Promise<boolean> {
     return !this.options.shouldFail;
   }
 

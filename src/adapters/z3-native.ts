@@ -83,9 +83,21 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
   }
 
   private async executeSMT2WithPackage(formula: string): Promise<VerificationResult> {
-    // Use z3-solver package API
-    // This will be implemented when we have the actual package
-    throw new Z3Error('Z3 package API not yet fully implemented');
+    const startTime = Date.now();
+
+    try {
+      // z3-solver package doesn't directly support SMT2 string execution
+      // We need to fall back to CLI for SMT2 formulas
+      // The package is better suited for programmatic API usage
+      return await this.executeSMT2WithCLI(formula);
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      throw new Z3Error(
+        `Z3 package execution failed: ${error instanceof Error ? error.message : String(error)}`,
+        undefined,
+        { executionTime }
+      );
+    }
   }
 
   private async executeSMT2WithCLI(formula: string): Promise<VerificationResult> {

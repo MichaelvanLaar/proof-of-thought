@@ -13,6 +13,7 @@ import type {
   SelfConsistencyConfig,
   DecomposedConfig,
   LeastToMostConfig,
+  Z3Adapter,
 } from '../types/index.js';
 import { ConfigurationError, ValidationError } from '../types/errors.js';
 import { SMT2Backend } from '../backends/smt2-backend.js';
@@ -46,6 +47,7 @@ export class ProofOfThought {
     Omit<
       ProofOfThoughtConfig,
       | 'z3Path'
+      | 'z3Adapter'
       | 'postprocessing'
       | 'selfRefineConfig'
       | 'selfConsistencyConfig'
@@ -54,6 +56,7 @@ export class ProofOfThought {
     >
   > & {
     z3Path?: string;
+    z3Adapter?: Z3Adapter;
     postprocessing: PostprocessingMethod[];
     selfRefineConfig?: SelfRefineConfig;
     selfConsistencyConfig?: SelfConsistencyConfig;
@@ -84,6 +87,7 @@ export class ProofOfThought {
       postprocessing: config.postprocessing ?? [],
       verbose: config.verbose ?? false,
       z3Path: config.z3Path,
+      z3Adapter: config.z3Adapter,
       selfRefineConfig: config.selfRefineConfig,
       selfConsistencyConfig: config.selfConsistencyConfig,
       decomposedConfig: config.decomposedConfig,
@@ -100,20 +104,27 @@ export class ProofOfThought {
       return;
     }
 
+    let z3Adapter: Z3Adapter | undefined;
+
     // Check if backend is already a Backend instance
     if (typeof this.config.backend === 'object' && this.config.backend !== null) {
       // Backend instance provided directly
       this.backend = this.config.backend;
     } else {
       // Create backend from type string
-      // Create Z3 adapter
-      const z3Adapter = createZ3Adapter({
-        timeout: this.config.z3Timeout,
-        z3Path: this.config.z3Path,
-      });
+      // Check if Z3 adapter was provided in config
+      if (this.config.z3Adapter) {
+        z3Adapter = this.config.z3Adapter;
+      } else {
+        // Create Z3 adapter
+        z3Adapter = createZ3Adapter({
+          timeout: this.config.z3Timeout,
+          z3Path: this.config.z3Path,
+        });
 
-      // Initialize Z3 adapter
-      await z3Adapter.initialize();
+        // Initialize Z3 adapter
+        await z3Adapter.initialize();
+      }
 
       // Create backend based on configuration
       if (this.config.backend === 'smt2') {
@@ -126,7 +137,9 @@ export class ProofOfThought {
           verbose: this.config.verbose,
         });
       } else if (this.config.backend === 'json') {
-        this.backend = new JSONBackend(this.config.client, z3Adapter, {
+        this.backend = new JSONBackend({
+          client: this.config.client,
+          z3Adapter,
           model: this.config.model,
           temperature: this.config.temperature,
           maxTokens: this.config.maxTokens,
@@ -140,8 +153,10 @@ export class ProofOfThought {
     this.initialized = true;
 
     if (this.config.verbose) {
-      console.log(`ProofOfThought initialized with ${this.config.backend} backend`);
-      console.log(`Z3 adapter: ${z3Adapter.constructor.name}`);
+      console.log(`ProofOfThought initialized with ${this.getBackendType()} backend`);
+      if (z3Adapter) {
+        console.log(`Z3 adapter: ${z3Adapter.constructor.name}`);
+      }
       console.log(`Model: ${this.config.model}`);
     }
   }
@@ -266,12 +281,17 @@ export class ProofOfThought {
       }
 
       // Build initial response
+      // Extract backend type from config (could be string or Backend instance)
+      const backendType: 'smt2' | 'json' = typeof this.config.backend === 'string'
+        ? this.config.backend
+        : this.backend!.type;
+
       let response: ReasoningResponse = {
         answer,
         formula: String(formula),
         proof,
         isVerified: verificationResult.result === 'sat' || verificationResult.result === 'unsat',
-        backend: this.config.backend,
+        backend: backendType,
         executionTime: Date.now() - startTime,
         model: verificationResult.model,
         tokensUsed: undefined, // Will be tracked in future enhancement
@@ -599,6 +619,9 @@ export class ProofOfThought {
    * Get the backend type
    */
   getBackendType(): 'smt2' | 'json' {
-    return this.config.backend;
+    if (typeof this.config.backend === 'string') {
+      return this.config.backend;
+    }
+    return this.config.backend.type;
   }
 }

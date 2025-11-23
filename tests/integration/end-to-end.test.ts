@@ -13,15 +13,12 @@ describe('End-to-End Integration Tests', () => {
   describe('SMT2 Backend Flow (Mocked)', () => {
     it('should complete full reasoning pipeline with mocked components', async () => {
       const mockClient = createMockSMT2Client();
+      const mockZ3 = createUnsatMock();
       const pot = new ProofOfThought({
         client: mockClient,
         backend: 'smt2',
+        z3Adapter: mockZ3,
       });
-
-      // Override the Z3 adapter with our mock
-      const mockZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      pot.backend.z3Adapter = mockZ3;
 
       const response = await pot.query(
         reasoningFixtures.socrates.question,
@@ -40,14 +37,12 @@ describe('End-to-End Integration Tests', () => {
 
     it('should handle satisfiable results', async () => {
       const mockClient = createMockSMT2Client();
+      const mockZ3 = createSatMock('(model\n  (define-fun x () Int 15)\n)');
       const pot = new ProofOfThought({
         client: mockClient,
         backend: 'smt2',
+        z3Adapter: mockZ3,
       });
-
-      const mockZ3 = createSatMock('(model\n  (define-fun x () Int 15)\n)');
-      // @ts-expect-error - accessing private property for testing
-      pot.backend.z3Adapter = mockZ3;
 
       const response = await pot.query('Test question', 'Test context');
 
@@ -57,15 +52,13 @@ describe('End-to-End Integration Tests', () => {
 
     it('should collect detailed proof trace', async () => {
       const mockClient = createMockSMT2Client();
+      const mockZ3 = createUnsatMock();
       const pot = new ProofOfThought({
         client: mockClient,
         backend: 'smt2',
         verbose: true,
+        z3Adapter: mockZ3,
       });
-
-      const mockZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      pot.backend.z3Adapter = mockZ3;
 
       const response = await pot.query('Test question', 'Test context');
 
@@ -83,14 +76,12 @@ describe('End-to-End Integration Tests', () => {
   describe('Batch Processing (Mocked)', () => {
     it('should process multiple queries sequentially', async () => {
       const mockClient = createMockSMT2Client();
+      const mockZ3 = createUnsatMock();
       const pot = new ProofOfThought({
         client: mockClient,
         backend: 'smt2',
+        z3Adapter: mockZ3,
       });
-
-      const mockZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      pot.backend.z3Adapter = mockZ3;
 
       const queries: Array<[string, string]> = [
         ['Question 1', 'Context 1'],
@@ -108,14 +99,12 @@ describe('End-to-End Integration Tests', () => {
 
     it('should process multiple queries in parallel', async () => {
       const mockClient = createMockSMT2Client();
+      const mockZ3 = createUnsatMock();
       const pot = new ProofOfThought({
         client: mockClient,
         backend: 'smt2',
+        z3Adapter: mockZ3,
       });
-
-      const mockZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      pot.backend.z3Adapter = mockZ3;
 
       const queries: Array<[string, string]> = [
         ['Question 1', 'Context 1'],
@@ -154,10 +143,6 @@ describe('End-to-End Integration Tests', () => {
 
     it('should handle Z3 errors gracefully', async () => {
       const mockClient = createMockSMT2Client();
-      const pot = new ProofOfThought({
-        client: mockClient,
-        backend: 'smt2',
-      });
 
       // Create a failing Z3 mock
       const failingZ3 = new MockZ3Adapter({
@@ -165,8 +150,11 @@ describe('End-to-End Integration Tests', () => {
         failureMessage: 'Z3 execution failed',
       });
 
-      // @ts-expect-error - accessing private property for testing
-      pot.backend.z3Adapter = failingZ3;
+      const pot = new ProofOfThought({
+        client: mockClient,
+        backend: 'smt2',
+        z3Adapter: failingZ3,
+      });
 
       await expect(pot.query('test', 'test')).rejects.toThrow();
     });
@@ -213,14 +201,12 @@ describe('End-to-End Integration Tests', () => {
   describe('Reasoning Fixtures', () => {
     it('should handle Socrates mortality example', async () => {
       const mockClient = createMockSMT2Client();
+      const mockZ3 = createUnsatMock();
       const pot = new ProofOfThought({
         client: mockClient,
         backend: 'smt2',
+        z3Adapter: mockZ3,
       });
-
-      const mockZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      pot.backend.z3Adapter = mockZ3;
 
       const { question, context } = reasoningFixtures.socrates;
       const response = await pot.query(question, context);
@@ -231,14 +217,12 @@ describe('End-to-End Integration Tests', () => {
 
     it('should handle logical implication example', async () => {
       const mockClient = createMockSMT2Client();
+      const mockZ3 = createUnsatMock();
       const pot = new ProofOfThought({
         client: mockClient,
         backend: 'smt2',
+        z3Adapter: mockZ3,
       });
-
-      const mockZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      pot.backend.z3Adapter = mockZ3;
 
       const { question, context } = reasoningFixtures.logical;
       const response = await pot.query(question, context);
@@ -248,14 +232,12 @@ describe('End-to-End Integration Tests', () => {
 
     it('should handle mathematical reasoning example', async () => {
       const mockClient = createMockSMT2Client();
+      const mockZ3 = createSatMock('(model\n  (define-fun x () Int 15)\n)');
       const pot = new ProofOfThought({
         client: mockClient,
         backend: 'smt2',
+        z3Adapter: mockZ3,
       });
-
-      const mockZ3 = createSatMock('(model\n  (define-fun x () Int 15)\n)');
-      // @ts-expect-error - accessing private property for testing
-      pot.backend.z3Adapter = mockZ3;
 
       const { question, context } = reasoningFixtures.mathematical;
       const response = await pot.query(question, context);

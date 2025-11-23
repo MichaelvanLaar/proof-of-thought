@@ -14,17 +14,14 @@ describe('Backend Workflow Integration Tests', () => {
   describe('SMT2Backend Workflow', () => {
     it('should complete full translation-verification-explanation workflow', async () => {
       const mockClient = createMockSMT2Client();
-      const backend = new SMT2Backend(mockClient, {
+      const mockZ3 = createUnsatMock();
+      const backend = new SMT2Backend({
+        client: mockClient,
+        z3Adapter: mockZ3,
         model: 'gpt-4o',
         temperature: 0.0,
         maxTokens: 4096,
-        z3Timeout: 30000,
       });
-
-      // Override Z3 adapter
-      const mockZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      backend.z3Adapter = mockZ3;
 
       const { question, context } = reasoningFixtures.socrates;
 
@@ -47,22 +44,20 @@ describe('Backend Workflow Integration Tests', () => {
 
     it('should handle sat results with model extraction', async () => {
       const mockClient = createMockSMT2Client();
-      const backend = new SMT2Backend(mockClient, {
+      const mockZ3 = createSatMock('(model\n  (define-fun x () Int 15)\n)');
+      const backend = new SMT2Backend({
+        client: mockClient,
+        z3Adapter: mockZ3,
         model: 'gpt-4o',
         temperature: 0.0,
         maxTokens: 4096,
-        z3Timeout: 30000,
       });
-
-      const mockZ3 = createSatMock('(model\n  (define-fun x () Int 15)\n)');
-      // @ts-expect-error - accessing private property for testing
-      backend.z3Adapter = mockZ3;
 
       const formula = await backend.translate('Is x > 10?', 'x = 15');
       const result = await backend.verify(formula as SMT2Formula);
 
       expect(result.result).toBe('sat');
-      expect(result.model).toBeTruthy();
+      expect(result.rawOutput).toBeTruthy();
 
       const explanation = await backend.explain(result, 'Is x > 10?', 'x = 15');
       expect(explanation).toBeTruthy();
@@ -72,16 +67,14 @@ describe('Backend Workflow Integration Tests', () => {
       const mockClient = createMockSMT2Client(
         '```smt2\n' + smt2Fixtures.simple + '\n```'
       );
-      const backend = new SMT2Backend(mockClient, {
+      const mockZ3 = createUnsatMock();
+      const backend = new SMT2Backend({
+        client: mockClient,
+        z3Adapter: mockZ3,
         model: 'gpt-4o',
         temperature: 0.0,
         maxTokens: 4096,
-        z3Timeout: 30000,
       });
-
-      const mockZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      backend.z3Adapter = mockZ3;
 
       const formula = await backend.translate('test', 'test');
 
@@ -94,16 +87,14 @@ describe('Backend Workflow Integration Tests', () => {
   describe('JSONBackend Workflow', () => {
     it('should complete full translation-verification-explanation workflow', async () => {
       const mockClient = createMockJSONClient();
-      const backend = new JSONBackend(mockClient, {
+      const mockZ3 = createUnsatMock();
+      const backend = new JSONBackend({
+        client: mockClient,
+        z3Adapter: mockZ3,
         model: 'gpt-4o',
         temperature: 0.0,
         maxTokens: 4096,
-        z3Timeout: 30000,
       });
-
-      const mockZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      backend.z3Adapter = mockZ3;
 
       const { question, context } = reasoningFixtures.socrates;
 
@@ -123,19 +114,22 @@ describe('Backend Workflow Integration Tests', () => {
 
     it('should validate JSON DSL schema', async () => {
       const mockClient = createMockJSONClient();
-      const backend = new JSONBackend(mockClient, {
+      const mockZ3 = createUnsatMock();
+      const backend = new JSONBackend({
+        client: mockClient,
+        z3Adapter: mockZ3,
         model: 'gpt-4o',
         temperature: 0.0,
         maxTokens: 4096,
-        z3Timeout: 30000,
       });
 
       const formula = await backend.translate('test', 'test');
 
-      // Parse and check structure
-      const parsed = JSON.parse(formula as string);
-      expect(parsed).toHaveProperty('assertions');
-      expect(Array.isArray(parsed.assertions)).toBe(true);
+      // Formula is already a parsed JSONProgram object
+      const parsed = formula as unknown as Record<string, unknown>;
+      expect(parsed).toHaveProperty('sorts');
+      expect(parsed).toHaveProperty('verifications');
+      expect(typeof parsed.verifications).toBe('object');
     });
   });
 
@@ -145,27 +139,25 @@ describe('Backend Workflow Integration Tests', () => {
 
       // SMT2 Backend
       const smt2Client = createMockSMT2Client();
-      const smt2Backend = new SMT2Backend(smt2Client, {
+      const smt2Z3 = createUnsatMock();
+      const smt2Backend = new SMT2Backend({
+        client: smt2Client,
+        z3Adapter: smt2Z3,
         model: 'gpt-4o',
         temperature: 0.0,
         maxTokens: 4096,
-        z3Timeout: 30000,
       });
-      const smt2Z3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      smt2Backend.z3Adapter = smt2Z3;
 
       // JSON Backend
       const jsonClient = createMockJSONClient();
-      const jsonBackend = new JSONBackend(jsonClient, {
+      const jsonZ3 = createUnsatMock();
+      const jsonBackend = new JSONBackend({
+        client: jsonClient,
+        z3Adapter: jsonZ3,
         model: 'gpt-4o',
         temperature: 0.0,
         maxTokens: 4096,
-        z3Timeout: 30000,
       });
-      const jsonZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      jsonBackend.z3Adapter = jsonZ3;
 
       // Run both backends
       const smt2Formula = await smt2Backend.translate(question, context);
@@ -183,11 +175,13 @@ describe('Backend Workflow Integration Tests', () => {
   describe('Error Recovery', () => {
     it('should handle malformed LLM responses', async () => {
       const mockClient = createMockSMT2Client('Invalid response without code blocks');
-      const backend = new SMT2Backend(mockClient, {
+      const mockZ3 = createUnsatMock();
+      const backend = new SMT2Backend({
+        client: mockClient,
+        z3Adapter: mockZ3,
         model: 'gpt-4o',
         temperature: 0.0,
         maxTokens: 4096,
-        z3Timeout: 30000,
       });
 
       await expect(backend.translate('test', 'test')).rejects.toThrow();
@@ -195,19 +189,17 @@ describe('Backend Workflow Integration Tests', () => {
 
     it('should handle Z3 verification failures', async () => {
       const mockClient = createMockSMT2Client();
-      const backend = new SMT2Backend(mockClient, {
+      const failingZ3 = createUnsatMock();
+      failingZ3.executeSMT2 = async () => {
+        throw new Error('Z3 execution failed');
+      };
+      const backend = new SMT2Backend({
+        client: mockClient,
+        z3Adapter: failingZ3,
         model: 'gpt-4o',
         temperature: 0.0,
         maxTokens: 4096,
-        z3Timeout: 30000,
       });
-
-      const failingZ3 = createUnsatMock();
-      failingZ3.verify = async () => {
-        throw new Error('Z3 execution failed');
-      };
-      // @ts-expect-error - accessing private property for testing
-      backend.z3Adapter = failingZ3;
 
       const formula = await backend.translate('test', 'test');
       await expect(backend.verify(formula as SMT2Formula)).rejects.toThrow();
@@ -217,16 +209,14 @@ describe('Backend Workflow Integration Tests', () => {
   describe('Performance Metrics', () => {
     it('should track execution time for each step', async () => {
       const mockClient = createMockSMT2Client();
-      const backend = new SMT2Backend(mockClient, {
+      const mockZ3 = createUnsatMock();
+      const backend = new SMT2Backend({
+        client: mockClient,
+        z3Adapter: mockZ3,
         model: 'gpt-4o',
         temperature: 0.0,
         maxTokens: 4096,
-        z3Timeout: 30000,
       });
-
-      const mockZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      backend.z3Adapter = mockZ3;
 
       const startTranslate = Date.now();
       const formula = await backend.translate('test', 'test');

@@ -104,6 +104,51 @@ Output:
 Convert the given question and context into a valid JSON program. Return ONLY the JSON, no explanations.`;
 
 /**
+ * Configuration for JSON Backend
+ */
+export interface JSONBackendConfig {
+  /**
+   * OpenAI client for LLM translation
+   */
+  client: OpenAI;
+
+  /**
+   * Z3 adapter for formula verification
+   */
+  z3Adapter: Z3Adapter;
+
+  /**
+   * LLM model to use
+   * @default 'gpt-4o'
+   */
+  model?: string;
+
+  /**
+   * Temperature for LLM sampling
+   * @default 0.0
+   */
+  temperature?: number;
+
+  /**
+   * Maximum tokens for LLM response
+   * @default 4096
+   */
+  maxTokens?: number;
+
+  /**
+   * Z3 timeout in milliseconds
+   * @default 30000
+   */
+  z3Timeout?: number;
+
+  /**
+   * Enable verbose logging
+   * @default false
+   */
+  verbose?: boolean;
+}
+
+/**
  * JSON Backend implementation using custom JSON DSL
  * Executes formulas via Z3 API
  */
@@ -111,18 +156,19 @@ export class JSONBackend implements Backend {
   readonly type = 'json' as const;
 
   private interpreter: Z3JSONInterpreter;
+  private config: Required<JSONBackendConfig>;
 
-  constructor(
-    private client: OpenAI,
-    private z3Adapter: Z3Adapter,
-    private config: {
-      model?: string;
-      temperature?: number;
-      maxTokens?: number;
-      z3Timeout?: number;
-    } = {}
-  ) {
-    this.interpreter = new Z3JSONInterpreter(z3Adapter);
+  constructor(config: JSONBackendConfig) {
+    this.config = {
+      client: config.client,
+      z3Adapter: config.z3Adapter,
+      model: config.model ?? 'gpt-4o',
+      temperature: config.temperature ?? 0.0,
+      maxTokens: config.maxTokens ?? 4096,
+      z3Timeout: config.z3Timeout ?? 30000,
+      verbose: config.verbose ?? false,
+    };
+    this.interpreter = new Z3JSONInterpreter(this.config.z3Adapter);
   }
 
   /**
@@ -134,10 +180,10 @@ export class JSONBackend implements Backend {
   async translate(question: string, context: string): Promise<Formula> {
     try {
       // Call LLM to generate JSON program
-      const completion = await this.client.chat.completions.create({
-        model: this.config.model || 'gpt-4o',
-        temperature: this.config.temperature ?? 0.0,
-        max_tokens: this.config.maxTokens || 4096,
+      const completion = await this.config.client.chat.completions.create({
+        model: this.config.model,
+        temperature: this.config.temperature,
+        max_tokens: this.config.maxTokens,
         messages: [
           {
             role: 'system',
