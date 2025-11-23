@@ -4,7 +4,7 @@
 
 import type { VerificationResult } from '../types/index.js';
 import { AbstractZ3Adapter } from './z3-adapter.js';
-import { Z3NotAvailableError, Z3Error, Z3TimeoutError, ParsingError } from '../types/errors.js';
+import { Z3NotAvailableError, Z3Error, Z3TimeoutError } from '../types/errors.js';
 
 /**
  * Configuration for Z3 native adapter
@@ -103,7 +103,6 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
   private async executeSMT2WithCLI(formula: string): Promise<VerificationResult> {
     const startTime = Date.now();
     const { spawn } = await import('child_process');
-    const { promisify } = await import('util');
 
     return new Promise<VerificationResult>((resolve, reject) => {
       const z3Path = this.config.z3Path ?? 'z3';
@@ -221,8 +220,12 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
 
     let match;
     while ((match = definePattern.exec(output)) !== null) {
-      const [, name, type, value] = match;
-      model[name] = this.parseValue(value.trim(), type);
+      const name = match[1];
+      const type = match[2];
+      const value = match[3];
+      if (name && type && value) {
+        model[name] = this.parseValue(value.trim(), type);
+      }
     }
 
     return Object.keys(model).length > 0 ? model : undefined;
@@ -242,7 +245,7 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
     }
   }
 
-  async executeJSON(formula: object): Promise<VerificationResult> {
+  async executeJSON(_formula: object): Promise<VerificationResult> {
     await this.initialize();
 
     // JSON execution will require Z3 API
@@ -290,16 +293,7 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
   }
 
   async getVersion(): Promise<string> {
-    try {
-      // Try z3-solver package first
-      const { version } = await import('z3-solver');
-      if (version) {
-        return version;
-      }
-    } catch {
-      // Fall through to CLI
-    }
-
+    // z3-solver package doesn't expose version in exports, use CLI
     // Try CLI
     const { spawn } = await import('child_process');
     const z3Path = this.config.z3Path ?? 'z3';

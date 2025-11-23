@@ -117,7 +117,7 @@ export class ProofOfThought {
         z3Adapter = this.config.z3Adapter;
       } else {
         // Create Z3 adapter
-        z3Adapter = createZ3Adapter({
+        z3Adapter = await createZ3Adapter({
           timeout: this.config.z3Timeout,
           z3Path: this.config.z3Path,
         });
@@ -282,9 +282,8 @@ export class ProofOfThought {
 
       // Build initial response
       // Extract backend type from config (could be string or Backend instance)
-      const backendType: 'smt2' | 'json' = typeof this.config.backend === 'string'
-        ? this.config.backend
-        : this.backend!.type;
+      const backendType: 'smt2' | 'json' =
+        typeof this.config.backend === 'string' ? this.config.backend : this.backend!.type;
 
       let response: ReasoningResponse = {
         answer,

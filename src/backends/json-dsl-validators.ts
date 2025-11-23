@@ -81,7 +81,7 @@ export function validateJSONProgramSafe(program: unknown) {
 export function isExpressionSafe(expression: string): boolean {
   // Check if expression only contains allowed operators
   // This is a basic check - more sophisticated parsing would be needed for production
-  const operatorPattern = new RegExp(`\\b(${ALLOWED_Z3_OPERATORS.join('|')})\\b`, 'g');
+  // Note: operatorPattern could be used for more sophisticated validation in the future
 
   // Extract potential operator names (words starting with capital letter)
   const potentialOperators = expression.match(/\b[A-Z][a-zA-Z0-9_]*\b/g) || [];

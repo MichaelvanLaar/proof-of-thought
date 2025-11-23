@@ -198,11 +198,9 @@ export class JSONBackend implements Backend {
 
       const response = completion.choices[0]?.message?.content;
       if (!response) {
-        throw new TranslationError(
-          'LLM returned empty response',
-          question,
-          'No content in completion'
-        );
+        throw new TranslationError('LLM returned empty response', question, {
+          reason: 'No content in completion',
+        });
       }
 
       // Extract JSON from response (handle markdown code blocks)
@@ -214,21 +212,17 @@ export class JSONBackend implements Backend {
       try {
         program = JSON.parse(jsonText.trim());
       } catch (error) {
-        throw new TranslationError(
-          'Failed to parse LLM JSON response',
-          question,
-          error instanceof Error ? error.message : 'Invalid JSON'
-        );
+        throw new TranslationError('Failed to parse LLM JSON response', question, {
+          parseError: error instanceof Error ? error.message : 'Invalid JSON',
+        });
       }
 
       // Validate against schema
       const validation = validateJSONProgramSafe(program);
       if (!validation.success) {
-        throw new TranslationError(
-          'LLM generated invalid JSON program',
-          question,
-          JSON.stringify(validation.error.errors, null, 2)
-        );
+        throw new TranslationError('LLM generated invalid JSON program', question, {
+          validationErrors: validation.error.errors,
+        });
       }
 
       // Return as branded JSONFormula
@@ -240,7 +234,7 @@ export class JSONBackend implements Backend {
       throw new TranslationError(
         `JSON translation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         question,
-        error instanceof Error ? error.stack : undefined
+        error instanceof Error && error.stack ? { stack: error.stack } : undefined
       );
     }
   }
@@ -256,7 +250,7 @@ export class JSONBackend implements Backend {
 
       // Execute the JSON program
       const result = await this.interpreter.execute(
-        formula as JSONProgram,
+        formula as unknown as JSONProgram,
         this.config.z3Timeout || 30000
       );
 

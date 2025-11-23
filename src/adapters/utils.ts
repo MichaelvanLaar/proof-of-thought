@@ -3,8 +3,6 @@
  */
 
 import type { Z3Adapter } from '../types/index.js';
-import { Z3NativeAdapter } from './z3-native.js';
-import { Z3WASMAdapter } from './z3-wasm.js';
 
 /**
  * Runtime environment type
@@ -48,17 +46,26 @@ export function isBrowser(): boolean {
  * @param config - Configuration options
  * @returns Z3 adapter instance for the current environment
  */
-export function createZ3Adapter(config?: { timeout?: number; z3Path?: string }): Z3Adapter {
+export async function createZ3Adapter(config?: {
+  timeout?: number;
+  z3Path?: string;
+}): Promise<Z3Adapter> {
   const env = detectEnvironment();
 
   switch (env) {
-    case 'node':
+    case 'node': {
+      const { Z3NativeAdapter } = await import('./z3-native.js');
       return new Z3NativeAdapter(config);
-    case 'browser':
+    }
+    case 'browser': {
+      const { Z3WASMAdapter } = await import('./z3-wasm.js');
       return new Z3WASMAdapter();
-    default:
+    }
+    default: {
       // Default to native adapter and let it fail if not available
+      const { Z3NativeAdapter } = await import('./z3-native.js');
       return new Z3NativeAdapter(config);
+    }
   }
 }
 

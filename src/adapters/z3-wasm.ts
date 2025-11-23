@@ -10,7 +10,7 @@
 
 import type { VerificationResult } from '../types/index.js';
 import { AbstractZ3Adapter } from './z3-adapter.js';
-import { Z3NotAvailableError, Z3Error, Z3TimeoutError } from '../types/errors.js';
+import { Z3NotAvailableError, Z3Error } from '../types/errors.js';
 
 /**
  * Configuration for Z3 WASM adapter
@@ -107,8 +107,10 @@ export class Z3WASMAdapter extends AbstractZ3Adapter {
       const imports = {
         env: {
           memory: new WebAssembly.Memory({
-            initial: this.config.memory.initial,
-            maximum: this.config.memory.maximum,
+            initial: this.config.memory.initial ?? 256,
+            ...(this.config.memory.maximum !== undefined && {
+              maximum: this.config.memory.maximum,
+            }),
           }),
           // Placeholder imports - actual Z3 WASM may require specific imports
           __assert_fail: () => {
@@ -139,7 +141,7 @@ export class Z3WASMAdapter extends AbstractZ3Adapter {
     }
   }
 
-  async executeSMT2(formula: string): Promise<VerificationResult> {
+  async executeSMT2(_formula: string): Promise<VerificationResult> {
     await this.initialize();
 
     if (!this.wasmInstance) {
@@ -172,18 +174,16 @@ export class Z3WASMAdapter extends AbstractZ3Adapter {
       if (error instanceof Z3Error) {
         throw error;
       }
-      throw new Z3Error(
-        `WASM SMT2 execution failed: ${error instanceof Error ? error.message : String(error)}`
-      );
-    } finally {
       const executionTime = Date.now() - startTime;
-      if (executionTime > this.config.timeout) {
-        throw new Z3TimeoutError(`Z3 WASM execution exceeded timeout of ${this.config.timeout}ms`);
-      }
+      throw new Z3Error(
+        `WASM SMT2 execution failed: ${error instanceof Error ? error.message : String(error)}`,
+        undefined,
+        { executionTime }
+      );
     }
   }
 
-  async executeJSON(formula: object): Promise<VerificationResult> {
+  async executeJSON(_formula: object): Promise<VerificationResult> {
     await this.initialize();
 
     if (!this.wasmInstance) {

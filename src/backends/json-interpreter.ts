@@ -5,7 +5,7 @@
 
 import type { Z3Adapter } from '../types/index.js';
 import type { JSONProgram, JSONExecutionResult, SortDefinition } from './json-dsl-types.js';
-import { ValidationError, BackendError } from '../types/errors.js';
+import { ValidationError } from '../types/errors.js';
 import { validateJSONProgram, isExpressionSafe, isSortValid } from './json-dsl-validators.js';
 
 /**
@@ -18,10 +18,10 @@ export class Z3JSONInterpreter {
   /**
    * Execute a JSON program and return verification results
    * @param program - The JSON program to execute
-   * @param timeout - Timeout in milliseconds
+   * @param _timeout - Timeout in milliseconds (not yet implemented)
    * @returns Execution result with verifications
    */
-  async execute(program: unknown, timeout = 30000): Promise<JSONExecutionResult> {
+  async execute(program: unknown, _timeout = 30000): Promise<JSONExecutionResult> {
     const startTime = Date.now();
 
     // Step 1: Validate the JSON program

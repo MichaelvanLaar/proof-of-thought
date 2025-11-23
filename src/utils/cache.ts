@@ -70,15 +70,8 @@ export class LRUCache<T> {
   constructor(config: CacheConfig = {}) {
     this.cache = new Map();
     this.maxSize = config.maxSize || 1000;
-    this.ttl = config.ttl || 3600000;  // 1 hour
+    this.ttl = config.ttl || 3600000; // 1 hour
     this.enableStats = config.enableStats !== false;
-  }
-
-  /**
-   * Generate cache key from inputs
-   */
-  private generateKey(inputs: unknown[]): string {
-    return JSON.stringify(inputs);
   }
 
   /**
@@ -350,6 +343,13 @@ export class FormulaCache {
   getStats(): CacheStats {
     return this.cache.getStats();
   }
+
+  /**
+   * Clean expired entries
+   */
+  cleanExpired(): number {
+    return this.cache.cleanExpired();
+  }
 }
 
 /**
@@ -405,6 +405,13 @@ export class Z3ResultCache {
    */
   getStats(): CacheStats {
     return this.cache.getStats();
+  }
+
+  /**
+   * Clean expired entries
+   */
+  cleanExpired(): number {
+    return this.cache.cleanExpired();
   }
 }
 
