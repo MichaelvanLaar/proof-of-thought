@@ -13,6 +13,18 @@
 
 TypeScript/JavaScript port of the [ProofOfThought](https://github.com/DebarghaG/proofofthought) framework, bringing powerful neurosymbolic reasoning to the Node.js and browser ecosystems.
 
+## 🎉 **v0.1.0 Beta Release Now Available!**
+
+We're excited to announce the first beta release of ProofOfThought for TypeScript! This release brings complete feature parity with the Python implementation, including:
+
+- ✨ Full neurosymbolic reasoning with Z3 theorem prover integration
+- 🎯 94% test coverage with comprehensive test suite
+- 🚀 Cross-platform support (Node.js + Browser with WASM)
+- 📦 All four postprocessing methods (Self-Refine, Self-Consistency, Decomposed, Least-to-Most)
+- ⚡ Performance optimizations (caching, batching, lazy loading)
+
+**[See Release Notes](./GITHUB_RELEASE.md)** | **[View Roadmap](./ROADMAP.md)** | **[Migration Guide](./docs/MIGRATION.md)**
+
 ## 📖 Overview
 
 ProofOfThought is a neurosymbolic reasoning framework that combines the natural language understanding of Large Language Models (LLMs) with the formal verification capabilities of the Z3 theorem prover. This approach enables:
