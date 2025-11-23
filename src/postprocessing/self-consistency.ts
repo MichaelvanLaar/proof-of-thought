@@ -240,7 +240,13 @@ export class SelfConsistency {
 
     if (matchingResponses.length === 0) {
       // Fallback to first response if no exact match
-      return paths[0]!;
+      const firstPath = paths[0];
+      if (!firstPath) {
+        throw new PostprocessingError('No reasoning paths available', 'self-consistency', {
+          selectedAnswer,
+        });
+      }
+      return firstPath;
     }
 
     // Return the verified response with the shortest execution time
@@ -253,7 +259,13 @@ export class SelfConsistency {
       return a.executionTime - b.executionTime;
     });
 
-    return matchingResponses[0]!;
+    const bestResponse = matchingResponses[0];
+    if (!bestResponse) {
+      throw new PostprocessingError('No matching responses found', 'self-consistency', {
+        selectedAnswer,
+      });
+    }
+    return bestResponse;
   }
 
   /**

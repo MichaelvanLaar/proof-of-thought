@@ -97,7 +97,10 @@ export class LeastToMost {
       const solutions: LevelSolution[] = [];
 
       for (let i = 0; i < levels.length; i++) {
-        const level = levels[i]!;
+        const level = levels[i];
+        if (!level) {
+          continue;
+        }
 
         // Build context including previous solutions
         const enrichedContext = this.buildProgressiveContext(context, solutions, level);

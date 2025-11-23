@@ -23,6 +23,7 @@ import { SelfRefine } from '../postprocessing/self-refine.js';
 import { SelfConsistency } from '../postprocessing/self-consistency.js';
 import { DecomposedPrompting } from '../postprocessing/decomposed.js';
 import { LeastToMost } from '../postprocessing/least-to-most.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Main class for neurosymbolic reasoning
@@ -154,11 +155,11 @@ export class ProofOfThought {
     this.initialized = true;
 
     if (this.config.verbose) {
-      console.log(`ProofOfThought initialized with ${this.getBackendType()} backend`);
+      logger.debug(`ProofOfThought initialized with ${this.getBackendType()} backend`);
       if (z3Adapter) {
-        console.log(`Z3 adapter: ${z3Adapter.constructor.name}`);
+        logger.debug(`Z3 adapter: ${z3Adapter.constructor.name}`);
       }
-      console.log(`Model: ${this.config.model}`);
+      logger.debug(`Model: ${this.config.model}`);
     }
   }
 
@@ -211,9 +212,9 @@ export class ProofOfThought {
     try {
       // Step 1: Translate to formal logic
       if (this.config.verbose) {
-        console.log('\n=== Step 1: Translation ===');
-        console.log(`Question: ${question}`);
-        console.log(`Context: ${context || 'None'}`);
+        logger.debug('\n=== Step 1: Translation ===');
+        logger.debug(`Question: ${question}`);
+        logger.debug(`Context: ${context || 'None'}`);
       }
 
       proof.push({
@@ -231,12 +232,12 @@ export class ProofOfThought {
       });
 
       if (this.config.verbose) {
-        console.log(`\nFormula:\n${String(formula).substring(0, 500)}...`);
+        logger.debug(`\nFormula:\n${String(formula).substring(0, 500)}...`);
       }
 
       // Step 2: Verify with Z3
       if (this.config.verbose) {
-        console.log('\n=== Step 2: Verification ===');
+        logger.debug('\n=== Step 2: Verification ===');
       }
 
       proof.push({
@@ -253,15 +254,15 @@ export class ProofOfThought {
       });
 
       if (this.config.verbose) {
-        console.log(`Result: ${verificationResult.result}`);
+        logger.debug(`Result: ${verificationResult.result}`);
         if (verificationResult.model) {
-          console.log('Model:', verificationResult.model);
+          logger.debug('Model:', verificationResult.model);
         }
       }
 
       // Step 3: Generate explanation
       if (this.config.verbose) {
-        console.log('\n=== Step 3: Explanation ===');
+        logger.debug('\n=== Step 3: Explanation ===');
       }
 
       proof.push({
@@ -278,13 +279,15 @@ export class ProofOfThought {
       });
 
       if (this.config.verbose) {
-        console.log(`Answer: ${answer}`);
+        logger.debug(`Answer: ${answer}`);
       }
 
       // Build initial response
       // Extract backend type from config (could be string or Backend instance)
       const backendType: 'smt2' | 'json' =
-        typeof this.config.backend === 'string' ? this.config.backend : this.backend!.type;
+        typeof this.config.backend === 'string'
+          ? this.config.backend
+          : (this.backend.type ?? 'smt2');
 
       let response: ReasoningResponse = {
         answer,
@@ -303,7 +306,7 @@ export class ProofOfThought {
 
       if (this.config.postprocessing.length > 0) {
         if (this.config.verbose) {
-          console.log(
+          logger.debug(
             `\n=== Step 4: Postprocessing (${this.config.postprocessing.join(', ')}) ===`
           );
         }
@@ -329,7 +332,7 @@ export class ProofOfThought {
               }
 
               if (this.config.verbose) {
-                console.log('\nApplying Self-Refine...');
+                logger.debug('\nApplying Self-Refine...');
               }
 
               response = await this.selfRefine.refine(response, question, context ?? '');
@@ -341,7 +344,7 @@ export class ProofOfThought {
               methodMetrics.selfRefineIterations = refinementSteps.length;
 
               if (this.config.verbose) {
-                console.log(`Refined answer: ${response.answer}`);
+                logger.debug(`Refined answer: ${response.answer}`);
               }
 
               methodsApplied.push(method);
@@ -375,7 +378,7 @@ export class ProofOfThought {
               }
 
               if (this.config.verbose) {
-                console.log('\nApplying Decomposed Prompting...');
+                logger.debug('\nApplying Decomposed Prompting...');
               }
 
               // Decomposed prompting replaces the entire response
@@ -388,7 +391,7 @@ export class ProofOfThought {
               methodMetrics.decomposedSubQuestions = subQuestionSteps.length;
 
               if (this.config.verbose) {
-                console.log(`Decomposed answer: ${response.answer}`);
+                logger.debug(`Decomposed answer: ${response.answer}`);
               }
 
               methodsApplied.push(method);
@@ -422,7 +425,7 @@ export class ProofOfThought {
               }
 
               if (this.config.verbose) {
-                console.log('\nApplying Least-to-Most Prompting...');
+                logger.debug('\nApplying Least-to-Most Prompting...');
               }
 
               // Least-to-most replaces the entire response
@@ -433,7 +436,7 @@ export class ProofOfThought {
               methodMetrics.leastToMostLevels = levelSteps.length;
 
               if (this.config.verbose) {
-                console.log(`Least-to-Most answer: ${response.answer}`);
+                logger.debug(`Least-to-Most answer: ${response.answer}`);
               }
 
               methodsApplied.push(method);
@@ -448,8 +451,8 @@ export class ProofOfThought {
           } catch (error) {
             // Error handling: fallback to base result
             if (this.config.verbose) {
-              console.error(`\nError in ${method} postprocessing:`, error);
-              console.log(
+              logger.error(`\nError in ${method} postprocessing:`, error);
+              logger.debug(
                 `Falling back to ${methodsApplied.length > 0 ? 'previous' : 'base'} result`
               );
             }
@@ -506,7 +509,7 @@ export class ProofOfThought {
       response.executionTime = Date.now() - startTime;
 
       if (this.config.verbose) {
-        console.log(`\n=== Total Execution Time: ${response.executionTime}ms ===\n`);
+        logger.debug(`\n=== Total Execution Time: ${response.executionTime}ms ===\n`);
       }
 
       return response;
@@ -560,9 +563,9 @@ export class ProofOfThought {
     }
 
     if (this.config.verbose) {
-      console.log('\n=== Self-Consistency: Generating multiple reasoning paths ===');
+      logger.debug('\n=== Self-Consistency: Generating multiple reasoning paths ===');
       const config = this.selfConsistency.getConfig();
-      console.log(`Samples: ${config.numSamples}, Voting: ${config.votingMethod}`);
+      logger.debug(`Samples: ${config.numSamples}, Voting: ${config.votingMethod}`);
     }
 
     return this.selfConsistency.apply(question, context ?? '');
@@ -581,7 +584,7 @@ export class ProofOfThought {
     }
 
     if (this.config.verbose) {
-      console.log(
+      logger.debug(
         `\n=== Batch Processing: ${queries.length} queries (${parallel ? 'parallel' : 'sequential'}) ===\n`
       );
     }
@@ -592,9 +595,13 @@ export class ProofOfThought {
 
     const results: ReasoningResponse[] = [];
     for (let i = 0; i < queries.length; i++) {
-      const [question, context] = queries[i]!;
+      const query = queries[i];
+      if (!query) {
+        continue;
+      }
+      const [question, context] = query;
       if (this.config.verbose) {
-        console.log(`\n--- Query ${i + 1}/${queries.length} ---`);
+        logger.debug(`\n--- Query ${i + 1}/${queries.length} ---`);
       }
       results.push(await this.query(question, context));
     }

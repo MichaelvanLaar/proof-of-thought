@@ -7,6 +7,8 @@
  * @packageDocumentation
  */
 
+import { logger } from './logger.js';
+
 /**
  * Performance metrics for a single LLM call
  */
@@ -447,7 +449,7 @@ export async function measureAsync<T>(
   const duration = performance.now() - start;
 
   if (label) {
-    console.log(`${label}: ${duration.toFixed(2)}ms`);
+    logger.debug(`${label}: ${duration.toFixed(2)}ms`);
   }
 
   return { result, duration };
@@ -462,7 +464,7 @@ export function measureSync<T>(fn: () => T, label?: string): { result: T; durati
   const duration = performance.now() - start;
 
   if (label) {
-    console.log(`${label}: ${duration.toFixed(2)}ms`);
+    logger.debug(`${label}: ${duration.toFixed(2)}ms`);
   }
 
   return { result, duration };

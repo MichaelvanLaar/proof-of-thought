@@ -11,6 +11,7 @@
 import type { VerificationResult } from '../types/index.js';
 import { AbstractZ3Adapter } from './z3-adapter.js';
 import { Z3NotAvailableError, Z3Error } from '../types/errors.js';
+import { logger } from '../utils/logger.js';
 
 /**
  * Configuration for Z3 WASM adapter
@@ -131,7 +132,7 @@ export class Z3WASMAdapter extends AbstractZ3Adapter {
       this.initialized = true;
 
       if (this.config.timeout > 0) {
-        console.log(`Z3 WASM adapter initialized (timeout: ${this.config.timeout}ms)`);
+        logger.debug(`Z3 WASM adapter initialized (timeout: ${this.config.timeout}ms)`);
       }
     } catch (error) {
       throw new Z3NotAvailableError(

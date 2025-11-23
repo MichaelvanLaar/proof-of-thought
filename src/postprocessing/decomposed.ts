@@ -85,7 +85,10 @@ export class DecomposedPrompting {
         [];
 
       for (let i = 0; i < subQuestions.length; i++) {
-        const subQ = subQuestions[i]!;
+        const subQ = subQuestions[i];
+        if (!subQ) {
+          continue;
+        }
 
         // Build context including previous answers
         const enrichedContext = this.buildEnrichedContext(context, subAnswers, subQ.dependencies);
@@ -216,9 +219,9 @@ Guidelines:
       // Match patterns like: "1. Question text" or "1) Question text"
       const match = line.match(/^\s*(\d+)[.)]\s*(.+?)(?:\s*\(depends on:\s*([0-9,\s]+)\))?\s*$/);
 
-      if (match) {
-        const order = parseInt(match[1]!, 10);
-        const question = match[2]!.trim();
+      if (match && match[1] && match[2]) {
+        const order = parseInt(match[1], 10);
+        const question = match[2].trim();
         const depsStr = match[3];
 
         const dependencies: number[] = [];
@@ -257,8 +260,10 @@ Guidelines:
       for (const dep of dependencies) {
         const depIndex = dep - 1; // Convert 1-based to 0-based
         if (depIndex >= 0 && depIndex < previousAnswers.length) {
-          const prev = previousAnswers[depIndex]!;
-          enriched += `\n\nQ: ${prev.question}\nA: ${prev.answer}`;
+          const prev = previousAnswers[depIndex];
+          if (prev) {
+            enriched += `\n\nQ: ${prev.question}\nA: ${prev.answer}`;
+          }
         }
       }
     } else if (previousAnswers.length > 0) {
@@ -343,8 +348,11 @@ Based on these sub-answers, provide a comprehensive answer to the original quest
 
     // Add each sub-question's proof
     for (let i = 0; i < subAnswers.length; i++) {
-      const subAnswer = subAnswers[i]!;
-      const subQuestion = subQuestions[i]!;
+      const subAnswer = subAnswers[i];
+      const subQuestion = subQuestions[i];
+      if (!subAnswer || !subQuestion) {
+        continue;
+      }
 
       combinedProof.push({
         step: ++stepCounter,
