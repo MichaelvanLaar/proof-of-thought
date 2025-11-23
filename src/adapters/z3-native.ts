@@ -4,7 +4,7 @@
 
 import type { VerificationResult } from '../types/index.js';
 import { AbstractZ3Adapter } from './z3-adapter.js';
-import { Z3NotAvailableError, Z3Error, Z3TimeoutError, ParsingError } from '../types/errors.js';
+import { Z3NotAvailableError, Z3Error, Z3TimeoutError } from '../types/errors.js';
 
 /**
  * Configuration for Z3 native adapter
@@ -30,6 +30,37 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
       memoryLimit: config.memoryLimit,
       z3Path: config.z3Path,
     };
+
+    // Validate z3Path if provided to prevent command injection
+    if (this.config.z3Path) {
+      this.validateZ3Path(this.config.z3Path);
+    }
+  }
+
+  /**
+   * Validate z3Path to prevent command injection attacks
+   */
+  private validateZ3Path(path: string): void {
+    // Disallow paths with shell metacharacters or command chains
+    const dangerousPatterns = [
+      /[;&|`$()]/,          // Shell metacharacters
+      /\.\./,                 // Directory traversal
+      /[\r\n]/,               // Line breaks
+      /\s+(&&|\|\||;)\s+/,   // Command chains
+    ];
+
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(path)) {
+        throw new Z3NotAvailableError(
+          `Invalid z3Path: contains potentially dangerous characters. Path must be a simple executable path.`
+        );
+      }
+    }
+
+    // Path should be reasonable length
+    if (path.length > 500) {
+      throw new Z3NotAvailableError(`Invalid z3Path: path too long (max 500 characters)`);
+    }
   }
 
   async initialize(): Promise<void> {
@@ -42,7 +73,7 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
       const { init } = await import('z3-solver');
       this.z3Instance = await init();
       this.initialized = true;
-    } catch (error) {
+    } catch (_error) {
       // If z3-solver not available, we'll fall back to CLI execution
       const available = await this.isAvailable();
       if (!available) {
@@ -83,15 +114,26 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
   }
 
   private async executeSMT2WithPackage(formula: string): Promise<VerificationResult> {
-    // Use z3-solver package API
-    // This will be implemented when we have the actual package
-    throw new Z3Error('Z3 package API not yet fully implemented');
+    const startTime = Date.now();
+
+    try {
+      // z3-solver package doesn't directly support SMT2 string execution
+      // We need to fall back to CLI for SMT2 formulas
+      // The package is better suited for programmatic API usage
+      return await this.executeSMT2WithCLI(formula);
+    } catch (error) {
+      const executionTime = Date.now() - startTime;
+      throw new Z3Error(
+        `Z3 package execution failed: ${error instanceof Error ? error.message : String(error)}`,
+        undefined,
+        { executionTime }
+      );
+    }
   }
 
   private async executeSMT2WithCLI(formula: string): Promise<VerificationResult> {
     const startTime = Date.now();
     const { spawn } = await import('child_process');
-    const { promisify } = await import('util');
 
     return new Promise<VerificationResult>((resolve, reject) => {
       const z3Path = this.config.z3Path ?? 'z3';
@@ -209,8 +251,12 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
 
     let match;
     while ((match = definePattern.exec(output)) !== null) {
-      const [, name, type, value] = match;
-      model[name] = this.parseValue(value.trim(), type);
+      const name = match[1];
+      const type = match[2];
+      const value = match[3];
+      if (name && type && value) {
+        model[name] = this.parseValue(value.trim(), type);
+      }
     }
 
     return Object.keys(model).length > 0 ? model : undefined;
@@ -230,7 +276,7 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
     }
   }
 
-  async executeJSON(formula: object): Promise<VerificationResult> {
+  async executeJSON(_formula: object): Promise<VerificationResult> {
     await this.initialize();
 
     // JSON execution will require Z3 API
@@ -278,16 +324,7 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
   }
 
   async getVersion(): Promise<string> {
-    try {
-      // Try z3-solver package first
-      const { version } = await import('z3-solver');
-      if (version) {
-        return version;
-      }
-    } catch {
-      // Fall through to CLI
-    }
-
+    // z3-solver package doesn't expose version in exports, use CLI
     // Try CLI
     const { spawn } = await import('child_process');
     const z3Path = this.config.z3Path ?? 'z3';

@@ -16,7 +16,14 @@ export interface LLMCallMetrics {
   /** Model used */
   model: string;
   /** Call type (translation, explanation, critique, etc.) */
-  type: 'translation' | 'explanation' | 'critique' | 'improvement' | 'decomposition' | 'synthesis' | 'other';
+  type:
+    | 'translation'
+    | 'explanation'
+    | 'critique'
+    | 'improvement'
+    | 'decomposition'
+    | 'synthesis'
+    | 'other';
   /** Start timestamp */
   startTime: number;
   /** End timestamp */
@@ -110,9 +117,11 @@ export class PerformanceProfiler {
   private llmCalls: LLMCallMetrics[] = [];
   private z3Calls: Z3CallMetrics[] = [];
   private enabled: boolean;
+  private readonly maxMetrics: number;
 
-  constructor(enabled: boolean = true) {
+  constructor(enabled: boolean = true, maxMetrics: number = 10000) {
     this.enabled = enabled;
+    this.maxMetrics = maxMetrics;
   }
 
   /**
@@ -121,6 +130,11 @@ export class PerformanceProfiler {
   recordLLMCall(metrics: LLMCallMetrics): void {
     if (!this.enabled) return;
     this.llmCalls.push(metrics);
+
+    // Implement circular buffer: remove oldest if limit exceeded
+    if (this.llmCalls.length > this.maxMetrics) {
+      this.llmCalls.shift();
+    }
   }
 
   /**
@@ -129,14 +143,19 @@ export class PerformanceProfiler {
   recordZ3Call(metrics: Z3CallMetrics): void {
     if (!this.enabled) return;
     this.z3Calls.push(metrics);
+
+    // Implement circular buffer: remove oldest if limit exceeded
+    if (this.z3Calls.length > this.maxMetrics) {
+      this.z3Calls.shift();
+    }
   }
 
   /**
    * Start timing an LLM call
    */
   startLLMCall(
-    model: string,
-    type: LLMCallMetrics['type']
+    _model: string,
+    _type: LLMCallMetrics['type']
   ): { callId: string; startTime: number } {
     const callId = `llm_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const startTime = performance.now();
@@ -179,7 +198,10 @@ export class PerformanceProfiler {
   /**
    * Start timing a Z3 call
    */
-  startZ3Call(backend: 'smt2' | 'json', formulaSize: number): { callId: string; startTime: number } {
+  startZ3Call(
+    _backend: 'smt2' | 'json',
+    _formulaSize: number
+  ): { callId: string; startTime: number } {
     const callId = `z3_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const startTime = performance.now();
     return { callId, startTime };
@@ -237,9 +259,9 @@ export class PerformanceProfiler {
     const z3Metrics = this.z3Calls;
 
     // LLM metrics
-    const successfulLLMCalls = llmMetrics.filter(m => m.success).length;
+    const successfulLLMCalls = llmMetrics.filter((m) => m.success).length;
     const failedLLMCalls = llmMetrics.length - successfulLLMCalls;
-    const llmTimes = llmMetrics.map(m => m.duration);
+    const llmTimes = llmMetrics.map((m) => m.duration);
     const totalLLMTime = llmTimes.reduce((sum, t) => sum + t, 0);
     const averageLLMTime = llmTimes.length > 0 ? totalLLMTime / llmTimes.length : 0;
     const minLLMTime = llmTimes.length > 0 ? Math.min(...llmTimes) : 0;
@@ -250,14 +272,14 @@ export class PerformanceProfiler {
     const totalCompletionTokens = llmMetrics.reduce((sum, m) => sum + (m.completionTokens || 0), 0);
 
     const callsByType: Record<string, number> = {};
-    llmMetrics.forEach(m => {
+    llmMetrics.forEach((m) => {
       callsByType[m.type] = (callsByType[m.type] || 0) + 1;
     });
 
     // Z3 metrics
-    const successfulZ3Calls = z3Metrics.filter(m => m.success).length;
+    const successfulZ3Calls = z3Metrics.filter((m) => m.success).length;
     const failedZ3Calls = z3Metrics.length - successfulZ3Calls;
-    const z3Times = z3Metrics.map(m => m.duration);
+    const z3Times = z3Metrics.map((m) => m.duration);
     const totalZ3Time = z3Times.reduce((sum, t) => sum + t, 0);
     const averageZ3Time = z3Times.length > 0 ? totalZ3Time / z3Times.length : 0;
     const minZ3Time = z3Times.length > 0 ? Math.min(...z3Times) : 0;
@@ -339,15 +361,34 @@ Performance Breakdown:
   }
 
   /**
+   * Clean up metrics older than specified age
+   * @param maxAgeMs - Maximum age in milliseconds (default: 24 hours)
+   * @returns Number of metrics removed
+   */
+  cleanupOldMetrics(maxAgeMs: number = 24 * 60 * 60 * 1000): number {
+    const cutoff = Date.now() - maxAgeMs;
+    const initialCount = this.llmCalls.length + this.z3Calls.length;
+
+    this.llmCalls = this.llmCalls.filter((m) => m.endTime > cutoff);
+    this.z3Calls = this.z3Calls.filter((m) => m.endTime > cutoff);
+
+    return initialCount - (this.llmCalls.length + this.z3Calls.length);
+  }
+
+  /**
    * Export metrics to JSON
    */
   exportJSON(): string {
-    return JSON.stringify({
-      llmCalls: this.llmCalls,
-      z3Calls: this.z3Calls,
-      aggregated: this.getAggregatedMetrics(),
-      timestamp: new Date().toISOString(),
-    }, null, 2);
+    return JSON.stringify(
+      {
+        llmCalls: this.llmCalls,
+        z3Calls: this.z3Calls,
+        aggregated: this.getAggregatedMetrics(),
+        timestamp: new Date().toISOString(),
+      },
+      null,
+      2
+    );
   }
 
   /**
@@ -382,7 +423,7 @@ let globalProfiler: PerformanceProfiler | null = null;
  */
 export function getGlobalProfiler(): PerformanceProfiler {
   if (!globalProfiler) {
-    globalProfiler = new PerformanceProfiler(false);  // Disabled by default
+    globalProfiler = new PerformanceProfiler(false); // Disabled by default
   }
   return globalProfiler;
 }
@@ -415,10 +456,7 @@ export async function measureAsync<T>(
 /**
  * Measure sync function execution time
  */
-export function measureSync<T>(
-  fn: () => T,
-  label?: string
-): { result: T; duration: number } {
+export function measureSync<T>(fn: () => T, label?: string): { result: T; duration: number } {
   const start = performance.now();
   const result = fn();
   const duration = performance.now() - start;

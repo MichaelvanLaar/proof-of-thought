@@ -72,7 +72,11 @@ async function buildAll() {
       target: ['es2020', 'chrome90', 'firefox88', 'safari14'],
       format: 'esm',
       outfile: 'dist/browser.js',
-      external: ['openai'], // Let bundlers handle OpenAI SDK
+      external: [
+        'openai', // Let bundlers handle OpenAI SDK
+        'child_process', // Node.js built-in, not available in browser
+        'z3-solver', // Native Z3 package, only used in Node.js
+      ],
       sourcemap: true,
       minify: false,
       metafile: true,
@@ -93,7 +97,11 @@ async function buildAll() {
       target: ['es2020', 'chrome90', 'firefox88', 'safari14'],
       format: 'esm',
       outfile: 'dist/browser.min.js',
-      external: ['openai'],
+      external: [
+        'openai',
+        'child_process', // Node.js built-in, not available in browser
+        'z3-solver', // Native Z3 package, only used in Node.js
+      ],
       sourcemap: true,
       minify: true,
       minifyWhitespace: true,

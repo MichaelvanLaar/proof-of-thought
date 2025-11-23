@@ -137,9 +137,7 @@ export class WASMLoader {
       const response = await this.fetchWithTimeout(url, this.config.timeout);
 
       if (!response.ok) {
-        throw new Error(
-          `Failed to fetch WASM: ${response.status} ${response.statusText}`
-        );
+        throw new Error(`Failed to fetch WASM: ${response.status} ${response.statusText}`);
       }
 
       // Cache the response
@@ -149,10 +147,7 @@ export class WASMLoader {
 
       // Compile WASM module
       const module = await this.compileWASM(response);
-      const size = parseInt(
-        response.headers.get('content-length') || '0',
-        10
-      );
+      const size = parseInt(response.headers.get('content-length') || '0', 10);
 
       return {
         module,
@@ -170,14 +165,9 @@ export class WASMLoader {
   /**
    * Compile WASM from response
    */
-  private async compileWASM(
-    response: Response
-  ): Promise<WebAssembly.Module> {
+  private async compileWASM(response: Response): Promise<WebAssembly.Module> {
     // Use streaming compilation if supported
-    if (
-      this.config.streaming &&
-      typeof WebAssembly.compileStreaming === 'function'
-    ) {
+    if (this.config.streaming && typeof WebAssembly.compileStreaming === 'function') {
       try {
         return await WebAssembly.compileStreaming(response);
       } catch (error) {
@@ -194,10 +184,7 @@ export class WASMLoader {
   /**
    * Fetch with timeout
    */
-  private async fetchWithTimeout(
-    url: string,
-    timeout: number
-  ): Promise<Response> {
+  private async fetchWithTimeout(url: string, timeout: number): Promise<Response> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
@@ -233,10 +220,7 @@ export class WASMLoader {
       }
 
       const module = await this.compileWASM(response);
-      const size = parseInt(
-        response.headers.get('content-length') || '0',
-        10
-      );
+      const size = parseInt(response.headers.get('content-length') || '0', 10);
 
       return { module, size };
     } catch (error) {
@@ -248,10 +232,7 @@ export class WASMLoader {
   /**
    * Cache response
    */
-  private async cacheResponse(
-    url: string,
-    response: Response
-  ): Promise<void> {
+  private async cacheResponse(url: string, response: Response): Promise<void> {
     try {
       const cache = await caches.open(this.config.cacheName);
       await cache.put(url, response);
@@ -337,10 +318,7 @@ export function lazyLoadWASM(
  *
  * Starts loading the WASM module without blocking.
  */
-export function preloadWASM(
-  url: string,
-  config?: WASMLoaderConfig
-): Promise<void> {
+export function preloadWASM(url: string, config?: WASMLoaderConfig): Promise<void> {
   const loader = new WASMLoader({ ...config, wasmUrl: url });
   return loader.preload();
 }

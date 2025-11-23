@@ -44,6 +44,12 @@ export interface SMT2BackendConfig {
    * @default false
    */
   verbose?: boolean;
+
+  /**
+   * Maximum formula size in bytes
+   * @default 1048576 (1MB)
+   */
+  maxFormulaSize?: number;
 }
 
 /**
@@ -63,7 +69,28 @@ export class SMT2Backend implements Backend {
       temperature: config.temperature ?? 0.0,
       maxTokens: config.maxTokens ?? 2048,
       verbose: config.verbose ?? false,
+      maxFormulaSize: config.maxFormulaSize ?? 1048576, // 1MB default
     };
+  }
+
+  /**
+   * Sanitize user input to prevent prompt injection attacks
+   */
+  private sanitizeInput(input: string): string {
+    const MAX_INPUT_LENGTH = 10000;
+
+    // Truncate to maximum length
+    let sanitized = input.substring(0, MAX_INPUT_LENGTH);
+
+    // Remove potential prompt injection patterns
+    sanitized = sanitized
+      .replace(/ignore\s+previous\s+instructions/gi, '')
+      .replace(/ignore\s+all\s+previous/gi, '')
+      .replace(/disregard\s+previous/gi, '')
+      .replace(/system\s*:/gi, '')
+      .replace(/assistant\s*:/gi, '');
+
+    return sanitized.trim();
   }
 
   /**
@@ -74,7 +101,11 @@ export class SMT2Backend implements Backend {
       throw new ValidationError('Question cannot be empty', 'question');
     }
 
-    const prompt = this.buildTranslationPrompt(question, context);
+    // Sanitize inputs to prevent prompt injection
+    const safeQuestion = this.sanitizeInput(question);
+    const safeContext = this.sanitizeInput(context);
+
+    const prompt = this.buildTranslationPrompt(safeQuestion, safeContext);
 
     try {
       const response = await this.config.client.chat.completions.create({
@@ -173,7 +204,7 @@ export class SMT2Backend implements Backend {
       });
 
       return response.choices[0]?.message?.content ?? 'Unable to generate explanation';
-    } catch (error) {
+    } catch (_error) {
       // If explanation fails, return a basic explanation
       return this.generateBasicExplanation(result);
     }
@@ -250,16 +281,27 @@ Result: ${result.result.toUpperCase()}
    * Extract SMT2 formula from LLM response (handle code blocks)
    */
   private extractSMT2Formula(content: string): string {
+    // Validate content size to prevent ReDoS attacks
+    const MAX_CONTENT_LENGTH = 100000; // 100KB
+    if (content.length > MAX_CONTENT_LENGTH) {
+      throw new ValidationError(
+        `LLM response too large (${content.length} chars), maximum is ${MAX_CONTENT_LENGTH}`,
+        'content'
+      );
+    }
+
     // Try to extract from code block first
     const codeBlockMatch = content.match(/```(?:smt2?|lisp)?\s*\n([\s\S]*?)\n```/);
     if (codeBlockMatch) {
       return codeBlockMatch[1]?.trim() ?? '';
     }
 
-    // If no code block, look for SMT2-like content
-    const smt2Match = content.match(/\(declare-[\s\S]*?\(check-sat\)/);
-    if (smt2Match) {
-      return smt2Match[0];
+    // If no code block, use string methods to avoid ReDoS
+    const declareIndex = content.indexOf('(declare-');
+    const checkSatIndex = content.indexOf('(check-sat)');
+
+    if (declareIndex !== -1 && checkSatIndex !== -1 && checkSatIndex > declareIndex) {
+      return content.substring(declareIndex, checkSatIndex + 11).trim();
     }
 
     // Return the whole content if it looks like SMT2
@@ -271,11 +313,20 @@ Result: ${result.result.toUpperCase()}
   }
 
   /**
-   * Validate SMT2 formula syntax
+   * Validate SMT2 formula syntax and size
    */
   private validateSMT2Formula(formula: string): void {
     if (!formula || formula.trim().length === 0) {
       throw new ValidationError('SMT2 formula is empty', 'formula');
+    }
+
+    // Check formula size to prevent DoS attacks
+    const formulaSize = Buffer.byteLength(formula, 'utf8');
+    if (formulaSize > this.config.maxFormulaSize) {
+      throw new ValidationError(
+        `Formula size (${formulaSize} bytes) exceeds maximum allowed size (${this.config.maxFormulaSize} bytes)`,
+        'formula'
+      );
     }
 
     // Basic syntax validation

@@ -320,11 +320,7 @@ export class PreloadManager {
   /**
    * Add a loader with preload strategy
    */
-  add<T>(
-    loader: LazyLoader<T>,
-    strategy: PreloadStrategy = 'idle',
-    priority: number = 0
-  ): void {
+  add<T>(loader: LazyLoader<T>, strategy: PreloadStrategy = 'idle', priority: number = 0): void {
     this.loaders.push({ loader, strategy, priority });
     this.loaders.sort((a, b) => b.priority - a.priority);
   }

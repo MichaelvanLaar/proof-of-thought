@@ -63,7 +63,7 @@ export class LeastToMost {
 
   constructor(
     private client: OpenAI,
-    // eslint-disable-next-line no-unused-vars
+
     private reasoningEngine: (_question: string, _context: string) => Promise<ReasoningResponse>,
     config: LeastToMostConfig = {}
   ) {
@@ -271,7 +271,7 @@ Provide ONLY the final synthesized answer, no explanations of the process.`;
 
       const finalAnswer = completion.choices[0]?.message?.content || '';
       return finalAnswer.trim();
-    } catch (error) {
+    } catch (_error) {
       // Fallback: use the last level's answer
       const lastSolution = solutions[solutions.length - 1];
       return lastSolution?.answer || 'Unable to synthesize final answer';

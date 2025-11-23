@@ -75,6 +75,7 @@ export class BatchProcessor<T, R> {
   private processing = false;
   private timer: NodeJS.Timeout | null = null;
   private activeBatches = 0;
+  private concurrencySemaphore: Array<() => void> = [];
 
   // Statistics
   private totalItems = 0;
@@ -83,10 +84,7 @@ export class BatchProcessor<T, R> {
   private config: Required<BatchConfig>;
   private processFn: (items: T[]) => Promise<R[]>;
 
-  constructor(
-    processFn: (items: T[]) => Promise<R[]>,
-    config: BatchConfig = {}
-  ) {
+  constructor(processFn: (items: T[]) => Promise<R[]>, config: BatchConfig = {}) {
     this.processFn = processFn;
     this.config = {
       maxBatchSize: config.maxBatchSize || 10,
@@ -94,6 +92,30 @@ export class BatchProcessor<T, R> {
       maxConcurrency: config.maxConcurrency || 5,
       enableStats: config.enableStats !== false,
     };
+  }
+
+  /**
+   * Acquire a slot for batch processing (concurrency control)
+   */
+  private async acquireBatchSlot(): Promise<void> {
+    if (this.activeBatches < this.config.maxConcurrency) {
+      return;
+    }
+
+    return new Promise<void>((resolve) => {
+      this.concurrencySemaphore.push(resolve);
+    });
+  }
+
+  /**
+   * Release a batch processing slot
+   */
+  private releaseBatchSlot(): void {
+    this.activeBatches--;
+    const next = this.concurrencySemaphore.shift();
+    if (next) {
+      next();
+    }
   }
 
   /**
@@ -111,13 +133,13 @@ export class BatchProcessor<T, R> {
       // Start timer if not already running
       if (!this.timer) {
         this.timer = setTimeout(() => {
-          this.flush();
+          void this.flush();
         }, this.config.maxWaitTime);
       }
 
       // If batch is full, flush immediately
       if (this.queue.length >= this.config.maxBatchSize) {
-        this.flush();
+        void this.flush();
       }
     });
   }
@@ -137,10 +159,8 @@ export class BatchProcessor<T, R> {
       return;
     }
 
-    // Wait if max concurrency reached
-    while (this.activeBatches >= this.config.maxConcurrency) {
-      await new Promise((resolve) => setTimeout(resolve, 10));
-    }
+    // Wait for available concurrency slot (non-blocking)
+    await this.acquireBatchSlot();
 
     this.processing = true;
 
@@ -168,17 +188,17 @@ export class BatchProcessor<T, R> {
     } catch (error) {
       // Reject all promises in batch
       batch.forEach((item) => {
-        item.reject(
-          error instanceof Error ? error : new Error(String(error))
-        );
+        item.reject(error instanceof Error ? error : new Error(String(error)));
       });
     } finally {
-      this.activeBatches--;
+      this.releaseBatchSlot();
       this.processing = false;
 
       // Process next batch if queue has items
       if (this.queue.length > 0) {
-        setImmediate(() => this.flush());
+        setImmediate(() => {
+          void this.flush();
+        });
       }
     }
   }
@@ -190,8 +210,7 @@ export class BatchProcessor<T, R> {
     return {
       totalItems: this.totalItems,
       totalBatches: this.totalBatches,
-      averageBatchSize:
-        this.totalBatches > 0 ? this.totalItems / this.totalBatches : 0,
+      averageBatchSize: this.totalBatches > 0 ? this.totalItems / this.totalBatches : 0,
       queuedItems: this.queue.length,
       activeBatches: this.activeBatches,
     };
@@ -276,9 +295,7 @@ export class LLMBatcher {
   /**
    * Process a batch of LLM requests
    */
-  private async processBatch(
-    requests: LLMRequest[]
-  ): Promise<LLMResponse[]> {
+  private async processBatch(requests: LLMRequest[]): Promise<LLMResponse[]> {
     // Process requests in parallel with Promise.all
     const promises = requests.map(async (request) => {
       const completion = await this.client.chat.completions.create({
@@ -368,12 +385,10 @@ export class Z3Batcher {
   /**
    * Process a batch of Z3 requests
    */
-  private async processBatch(
-    requests: Z3Request[]
-  ): Promise<VerificationResult[]> {
+  private async processBatch(requests: Z3Request[]): Promise<VerificationResult[]> {
     // Process requests in parallel
     const promises = requests.map(async (request) => {
-      return this.adapter.verify(request.formula);
+      return this.adapter.executeSMT2(request.formula);
     });
 
     return Promise.all(promises);

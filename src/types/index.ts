@@ -108,6 +108,11 @@ export interface ProofOfThoughtConfig {
    * Custom Z3 executable path (Node.js only)
    */
   z3Path?: string;
+
+  /**
+   * Custom Z3 adapter instance (useful for testing with mocks)
+   */
+  z3Adapter?: Z3Adapter;
 }
 
 /**

@@ -70,7 +70,7 @@ describe('JSONBackend', () => {
     it('should translate natural language to JSON formula', async () => {
       const client = createMockOpenAIClient();
       const z3Adapter = createMockZ3Adapter();
-      const backend = new JSONBackend(client, z3Adapter);
+      const backend = new JSONBackend({ client, z3Adapter });
 
       const formula = await backend.translate(
         'Is Socrates mortal?',
@@ -104,7 +104,7 @@ describe('JSONBackend', () => {
       } as unknown as OpenAI;
 
       const z3Adapter = createMockZ3Adapter();
-      const backend = new JSONBackend(client, z3Adapter);
+      const backend = new JSONBackend({ client, z3Adapter });
 
       const formula = await backend.translate('test', 'context');
       expect(formula).toBeDefined();
@@ -128,7 +128,7 @@ describe('JSONBackend', () => {
       } as unknown as OpenAI;
 
       const z3Adapter = createMockZ3Adapter();
-      const backend = new JSONBackend(client, z3Adapter);
+      const backend = new JSONBackend({ client, z3Adapter });
 
       await expect(backend.translate('test', 'context')).rejects.toThrow('Failed to parse');
     });
@@ -151,7 +151,7 @@ describe('JSONBackend', () => {
       } as unknown as OpenAI;
 
       const z3Adapter = createMockZ3Adapter();
-      const backend = new JSONBackend(client, z3Adapter);
+      const backend = new JSONBackend({ client, z3Adapter });
 
       await expect(backend.translate('test', 'context')).rejects.toThrow('invalid JSON program');
     });
@@ -161,7 +161,7 @@ describe('JSONBackend', () => {
     it('should verify a JSON formula', async () => {
       const client = createMockOpenAIClient();
       const z3Adapter = createMockZ3Adapter();
-      const backend = new JSONBackend(client, z3Adapter);
+      const backend = new JSONBackend({ client, z3Adapter });
 
       const formula: JSONProgram = {
         sorts: {
@@ -189,7 +189,7 @@ describe('JSONBackend', () => {
     it('should explain sat result with model', async () => {
       const client = createMockOpenAIClient();
       const z3Adapter = createMockZ3Adapter();
-      const backend = new JSONBackend(client, z3Adapter);
+      const backend = new JSONBackend({ client, z3Adapter });
 
       const explanation = await backend.explain({
         result: 'sat',
@@ -205,7 +205,7 @@ describe('JSONBackend', () => {
     it('should explain sat result without model', async () => {
       const client = createMockOpenAIClient();
       const z3Adapter = createMockZ3Adapter();
-      const backend = new JSONBackend(client, z3Adapter);
+      const backend = new JSONBackend({ client, z3Adapter });
 
       const explanation = await backend.explain({
         result: 'sat',
@@ -219,7 +219,7 @@ describe('JSONBackend', () => {
     it('should explain unsat result', async () => {
       const client = createMockOpenAIClient();
       const z3Adapter = createMockZ3Adapter();
-      const backend = new JSONBackend(client, z3Adapter);
+      const backend = new JSONBackend({ client, z3Adapter });
 
       const explanation = await backend.explain({
         result: 'unsat',
@@ -233,7 +233,7 @@ describe('JSONBackend', () => {
     it('should explain unknown result', async () => {
       const client = createMockOpenAIClient();
       const z3Adapter = createMockZ3Adapter();
-      const backend = new JSONBackend(client, z3Adapter);
+      const backend = new JSONBackend({ client, z3Adapter });
 
       const explanation = await backend.explain({
         result: 'unknown',
@@ -249,7 +249,9 @@ describe('JSONBackend', () => {
     it('should get configuration', () => {
       const client = createMockOpenAIClient();
       const z3Adapter = createMockZ3Adapter();
-      const backend = new JSONBackend(client, z3Adapter, {
+      const backend = new JSONBackend({
+        client,
+        z3Adapter,
         model: 'gpt-4o',
         temperature: 0.5,
       });
@@ -262,7 +264,7 @@ describe('JSONBackend', () => {
     it('should set configuration', () => {
       const client = createMockOpenAIClient();
       const z3Adapter = createMockZ3Adapter();
-      const backend = new JSONBackend(client, z3Adapter);
+      const backend = new JSONBackend({ client, z3Adapter });
 
       backend.setConfig({ temperature: 0.7 });
       const config = backend.getConfig();

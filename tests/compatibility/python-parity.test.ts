@@ -9,8 +9,8 @@ import { describe, it, expect } from 'vitest';
 import { ProofOfThought } from '../../src/reasoning/proof-of-thought.js';
 import { SMT2Backend } from '../../src/backends/smt2-backend.js';
 import { JSONBackend } from '../../src/backends/json-backend.js';
-import { createMockSMT2Client, createMockJSONClient } from '../helpers/mock-openai.js';
-import { createUnsatMock, createSatMock } from '../helpers/z3-mock.js';
+import { createMockSMT2Client, createMockJSONClient, createMockOpenAIClient } from '../helpers/mock-openai.js';
+import { createUnsatMock, createSatMock, MockZ3Adapter } from '../helpers/z3-mock.js';
 import simpleTests from '../fixtures/reasoning/simple.json';
 import mathematicalTests from '../fixtures/reasoning/mathematical.json';
 import type { SMT2Formula, JSONFormula } from '../../src/types/index.js';
@@ -32,14 +32,15 @@ describe('Python Compatibility Tests', () => {
 
     it('should have compatible query method signature', async () => {
       const mockClient = createMockSMT2Client();
+      const mockZ3 = createUnsatMock();
+      const mockBackend = new SMT2Backend({
+        client: mockClient,
+        z3Adapter: mockZ3,
+      });
       const pot = new ProofOfThought({
         client: mockClient,
-        backend: 'smt2',
+        backend: mockBackend,
       });
-
-      const mockZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      pot.backend.z3Adapter = mockZ3;
 
       // Python equivalent: pot.query(question, context)
       const response = await pot.query('Is Socrates mortal?', 'All humans are mortal.');
@@ -53,15 +54,43 @@ describe('Python Compatibility Tests', () => {
     });
 
     it('should have compatible batch method', async () => {
-      const mockClient = createMockSMT2Client();
-      const pot = new ProofOfThought({
-        client: mockClient,
-        backend: 'smt2',
+      // Create a mock with responses for 2 queries (formula + explanation for each)
+      const mockClient = createMockOpenAIClient({
+        responses: [
+          // First query: formula
+          {
+            content: `\`\`\`smt2
+(declare-const x Int)
+(assert (= x 5))
+(check-sat)
+(get-model)
+\`\`\``,
+          },
+          // First query: explanation
+          { content: 'The first conclusion is valid.' },
+          // Second query: formula
+          {
+            content: `\`\`\`smt2
+(declare-const y Int)
+(assert (= y 10))
+(check-sat)
+(get-model)
+\`\`\``,
+          },
+          // Second query: explanation
+          { content: 'The second conclusion is valid.' },
+        ],
       });
 
       const mockZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      pot.backend.z3Adapter = mockZ3;
+      const mockBackend = new SMT2Backend({
+        client: mockClient,
+        z3Adapter: mockZ3,
+      });
+      const pot = new ProofOfThought({
+        client: mockClient,
+        backend: mockBackend,
+      });
 
       // Python equivalent: pot.batch(queries)
       const queries: Array<[string, string]> = [
@@ -121,18 +150,21 @@ describe('Python Compatibility Tests', () => {
     it('should handle simple reasoning cases like Python', async () => {
       for (const testCase of simpleTests.testCases.slice(0, 3)) {
         const mockClient = createMockSMT2Client();
-        const pot = new ProofOfThought({
-          client: mockClient,
-          backend: 'smt2',
-        });
 
         // Mock Z3 based on expected verification
         const mockZ3 = testCase.expectedVerification === 'unsat'
           ? createUnsatMock()
           : createSatMock();
 
-        // @ts-expect-error - accessing private property for testing
-        pot.backend.z3Adapter = mockZ3;
+        const mockBackend = new SMT2Backend({
+          client: mockClient,
+          z3Adapter: mockZ3,
+        });
+
+        const pot = new ProofOfThought({
+          client: mockClient,
+          backend: mockBackend,
+        });
 
         const response = await pot.query(testCase.question, testCase.context);
 
@@ -151,17 +183,20 @@ describe('Python Compatibility Tests', () => {
     it('should handle mathematical reasoning cases like Python', async () => {
       for (const testCase of mathematicalTests.testCases.slice(0, 3)) {
         const mockClient = createMockSMT2Client();
-        const pot = new ProofOfThought({
-          client: mockClient,
-          backend: 'smt2',
-        });
 
         const mockZ3 = testCase.expectedVerification === 'unsat'
           ? createUnsatMock()
           : createSatMock();
 
-        // @ts-expect-error - accessing private property for testing
-        pot.backend.z3Adapter = mockZ3;
+        const mockBackend = new SMT2Backend({
+          client: mockClient,
+          z3Adapter: mockZ3,
+        });
+
+        const pot = new ProofOfThought({
+          client: mockClient,
+          backend: mockBackend,
+        });
 
         const response = await pot.query(testCase.question, testCase.context);
 
@@ -174,11 +209,13 @@ describe('Python Compatibility Tests', () => {
   describe('Backend Behavior Compatibility', () => {
     it('should produce SMT2 formulas with compatible structure', async () => {
       const mockClient = createMockSMT2Client();
-      const backend = new SMT2Backend(mockClient, {
+      const mockZ3 = createUnsatMock();
+      const backend = new SMT2Backend({
+        client: mockClient,
+        z3Adapter: mockZ3,
         model: 'gpt-4o',
         temperature: 0.0,
         maxTokens: 4096,
-        z3Timeout: 30000,
       });
 
       const formula = await backend.translate(
@@ -197,7 +234,10 @@ describe('Python Compatibility Tests', () => {
 
     it('should produce JSON DSL with compatible structure', async () => {
       const mockClient = createMockJSONClient();
-      const backend = new JSONBackend(mockClient, {
+      const mockZ3 = createUnsatMock();
+      const backend = new JSONBackend({
+        client: mockClient,
+        z3Adapter: mockZ3,
         model: 'gpt-4o',
         temperature: 0.0,
         maxTokens: 4096,
@@ -209,45 +249,59 @@ describe('Python Compatibility Tests', () => {
         'All humans are mortal. Socrates is human.'
       );
 
-      // Should be valid JSON
-      expect(() => JSON.parse(formula as string)).not.toThrow();
+      // Formula should be a JSON object with required structure
+      const parsed = formula as unknown;
+      expect(parsed).toBeDefined();
+      expect(typeof parsed).toBe('object');
 
-      // Should have required structure
-      const parsed = JSON.parse(formula as string);
-      expect(parsed).toHaveProperty('assertions');
-      expect(Array.isArray(parsed.assertions)).toBe(true);
+      // Should have required JSONProgram structure
+      const program = parsed as Record<string, unknown>;
+      expect(program).toHaveProperty('sorts');
+      expect(program).toHaveProperty('verifications');
+      expect(typeof program.sorts).toBe('object');
+      expect(typeof program.verifications).toBe('object');
     });
   });
 
   describe('Verification Result Compatibility', () => {
     it('should interpret sat/unsat results same as Python', async () => {
       const mockClient = createMockSMT2Client();
-      const backend = new SMT2Backend(mockClient, {
+
+      // Unsat result (valid conclusion)
+      const unsatZ3 = createUnsatMock();
+      const unsatBackend = new SMT2Backend({
+        client: mockClient,
+        z3Adapter: unsatZ3,
         model: 'gpt-4o',
         temperature: 0.0,
         maxTokens: 4096,
         z3Timeout: 30000,
       });
 
-      // Unsat result (valid conclusion)
-      const unsatZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      backend.z3Adapter = unsatZ3;
-
-      const formula = await backend.translate('test', 'test');
-      const unsatResult = await backend.verify(formula as SMT2Formula);
+      const formula = await unsatBackend.translate('test', 'test');
+      const unsatResult = await unsatBackend.verify(formula as SMT2Formula);
 
       expect(unsatResult.result).toBe('unsat');
 
       // Sat result (counterexample exists)
-      const satZ3 = createSatMock('(model\n  (define-fun x () Int 15)\n)');
-      // @ts-expect-error - accessing private property for testing
-      backend.z3Adapter = satZ3;
+      // Create a custom sat mock with model data
+      const satZ3 = new MockZ3Adapter({
+        result: 'sat',
+        model: '(model\n  (define-fun x () Int 15)\n)',
+      });
+      const satBackend = new SMT2Backend({
+        client: mockClient,
+        z3Adapter: satZ3,
+        model: 'gpt-4o',
+        temperature: 0.0,
+        maxTokens: 4096,
+        z3Timeout: 30000,
+      });
 
-      const satResult = await backend.verify(formula as SMT2Formula);
+      const satResult = await satBackend.verify(formula as SMT2Formula);
 
       expect(satResult.result).toBe('sat');
-      expect(satResult.model).toBeTruthy();
+      expect(satResult.rawOutput).toBeTruthy();
     });
   });
 
@@ -284,14 +338,15 @@ describe('Python Compatibility Tests', () => {
   describe('Proof Trace Compatibility', () => {
     it('should generate proof traces with sequential steps', async () => {
       const mockClient = createMockSMT2Client();
+      const mockZ3 = createUnsatMock();
+      const mockBackend = new SMT2Backend({
+        client: mockClient,
+        z3Adapter: mockZ3,
+      });
       const pot = new ProofOfThought({
         client: mockClient,
-        backend: 'smt2',
+        backend: mockBackend,
       });
-
-      const mockZ3 = createUnsatMock();
-      // @ts-expect-error - accessing private property for testing
-      pot.backend.z3Adapter = mockZ3;
 
       const response = await pot.query('test', 'test');
 
