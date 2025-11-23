@@ -173,7 +173,7 @@ export class SMT2Backend implements Backend {
       });
 
       return response.choices[0]?.message?.content ?? 'Unable to generate explanation';
-    } catch (error) {
+    } catch (_error) {
       // If explanation fails, return a basic explanation
       return this.generateBasicExplanation(result);
     }

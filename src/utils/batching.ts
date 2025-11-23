@@ -108,13 +108,13 @@ export class BatchProcessor<T, R> {
       // Start timer if not already running
       if (!this.timer) {
         this.timer = setTimeout(() => {
-          this.flush();
+          void this.flush();
         }, this.config.maxWaitTime);
       }
 
       // If batch is full, flush immediately
       if (this.queue.length >= this.config.maxBatchSize) {
-        this.flush();
+        void this.flush();
       }
     });
   }
@@ -173,7 +173,9 @@ export class BatchProcessor<T, R> {
 
       // Process next batch if queue has items
       if (this.queue.length > 0) {
-        setImmediate(() => this.flush());
+        setImmediate(() => {
+          void this.flush();
+        });
       }
     }
   }

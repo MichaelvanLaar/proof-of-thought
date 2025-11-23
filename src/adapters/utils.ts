@@ -14,7 +14,11 @@ export type RuntimeEnvironment = 'node' | 'browser' | 'unknown';
  */
 export function detectEnvironment(): RuntimeEnvironment {
   // Check for Node.js
-  if (typeof process !== 'undefined' && process.versions != null && process.versions.node != null) {
+  if (
+    typeof process !== 'undefined' &&
+    process.versions !== null &&
+    process.versions.node !== null
+  ) {
     return 'node';
   }
 

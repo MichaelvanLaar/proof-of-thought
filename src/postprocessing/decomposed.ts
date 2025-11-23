@@ -50,7 +50,7 @@ export class DecomposedPrompting {
 
   constructor(
     private client: OpenAI,
-    // eslint-disable-next-line no-unused-vars
+
     private reasoningEngine: (_question: string, _context: string) => Promise<ReasoningResponse>,
     config: DecomposedConfig = {}
   ) {
@@ -214,7 +214,7 @@ Guidelines:
 
     for (const line of lines) {
       // Match patterns like: "1. Question text" or "1) Question text"
-      const match = line.match(/^\s*(\d+)[\.)]\s*(.+?)(?:\s*\(depends on:\s*([0-9,\s]+)\))?\s*$/);
+      const match = line.match(/^\s*(\d+)[.)]\s*(.+?)(?:\s*\(depends on:\s*([0-9,\s]+)\))?\s*$/);
 
       if (match) {
         const order = parseInt(match[1]!, 10);

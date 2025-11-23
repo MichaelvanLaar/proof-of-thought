@@ -16,11 +16,28 @@ export default [
         project: './tsconfig.json',
       },
       globals: {
+        // Node.js globals
         console: 'readonly',
         process: 'readonly',
         Buffer: 'readonly',
         __dirname: 'readonly',
         __filename: 'readonly',
+        NodeJS: 'readonly',
+        setImmediate: 'readonly',
+        // Browser globals
+        window: 'readonly',
+        document: 'readonly',
+        fetch: 'readonly',
+        performance: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        requestIdleCallback: 'readonly',
+        WebAssembly: 'readonly',
+        caches: 'readonly',
+        Response: 'readonly',
+        Request: 'readonly',
       },
     },
     plugins: {
@@ -28,13 +45,17 @@ export default [
       prettier: prettier,
     },
     rules: {
+      // Disable base rule in favor of TypeScript version
+      'no-unused-vars': 'off',
+
       // TypeScript-specific rules
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
-          caughtErrorsIgnorePattern: '^_'
+          caughtErrorsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
         },
       ],
       '@typescript-eslint/no-explicit-any': 'error',

@@ -42,7 +42,7 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
       const { init } = await import('z3-solver');
       this.z3Instance = await init();
       this.initialized = true;
-    } catch (error) {
+    } catch (_error) {
       // If z3-solver not available, we'll fall back to CLI execution
       const available = await this.isAvailable();
       if (!available) {
