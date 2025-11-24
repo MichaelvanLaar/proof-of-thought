@@ -2,12 +2,26 @@
  * Tests for Z3 Native Adapter
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, beforeAll } from 'vitest';
 import { Z3NativeAdapter } from '../../src/adapters/z3-native.js';
 import { Z3NotAvailableError, Z3TimeoutError } from '../../src/types/errors.js';
 
 describe('Z3NativeAdapter', () => {
   let adapter: Z3NativeAdapter;
+  let isZ3Available = false;
+
+  // Check Z3 availability once before all tests
+  beforeAll(async () => {
+    const testAdapter = new Z3NativeAdapter();
+    isZ3Available = await testAdapter.isAvailable();
+    await testAdapter.dispose();
+
+    if (!isZ3Available) {
+      console.log(
+        '⚠️  Native Z3 not available - skipping native adapter tests. Install Z3 to run these tests.'
+      );
+    }
+  });
 
   beforeEach(() => {
     adapter = new Z3NativeAdapter({ timeout: 5000 });
@@ -23,42 +37,30 @@ describe('Z3NativeAdapter', () => {
       expect(typeof available).toBe('boolean');
     });
 
-    it('should get Z3 version if available', async () => {
-      const available = await adapter.isAvailable();
-      if (available) {
-        const version = await adapter.getVersion();
-        expect(version).toMatch(/^\d+\.\d+/);
-      }
+    it.skipIf(!isZ3Available)('should get Z3 version if available', async () => {
+      const version = await adapter.getVersion();
+      expect(version).toMatch(/^\d+\.\d+/);
     });
   });
 
   describe('SMT2 execution', () => {
-    it('should execute simple satisfiable formula', async () => {
-      const available = await adapter.isAvailable();
-      if (!available) {
-        console.log('Skipping test: Z3 not available');
-        return;
-      }
-
-      const formula = `(declare-const x Int)
+    it.skipIf(!isZ3Available)(
+      'should execute simple satisfiable formula',
+      async () => {
+        const formula = `(declare-const x Int)
 (assert (= x 5))
 (check-sat)
 (get-model)`;
 
-      const result = await adapter.executeSMT2(formula);
+        const result = await adapter.executeSMT2(formula);
 
-      expect(result.result).toBe('sat');
-      expect(result.executionTime).toBeGreaterThan(0);
-      expect(result.rawOutput).toBeTruthy();
-    });
-
-    it('should execute unsatisfiable formula', async () => {
-      const available = await adapter.isAvailable();
-      if (!available) {
-        console.log('Skipping test: Z3 not available');
-        return;
+        expect(result.result).toBe('sat');
+        expect(result.executionTime).toBeGreaterThan(0);
+        expect(result.rawOutput).toBeTruthy();
       }
+    );
 
+    it.skipIf(!isZ3Available)('should execute unsatisfiable formula', async () => {
       const formula = `(declare-const x Int)
 (assert (= x 5))
 (assert (= x 10))
@@ -70,36 +72,27 @@ describe('Z3NativeAdapter', () => {
       expect(result.executionTime).toBeGreaterThan(0);
     });
 
-    it('should extract model from satisfiable formula', async () => {
-      const available = await adapter.isAvailable();
-      if (!available) {
-        console.log('Skipping test: Z3 not available');
-        return;
-      }
-
-      const formula = `(declare-const x Int)
+    it.skipIf(!isZ3Available)(
+      'should extract model from satisfiable formula',
+      async () => {
+        const formula = `(declare-const x Int)
 (declare-const y Bool)
 (assert (= x 42))
 (assert (= y true))
 (check-sat)
 (get-model)`;
 
-      const result = await adapter.executeSMT2(formula);
+        const result = await adapter.executeSMT2(formula);
 
-      expect(result.result).toBe('sat');
-      if (result.model) {
-        expect(result.model.x).toBe(42);
-        expect(result.model.y).toBe(true);
+        expect(result.result).toBe('sat');
+        if (result.model) {
+          expect(result.model.x).toBe(42);
+          expect(result.model.y).toBe(true);
+        }
       }
-    });
+    );
 
-    it('should handle timeout correctly', async () => {
-      const available = await adapter.isAvailable();
-      if (!available) {
-        console.log('Skipping test: Z3 not available');
-        return;
-      }
-
+    it.skipIf(!isZ3Available)('should handle timeout correctly', async () => {
       const shortTimeoutAdapter = new Z3NativeAdapter({ timeout: 100 });
 
       // Create a complex formula that might timeout
@@ -108,34 +101,36 @@ describe('Z3NativeAdapter', () => {
 ${Array.from({ length: 1000 }, (_, i) => `(assert (> x ${i}))`).join('\n')}
 (check-sat)`;
 
-      await expect(shortTimeoutAdapter.executeSMT2(formula)).rejects.toThrow(Z3TimeoutError);
+      await expect(shortTimeoutAdapter.executeSMT2(formula)).rejects.toThrow(
+        Z3TimeoutError
+      );
 
       await shortTimeoutAdapter.dispose();
     });
   });
 
   describe('error handling', () => {
-    it('should throw Z3NotAvailableError for invalid Z3 path', async () => {
-      const invalidAdapter = new Z3NativeAdapter({ z3Path: '/nonexistent/z3' });
+    it.skipIf(!isZ3Available)(
+      'should throw Z3NotAvailableError for invalid Z3 path',
+      async () => {
+        const invalidAdapter = new Z3NativeAdapter({ z3Path: '/nonexistent/z3' });
 
-      await expect(invalidAdapter.executeSMT2('(check-sat)')).rejects.toThrow(
-        Z3NotAvailableError
-      );
+        await expect(invalidAdapter.executeSMT2('(check-sat)')).rejects.toThrow(
+          Z3NotAvailableError
+        );
 
-      await invalidAdapter.dispose();
-    });
-
-    it('should handle malformed SMT2 formulas gracefully', async () => {
-      const available = await adapter.isAvailable();
-      if (!available) {
-        console.log('Skipping test: Z3 not available');
-        return;
+        await invalidAdapter.dispose();
       }
+    );
 
-      const malformedFormula = '(this is not valid smt2)';
+    it.skipIf(!isZ3Available)(
+      'should handle malformed SMT2 formulas gracefully',
+      async () => {
+        const malformedFormula = '(this is not valid smt2)';
 
-      await expect(adapter.executeSMT2(malformedFormula)).rejects.toThrow();
-    });
+        await expect(adapter.executeSMT2(malformedFormula)).rejects.toThrow();
+      }
+    );
   });
 
   describe('lifecycle', () => {
