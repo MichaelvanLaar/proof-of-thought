@@ -44,8 +44,11 @@ export function createMockOpenAIClient(options: MockOpenAIOptions = {}): OpenAI 
     const messages = (params as { messages: Array<{ role: string; content: string }> }).messages;
     const lastMessage = messages[messages.length - 1];
 
-    // Use specific response if available, otherwise use default
-    const response = responses[callCount] || { content: defaultResponse };
+    // Use specific response if available, cycle through responses if needed, or use default
+    const response =
+      responses.length > 0
+        ? responses[callCount % responses.length]
+        : { content: defaultResponse };
     callCount++;
 
     return {
@@ -82,6 +85,9 @@ export function createMockOpenAIClient(options: MockOpenAIOptions = {}): OpenAI 
 
 /**
  * Creates a mock OpenAI client for SMT2 backend testing
+ *
+ * Uses smart detection of request type (translate vs explain) from prompt content
+ * to return appropriate responses regardless of call order (supports parallel execution).
  */
 export function createMockSMT2Client(customFormula?: string): OpenAI {
   const defaultFormula = `\`\`\`smt2
@@ -99,12 +105,54 @@ export function createMockSMT2Client(customFormula?: string): OpenAI {
   const defaultExplanation =
     'The logical statement is unsatisfiable, which means the conclusion is logically valid. If all humans are mortal and Socrates is human, then Socrates must be mortal.';
 
-  return createMockOpenAIClient({
-    responses: [
-      { content: customFormula || defaultFormula },
-      { content: defaultExplanation },
-    ],
+  const mockCreate = vi.fn().mockImplementation(async (params: unknown) => {
+    const messages = (params as { messages: Array<{ role: string; content: string }> }).messages;
+    const lastMessage = messages[messages.length - 1];
+    const content = lastMessage?.content || '';
+
+    // Detect request type from prompt content
+    let responseContent: string;
+    if (content.includes('Translate') || content.includes('SMT-LIB')) {
+      // Translation request -> return formula
+      responseContent = customFormula || defaultFormula;
+    } else if (content.includes('Explain') || content.includes('reasoning result')) {
+      // Explanation request -> return explanation
+      responseContent = defaultExplanation;
+    } else {
+      // Fallback
+      responseContent = defaultFormula;
+    }
+
+    return {
+      id: `chatcmpl-mock-${Date.now()}`,
+      object: 'chat.completion',
+      created: Math.floor(Date.now() / 1000),
+      model: 'gpt-4o',
+      choices: [
+        {
+          index: 0,
+          message: {
+            role: 'assistant',
+            content: responseContent,
+          },
+          finish_reason: 'stop',
+        },
+      ],
+      usage: {
+        prompt_tokens: content.length,
+        completion_tokens: responseContent.length,
+        total_tokens: content.length + responseContent.length,
+      },
+    };
   });
+
+  return {
+    chat: {
+      completions: {
+        create: mockCreate,
+      },
+    },
+  } as unknown as OpenAI;
 }
 
 /**

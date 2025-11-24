@@ -41,15 +41,14 @@ class MockBackend implements Backend {
 
   async verify(formula: Formula) {
     return {
-      result: 'sat' as const,
-      rawOutput: 'sat',
+      result: 'unsat' as const,
+      rawOutput: 'unsat',
       executionTime: 10,
-      model: { result: 'true' },
     };
   }
 
   async explain(result: any): Promise<string> {
-    return 'Mock explanation: The formula is satisfiable.';
+    return 'Mock explanation: The formula is valid (unsatisfiable).';
   }
 
   getConfig() {

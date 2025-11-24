@@ -35,7 +35,7 @@ This roadmap outlines the planned development priorities for the proof-of-though
 
 ---
 
-## v0.2.0 - Stability & Polish (Q1 2025)
+## v0.2.0 - Stability & Polish (Q1 2026)
 
 **Theme:** Production readiness and developer experience
 
@@ -91,7 +91,7 @@ This roadmap outlines the planned development priorities for the proof-of-though
 
 ---
 
-## v0.3.0 - Enhanced Integrations (Q2 2025)
+## v0.3.0 - Enhanced Integrations (Q2 2026)
 
 **Theme:** Expand LLM provider support and ecosystem integrations
 
@@ -124,7 +124,7 @@ This roadmap outlines the planned development priorities for the proof-of-though
 
 ---
 
-## v0.4.0 - Developer Tools (Q3 2025)
+## v0.4.0 - Developer Tools (Q3 2026)
 
 **Theme:** Tools and utilities for debugging and development
 
@@ -156,7 +156,7 @@ This roadmap outlines the planned development priorities for the proof-of-though
 
 ---
 
-## v1.0.0 - Production Release (Q4 2025)
+## v1.0.0 - Production Release (Q4 2026)
 
 **Theme:** Production-ready, stable, and feature-complete
 
@@ -246,7 +246,7 @@ This roadmap outlines the planned development priorities for the proof-of-though
 
 ## Community & Ecosystem
 
-### Short-term (2024-2025)
+### Short-term (2025-2026)
 
 - [ ] Establish contributor guidelines
 - [ ] Create community Discord/Slack
@@ -254,7 +254,7 @@ This roadmap outlines the planned development priorities for the proof-of-though
 - [ ] Monthly community calls
 - [ ] Mentorship program
 
-### Long-term (2025+)
+### Long-term (2026+)
 
 - [ ] Annual conference/meetup
 - [ ] Certification program
@@ -307,7 +307,7 @@ Features are prioritized based on:
 
 ## Changelog
 
-- **2024-11-23**: Initial roadmap created for v0.1.0 release
+- **2025-11-23**: Initial roadmap created for v0.1.0 release
 - Future updates will be tracked here
 
 ---

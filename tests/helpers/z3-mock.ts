@@ -97,14 +97,14 @@ export class MockZ3Adapter implements Z3Adapter {
  * Creates a mock Z3 adapter that returns sat
  */
 export function createSatMock(model = '(model\n  (define-fun x () Int 15)\n)'): MockZ3Adapter {
-  return new MockZ3Adapter({ result: 'sat', model });
+  return new MockZ3Adapter({ result: 'sat', model, delay: 1 });
 }
 
 /**
  * Creates a mock Z3 adapter that returns unsat
  */
 export function createUnsatMock(): MockZ3Adapter {
-  return new MockZ3Adapter({ result: 'unsat' });
+  return new MockZ3Adapter({ result: 'unsat', delay: 1 });
 }
 
 /**

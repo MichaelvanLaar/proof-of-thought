@@ -293,7 +293,10 @@ export class ProofOfThought {
         answer,
         formula: String(formula),
         proof,
-        isVerified: verificationResult.result === 'sat' || verificationResult.result === 'unsat',
+        // UNSAT means no counterexample exists -> verified
+        // SAT means counterexample exists -> not verified
+        // UNKNOWN means couldn't determine -> not verified
+        isVerified: verificationResult.result === 'unsat',
         backend: backendType,
         executionTime: Date.now() - startTime,
         model: verificationResult.model,
