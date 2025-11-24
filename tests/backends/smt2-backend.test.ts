@@ -4,7 +4,8 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { SMT2Backend } from '../../src/backends/smt2-backend.js';
-import { Z3NativeAdapter } from '../../src/adapters/z3-native.js';
+import { createZ3Adapter } from '../../src/adapters/utils.js';
+import type { Z3Adapter } from '../../src/types/index.js';
 import { ValidationError, TranslationError } from '../../src/types/errors.js';
 import type OpenAI from 'openai';
 
@@ -31,11 +32,11 @@ const createMockOpenAIClient = (mockResponse?: string): OpenAI => {
 
 describe('SMT2Backend', () => {
   let backend: SMT2Backend;
-  let z3Adapter: Z3NativeAdapter;
+  let z3Adapter: Z3Adapter;
   let mockClient: OpenAI;
 
-  beforeEach(() => {
-    z3Adapter = new Z3NativeAdapter({ timeout: 5000 });
+  beforeEach(async () => {
+    z3Adapter = await createZ3Adapter({ timeout: 5000 });
     mockClient = createMockOpenAIClient();
     backend = new SMT2Backend({
       client: mockClient,

@@ -265,7 +265,15 @@ npm run build
 
 ### Z3 Solver
 
-The Z3 solver is included as a dependency. For manual installation:
+**proof-of-thought works out-of-the-box** with automatic Z3 adapter selection:
+
+- **Automatic Fallback**: Tries native Z3 first, falls back to WASM (z3-solver) if not available
+- **WASM Included**: The z3-solver package is included as a dependency
+- **No Manual Setup Required**: Just `npm install` and it works!
+
+#### For Better Performance (Optional)
+
+Install native Z3 for ~10x faster execution:
 
 ```bash
 # macOS
@@ -275,8 +283,10 @@ brew install z3
 sudo apt-get install z3
 
 # Windows
-# Download from https://github.com/Z3Prover/z3/releases
+Download from https://github.com/Z3Prover/z3/releases
 ```
+
+**Note**: Native Z3 is automatically detected and preferred when available. If not found, the library seamlessly falls back to the included WASM implementation.
 
 See [Z3 Installation Guide](docs/Z3_INSTALLATION.md) for details.
 

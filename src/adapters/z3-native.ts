@@ -285,41 +285,35 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
   }
 
   async isAvailable(): Promise<boolean> {
+    // Check if z3 CLI is available
     try {
-      // Try to import z3-solver
-      await import('z3-solver');
-      return true;
-    } catch {
-      // Check if z3 CLI is available
-      try {
-        const { spawn } = await import('child_process');
-        const z3Path = this.config.z3Path ?? 'z3';
+      const { spawn } = await import('child_process');
+      const z3Path = this.config.z3Path ?? 'z3';
 
-        return new Promise<boolean>((resolve) => {
-          const z3Process = spawn(z3Path, ['--version']);
-          let found = false;
+      return new Promise<boolean>((resolve) => {
+        const z3Process = spawn(z3Path, ['--version']);
+        let found = false;
 
-          z3Process.on('error', () => {
-            resolve(false);
-          });
-
-          z3Process.stdout.on('data', () => {
-            found = true;
-          });
-
-          z3Process.on('close', () => {
-            resolve(found);
-          });
-
-          // Timeout after 2 seconds
-          setTimeout(() => {
-            z3Process.kill();
-            resolve(false);
-          }, 2000);
+        z3Process.on('error', () => {
+          resolve(false);
         });
-      } catch {
-        return false;
-      }
+
+        z3Process.stdout.on('data', () => {
+          found = true;
+        });
+
+        z3Process.on('close', () => {
+          resolve(found);
+        });
+
+        // Timeout after 2 seconds
+        setTimeout(() => {
+          z3Process.kill();
+          resolve(false);
+        }, 2000);
+      });
+    } catch {
+      return false;
     }
   }
 

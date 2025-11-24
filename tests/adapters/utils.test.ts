@@ -26,10 +26,13 @@ describe('Environment Detection', () => {
     expect(isBrowser()).toBe(false);
   });
 
-  it('should create Z3 native adapter in Node.js', () => {
-    const adapter = createZ3Adapter();
+  it('should create Z3 adapter in Node.js (native or WASM fallback)', async () => {
+    const adapter = await createZ3Adapter();
     expect(adapter).toBeDefined();
-    expect(adapter.constructor.name).toBe('Z3NativeAdapter');
+    // Should be either native or WASM depending on what's available
+    expect(['Z3NativeAdapter', 'Z3WASMAdapter']).toContain(
+      adapter.constructor.name
+    );
   });
 });
 

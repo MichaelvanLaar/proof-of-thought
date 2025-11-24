@@ -1,6 +1,6 @@
 # Z3 Solver Installation Guide
 
-This guide provides platform-specific instructions for installing the Z3 theorem prover, which is required for **proof-of-thought**'s formal verification capabilities.
+This guide provides platform-specific instructions for installing the Z3 theorem prover for **proof-of-thought**'s formal verification capabilities.
 
 ## Table of Contents
 
@@ -20,13 +20,21 @@ This guide provides platform-specific instructions for installing the Z3 theorem
 
 Z3 is a high-performance theorem prover from Microsoft Research. **proof-of-thought** uses Z3 for formal verification of logical formulas.
 
+### ⚡ TL;DR: It Just Works
+
+**No manual installation required!** When you install proof-of-thought, the z3-solver package is automatically included as a dependency. The library uses intelligent adapter selection:
+
+1. **Tries native Z3 first** (if installed on your system) - ~10x faster
+2. **Falls back to WASM automatically** (via z3-solver package) - always available
+3. **Works in browsers** automatically via WebAssembly
+
 ### Installation Options
 
-The **proof-of-thought** library supports multiple Z3 installation methods:
+For better performance, you can optionally install native Z3:
 
-1. **npm package (z3-solver)** - Recommended for Node.js
-2. **System package manager** - For native CLI access
-3. **WASM (browser)** - For web applications
+1. **npm package (z3-solver)** - ✅ Already included as dependency
+2. **System package manager** - Optional, for ~10x faster native execution
+3. **WASM (browser)** - ✅ Already included, works automatically
 4. **Manual download** - For custom installations
 
 ## Quick Install

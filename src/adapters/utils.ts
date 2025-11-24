@@ -45,7 +45,10 @@ export function isBrowser(): boolean {
 }
 
 /**
- * Create appropriate Z3 adapter for current environment
+ * Create appropriate Z3 adapter for current environment with automatic fallback
+ *
+ * Tries native Z3 first in Node.js, falls back to WASM if not available.
+ * Always uses WASM in browser environments.
  *
  * @param config - Configuration options
  * @returns Z3 adapter instance for the current environment
@@ -56,21 +59,43 @@ export async function createZ3Adapter(config?: {
 }): Promise<Z3Adapter> {
   const env = detectEnvironment();
 
-  switch (env) {
-    case 'node': {
-      const { Z3NativeAdapter } = await import('./z3-native.js');
-      return new Z3NativeAdapter(config);
-    }
-    case 'browser': {
-      const { Z3WASMAdapter } = await import('./z3-wasm.js');
-      return new Z3WASMAdapter();
-    }
-    default: {
-      // Default to native adapter and let it fail if not available
-      const { Z3NativeAdapter } = await import('./z3-native.js');
-      return new Z3NativeAdapter(config);
-    }
+  if (env === 'browser') {
+    // Browser always uses WASM
+    const { Z3WASMAdapter } = await import('./z3-wasm.js');
+    return new Z3WASMAdapter({ timeout: config?.timeout });
   }
+
+  // Node.js: Try native first, fall back to WASM
+  try {
+    const { Z3NativeAdapter } = await import('./z3-native.js');
+    const nativeAdapter = new Z3NativeAdapter(config);
+
+    // Check if native Z3 is available
+    if (await nativeAdapter.isAvailable()) {
+      return nativeAdapter;
+    }
+  } catch (_error) {
+    // Native adapter import or initialization failed, try WASM
+  }
+
+  // Fall back to WASM adapter
+  try {
+    const { Z3WASMAdapter } = await import('./z3-wasm.js');
+    const wasmAdapter = new Z3WASMAdapter({ timeout: config?.timeout });
+
+    // Check if WASM is available
+    if (await wasmAdapter.isAvailable()) {
+      return wasmAdapter;
+    }
+  } catch (_error) {
+    // WASM adapter also failed
+  }
+
+  // If both failed, throw error
+  throw new Error(
+    'No Z3 adapter available. Install Z3 natively or ensure z3-solver package is installed.\n' +
+      getZ3InstallationInstructions()
+  );
 }
 
 /**
