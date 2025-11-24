@@ -55,7 +55,7 @@ export function createMockOpenAIClient(options: MockOpenAIOptions = {}): OpenAI 
       id: `chatcmpl-mock-${Date.now()}`,
       object: 'chat.completion',
       created: Math.floor(Date.now() / 1000),
-      model: 'gpt-4o',
+      model: 'gpt-5.1',
       choices: [
         {
           index: 0,
@@ -127,7 +127,7 @@ export function createMockSMT2Client(customFormula?: string): OpenAI {
       id: `chatcmpl-mock-${Date.now()}`,
       object: 'chat.completion',
       created: Math.floor(Date.now() / 1000),
-      model: 'gpt-4o',
+      model: 'gpt-5.1',
       choices: [
         {
           index: 0,

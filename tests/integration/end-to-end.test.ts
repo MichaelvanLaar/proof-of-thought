@@ -175,7 +175,7 @@ describe('End-to-End Integration Tests', () => {
 
       const config = pot.getConfig();
       expect(config.backend).toBe('smt2');
-      expect(config.model).toBe('gpt-4o');
+      expect(config.model).toBe('gpt-5.1');
       expect(config.temperature).toBe(0.0);
     });
 

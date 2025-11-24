@@ -119,7 +119,7 @@ export interface JSONBackendConfig {
 
   /**
    * LLM model to use
-   * @default 'gpt-4o'
+   * @default 'gpt-5.1'
    */
   model?: string;
 
@@ -162,7 +162,7 @@ export class JSONBackend implements Backend {
     this.config = {
       client: config.client,
       z3Adapter: config.z3Adapter,
-      model: config.model ?? 'gpt-4o',
+      model: config.model ?? 'gpt-5.1',
       temperature: config.temperature ?? 0.0,
       maxTokens: config.maxTokens ?? 4096,
       z3Timeout: config.z3Timeout ?? 30000,

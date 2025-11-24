@@ -24,7 +24,7 @@ npm run benchmark -- --benchmark prontoqa --backend smt2
 npm run benchmark -- \
   --benchmark <name>        # prontoqa, folio, proofwriter, conditionalqa, strategyqa, or all
   --backend <type>          # smt2 or json (default: smt2)
-  --model <name>            # OpenAI model (default: gpt-4o)
+  --model <name>            # OpenAI model (default: gpt-5.1)
   --temperature <number>    # LLM temperature (default: 0.0)
   --max-tokens <number>     # Max tokens (default: 4096)
   --z3-timeout <ms>         # Z3 timeout in ms (default: 30000)

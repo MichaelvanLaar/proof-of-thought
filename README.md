@@ -188,7 +188,7 @@ const response = await pot.query(
 │  └──────────────────┬──────────────────────────────────┘   │
 │                     │                                        │
 │  ┌──────────────────▼──────────────────────────────────┐   │
-│  │           LLM Translation (GPT-4)                    │   │
+│  │           LLM Translation (GPT-5.1)                  │   │
 │  │     • SMT2 Formula  OR  • JSON DSL                  │   │
 │  └──────────────────┬──────────────────────────────────┘   │
 │                     │                                        │
@@ -198,7 +198,7 @@ const response = await pot.query(
 │  └──────────────────┬──────────────────────────────────┘   │
 │                     │                                        │
 │  ┌──────────────────▼──────────────────────────────────┐   │
-│  │           LLM Explanation (GPT-4)                    │   │
+│  │           LLM Explanation (GPT-5.1)                  │   │
 │  │     Natural Language + Verification Result          │   │
 │  └──────────────────┬──────────────────────────────────┘   │
 │                     │                                        │
@@ -296,7 +296,7 @@ See [Z3 Installation Guide](docs/Z3_INSTALLATION.md) for details.
 const pot = new ProofOfThought({
   client: openAIClient,      // Required: OpenAI client
   backend: 'smt2',           // 'smt2' | 'json' (default: 'smt2')
-  model: 'gpt-4o',           // OpenAI model (default: 'gpt-4o')
+  model: 'gpt-5.1',          // OpenAI model (default: 'gpt-5.1')
   temperature: 0.0,          // 0.0-1.0 (default: 0.0)
   maxTokens: 4096,           // Max tokens (default: 4096)
   z3Timeout: 30000,          // Z3 timeout ms (default: 30000)

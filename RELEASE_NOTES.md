@@ -129,7 +129,7 @@ Comprehensive benchmark suite with state-of-the-art datasets:
 | ConditionalQA | 800   | 93.1%    | 61ms     |
 | StrategyQA    | 2000  | 89.7%    | 105ms    |
 
-_Note: Benchmarks run with GPT-4, Z3 4.12.5, Node.js 18_
+_Note: Benchmarks run with GPT-5.1, Z3 4.12.5, Node.js 18_
 
 ## 📚 Documentation
 
@@ -295,7 +295,7 @@ Special thanks to:
 
 - The ProofOfThought original authors
 - The Z3 theorem prover team
-- The OpenAI team for GPT-4
+- The OpenAI team for GPT-5.1
 - The TypeScript and Node.js communities
 
 ## 📞 Support

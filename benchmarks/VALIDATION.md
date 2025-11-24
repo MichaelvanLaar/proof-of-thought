@@ -44,7 +44,7 @@ export OPENAI_API_KEY="your-key-here"
 npm run benchmark -- \
   --benchmark all \
   --backend smt2 \
-  --model gpt-4o \
+  --model gpt-5.1 \
   --temperature 0.0 \
   --output-format json \
   --output-file results/ts-{benchmark}-smt2.json
@@ -139,7 +139,7 @@ Small differences between Python and TypeScript implementations are expected due
 If differences exceed acceptable variance:
 
 1. **Check Configuration**
-   - Verify same model (gpt-4o vs gpt-4)
+   - Verify same model (default: gpt-5.1)
    - Verify same temperature (0.0)
    - Verify same backend (smt2 vs json)
 
@@ -185,7 +185,7 @@ Document validation results in `benchmarks/RESULTS.md`:
 ## Environment
 - Python Version: 3.10.12
 - TypeScript/Node Version: 22.x
-- OpenAI Model: gpt-4o
+- OpenAI Model: gpt-5.1
 - Z3 Version: 4.12.5
 - Date: 2025-01-XX
 

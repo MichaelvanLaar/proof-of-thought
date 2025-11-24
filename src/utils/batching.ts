@@ -451,7 +451,7 @@ export class SubquestionBatcher {
   async processSubquestions(
     subquestions: string[],
     context: string,
-    model: string = 'gpt-4'
+    model: string = 'gpt-5.1'
   ): Promise<string[]> {
     const promises = subquestions.map((subquestion) => {
       return this.llmBatcher.request({

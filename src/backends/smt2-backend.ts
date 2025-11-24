@@ -23,7 +23,7 @@ export interface SMT2BackendConfig {
 
   /**
    * LLM model to use
-   * @default 'gpt-4o'
+   * @default 'gpt-5.1'
    */
   model?: string;
 
@@ -65,7 +65,7 @@ export class SMT2Backend implements Backend {
     this.config = {
       client: config.client,
       z3Adapter: config.z3Adapter,
-      model: config.model ?? 'gpt-4o',
+      model: config.model ?? 'gpt-5.1',
       temperature: config.temperature ?? 0.0,
       maxTokens: config.maxTokens ?? 2048,
       verbose: config.verbose ?? false,

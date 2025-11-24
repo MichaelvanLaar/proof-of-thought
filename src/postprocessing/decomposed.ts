@@ -135,7 +135,7 @@ export class DecomposedPrompting {
     const prompt = this.buildDecompositionPrompt(question, context);
 
     const response = await this.client.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-5.1',
       messages: [
         {
           role: 'system',
@@ -301,7 +301,7 @@ ${subAnswers
 Based on these sub-answers, provide a comprehensive answer to the original question. Synthesize the information logically and ensure the answer directly addresses the main question.`;
 
     const response = await this.client.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-5.1',
       messages: [
         {
           role: 'system',

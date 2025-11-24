@@ -91,7 +91,7 @@ const client = new OpenAI({
 const pot = new ProofOfThought({
   client,                    // Required: pass OpenAI client
   backend: 'smt2',
-  model: 'gpt-4o',
+  model: 'gpt-5.1',
   temperature: 0.0,
 });
 ```
@@ -181,7 +181,7 @@ pot = ProofOfThought(
 const pot = new ProofOfThought({
   client: openAIClient,      // Required
   backend: 'smt2',           // Type: 'smt2' | 'json'
-  model: 'gpt-4o',
+  model: 'gpt-5.1',
   temperature: 0.0,
   maxTokens: 4096,           // camelCase
   z3Timeout: 30000,          // camelCase
@@ -197,7 +197,7 @@ const pot = new ProofOfThought({
 |--------------------------|---------------------------|--------------------------------------|
 | `api_key`                | N/A (use `client`)        | Pass OpenAI client instead           |
 | `backend`                | `backend`                 | Same values: `'smt2'` or `'json'`    |
-| `model`                  | `model`                   | Default: `'gpt-4o'` (was `'gpt-4'`)  |
+| `model`                  | `model`                   | Default: `'gpt-5.1'`                 |
 | `temperature`            | `temperature`             | Same range: 0.0-1.0                  |
 | `max_tokens`             | `maxTokens`               | camelCase naming                     |
 | `z3_timeout`             | `z3Timeout`               | camelCase naming                     |
@@ -531,7 +531,7 @@ console.log(result.answer);
 ```typescript
 const pot = new ProofOfThought({
   backend: 'smt2',
-  model: 'gpt-4o',
+  model: 'gpt-5.1',
 });  // Error: client is required
 ```
 

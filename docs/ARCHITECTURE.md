@@ -22,7 +22,7 @@ This document describes the architecture and design of the **proof-of-thought** 
 
 **proof-of-thought** is a TypeScript neurosymbolic reasoning library (a port of the original ProofOfThought Python library) that combines:
 
-1. **LLM Translation** - Natural language → Formal logic (via GPT-4/GPT-4o)
+1. **LLM Translation** - Natural language → Formal logic (via GPT-5.1)
 2. **Formal Verification** - Theorem proving (via Z3 solver)
 3. **Natural Language Explanation** - Formal results → Human-readable answers
 4. **Postprocessing** - Optional enhancement methods for improved accuracy
@@ -163,7 +163,7 @@ Natural Language Input
     ↓
 LLM System Prompt (SMT2 expert persona)
     ↓
-GPT-4o Translation
+GPT-5.1 Translation
     ↓
 Extract SMT2 from response
     ↓

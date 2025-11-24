@@ -176,7 +176,7 @@ export class SelfRefine {
       this.getDefaultCritiquePrompt(answer, question, context, formula);
 
     const response = await this.client.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-5.1',
       messages: [
         {
           role: 'system',
@@ -222,7 +222,7 @@ Please provide an improved answer that addresses the critique while maintaining 
 Improved Answer:`;
 
     const response = await this.client.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-5.1',
       messages: [
         {
           role: 'system',

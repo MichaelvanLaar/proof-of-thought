@@ -161,7 +161,7 @@ Output ONLY the numbered list, no explanations.`;
 
     try {
       const completion = await this.client.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-5.1',
         temperature: 0.3,
         max_tokens: 1024,
         messages: [
@@ -261,7 +261,7 @@ Provide ONLY the final synthesized answer, no explanations of the process.`;
 
     try {
       const completion = await this.client.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-5.1',
         temperature: 0.2,
         max_tokens: 2048,
         messages: [

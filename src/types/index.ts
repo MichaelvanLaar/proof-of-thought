@@ -50,7 +50,7 @@ export interface ProofOfThoughtConfig {
 
   /**
    * LLM model to use for reasoning
-   * @default 'gpt-4o'
+   * @default 'gpt-5.1'
    */
   model?: string;
 

@@ -82,7 +82,7 @@ export class ProofOfThought {
     this.config = {
       client: config.client,
       backend: config.backend ?? 'smt2',
-      model: config.model ?? 'gpt-4o',
+      model: config.model ?? 'gpt-5.1',
       temperature: config.temperature ?? 0.0,
       maxTokens: config.maxTokens ?? 4096,
       z3Timeout: config.z3Timeout ?? 30000,

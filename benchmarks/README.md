@@ -133,7 +133,7 @@ npm run benchmark -- --benchmark all --max-tasks 10
 -b, --benchmark <name>     Benchmark to run (prontoqa, folio, proofwriter,
                            conditionalqa, strategyqa, or all) [default: all]
 --backend <type>           Backend to use (smt2 or json) [default: smt2]
---model <name>             OpenAI model to use [default: gpt-4o]
+--model <name>             OpenAI model to use [default: gpt-5.1]
 --temperature <number>     Temperature for LLM [default: 0.0]
 --max-tokens <number>      Max tokens for LLM [default: 4096]
 --z3-timeout <ms>          Z3 solver timeout [default: 30000]

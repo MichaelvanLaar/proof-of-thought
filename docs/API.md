@@ -38,7 +38,7 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const pot = new ProofOfThought({
   client,
   backend: 'smt2',
-  model: 'gpt-4o',
+  model: 'gpt-5.1',
   temperature: 0.0,
   maxTokens: 4096,
   z3Timeout: 30000,
@@ -138,7 +138,7 @@ getConfig(): ProofOfThoughtConfig
 ```typescript
 const config = pot.getConfig();
 console.log(config.backend);     // 'smt2' or 'json'
-console.log(config.model);       // 'gpt-4o'
+console.log(config.model);       // 'gpt-5.1'
 console.log(config.temperature); // 0.0
 ```
 
@@ -184,7 +184,7 @@ console.log(pot.isInitialized()); // true (after first query)
 interface ProofOfThoughtConfig {
   client: OpenAI;              // OpenAI client instance
   backend?: 'smt2' | 'json';   // Backend type (default: 'smt2')
-  model?: string;              // OpenAI model (default: 'gpt-4o')
+  model?: string;              // OpenAI model (default: 'gpt-5.1')
   temperature?: number;        // 0.0-1.0 (default: 0.0)
   maxTokens?: number;          // Max response tokens (default: 4096)
   z3Timeout?: number;          // Z3 timeout in ms (default: 30000)
@@ -199,7 +199,7 @@ interface ProofOfThoughtConfig {
   - `'smt2'`: SMT-LIB 2.0 format (best for formal logic)
   - `'json'`: JSON DSL format (best for complex structures)
 - **model**: OpenAI model name
-  - Recommended: `'gpt-4o'`, `'gpt-4'`, `'gpt-4-turbo'`
+  - Recommended: `'gpt-5.1'` (default and latest model)
 - **temperature**: Randomness in LLM responses
   - `0.0`: Deterministic (recommended)
   - `0.5`: Moderate randomness
