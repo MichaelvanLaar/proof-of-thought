@@ -99,8 +99,8 @@ async function main() {
   console.log('\n\n' + '='.repeat(80));
   console.log('\n📝 Example 2: Weighted Voting\n');
 
-  const question2 = 'If x > 5 and y < 3, can x + y equal 7?';
-  const context2 = 'x and y are real numbers.';
+  const question2 = 'If all cats are animals, and some animals are pets, does that mean all cats are pets?';
+  const context2 = 'Logical reasoning with universal and existential quantifiers.';
 
   console.log(`Question: ${question2}`);
   console.log(`Context: ${context2}\n`);
@@ -197,8 +197,8 @@ async function main() {
   console.log('\n' + '='.repeat(80));
   console.log('\n📝 Example 5: Proof Trace with Self-Consistency\n');
 
-  const question5 = 'Can a number be both prime and composite?';
-  const context5 = 'Number theory definitions.';
+  const question5 = 'If no birds are fish, and all penguins are birds, can a penguin be a fish?';
+  const context5 = 'Logical reasoning with negation and set disjointness.';
 
   const sc5 = new SelfConsistency(client, reasoningEngine, {
     numSamples: 4,
