@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ProofOfThought Browser Test</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        margin-top: 0;
+      }
+      .test-result {
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 4px;
+        font-family: monospace;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .info {
+        background: #d1ecf1;
+        color: #0c5460;
+        border: 1px solid #bee5eb;
+      }
+      pre {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        overflow-x: auto;
+      }
+      .note {
+        background: #fff3cd;
+        border: 1px solid #ffeeba;
+        color: #856404;
+        padding: 15px;
+        border-radius: 4px;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 ProofOfThought Browser Test</h1>
+
+      <div class="note">
+        <strong>📝 Instructions:</strong><br />
+        1. Make sure you've run <code>npm run build</code><br />
+        2. Serve this file with a local HTTP server (see TESTING_GUIDE.md)<br />
+        3. Open browser DevTools (F12) to see detailed console output<br />
+        4. Check the test results below
+      </div>
+
+      <div id="tests">
+        <div class="test-result info">⏳ Running tests...</div>
+      </div>
+    </div>
+
+    <script type="module">
+      const testsDiv = document.getElementById('tests');
+      const results = [];
+
+      function addResult(success, title, details) {
+        const className = success ? 'success' : 'error';
+        const icon = success ? '✅' : '❌';
+        results.push(`
+          <div class="test-result ${className}">
+            <strong>${icon} ${title}</strong>
+            ${details ? `<pre>${details}</pre>` : ''}
+          </div>
+        `);
+        testsDiv.innerHTML = results.join('');
+      }
+
+      async function runTests() {
+        console.log('🧪 Starting ProofOfThought browser tests...');
+
+        // Test 1: Module import
+        try {
+          const { ProofOfThought } = await import('./dist/browser.js');
+          console.log('✅ Module imported successfully');
+          console.log('ProofOfThought class:', ProofOfThought);
+
+          addResult(
+            true,
+            'Test 1: Module Import',
+            `ProofOfThought class loaded\nType: ${typeof ProofOfThought}`
+          );
+
+          // Test 2: Class instantiation (without API key - should fail gracefully)
+          try {
+            // This should throw an error because we don't have a client
+            const pot = new ProofOfThought({});
+            addResult(false, 'Test 2: Validation', 'Should have thrown validation error');
+          } catch (error) {
+            if (error.message.includes('client') || error.message.includes('OpenAI')) {
+              console.log('✅ Validation works correctly');
+              addResult(
+                true,
+                'Test 2: Input Validation',
+                `Correctly validates required parameters\nError: ${error.message}`
+              );
+            } else {
+              throw error;
+            }
+          }
+
+          // Test 3: Check exports
+          const moduleExports = await import('./dist/browser.js');
+          const exportsList = Object.keys(moduleExports);
+          console.log('✅ Module exports:', exportsList);
+
+          const expectedExports = ['ProofOfThought', 'Z3WASMAdapter'];
+          const hasExpectedExports = expectedExports.every((exp) =>
+            exportsList.includes(exp)
+          );
+
+          addResult(
+            hasExpectedExports,
+            'Test 3: Module Exports',
+            `Found exports: ${exportsList.join(', ')}`
+          );
+
+          // Test 4: Browser bundle size check
+          try {
+            const response = await fetch('./dist/browser.min.js');
+            const blob = await response.blob();
+            const sizeKB = (blob.size / 1024).toFixed(2);
+            console.log(`✅ Browser bundle size: ${sizeKB}KB`);
+
+            const isReasonableSize = blob.size < 150 * 1024; // Less than 150KB
+            addResult(
+              isReasonableSize,
+              'Test 4: Bundle Size',
+              `Minified bundle: ${sizeKB}KB ${isReasonableSize ? '(Good!)' : '(Too large!)'}`
+            );
+          } catch (e) {
+            addResult(false, 'Test 4: Bundle Size', `Could not load bundle: ${e.message}`);
+          }
+
+          // Summary
+          console.log('🎉 All tests completed!');
+          console.log('Check the results above for details.');
+
+          results.push(`
+            <div class="test-result success" style="margin-top: 20px; font-weight: bold;">
+              🎉 Browser testing complete! Check console (F12) for details.
+            </div>
+          `);
+          testsDiv.innerHTML = results.join('');
+        } catch (error) {
+          console.error('❌ Error during testing:', error);
+          addResult(false, 'Test Failed', error.message + '\n\n' + error.stack);
+
+          results.push(`
+            <div class="test-result error" style="margin-top: 20px;">
+              <strong>💡 Troubleshooting:</strong>
+              <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Make sure you ran <code>npm run build</code></li>
+                <li>Verify you're using a local HTTP server (not file://)</li>
+                <li>Check browser console (F12) for more details</li>
+                <li>See TESTING_GUIDE.md for help</li>
+              </ul>
+            </div>
+          `);
+          testsDiv.innerHTML = results.join('');
+        }
+      }
+
+      // Run tests when page loads
+      runTests().catch(console.error);
+    </script>
+  </body>
+</html>
