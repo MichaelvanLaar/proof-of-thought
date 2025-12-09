@@ -40,10 +40,15 @@ async function main() {
     // Show JSON DSL structure
     console.log('JSON DSL Structure (formatted):');
     try {
-      const formula = JSON.parse(response1.formula);
-      console.log(JSON.stringify(formula, null, 2).substring(0, 300) + '...');
-    } catch {
-      console.log('Formula:', response1.formula.substring(0, 150) + '...');
+      // Formula might be a string or an object
+      const formula =
+        typeof response1.formula === 'string'
+          ? JSON.parse(response1.formula)
+          : response1.formula;
+      const jsonStr = JSON.stringify(formula, null, 2);
+      console.log(jsonStr.substring(0, 300) + (jsonStr.length > 300 ? '...' : ''));
+    } catch (error) {
+      console.log('Formula:', String(response1.formula).substring(0, 150) + '...');
     }
     console.log();
   } catch (error) {

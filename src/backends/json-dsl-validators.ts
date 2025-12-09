@@ -79,25 +79,32 @@ export function validateJSONProgramSafe(program: unknown) {
  * @returns True if safe, false otherwise
  */
 export function isExpressionSafe(expression: string): boolean {
-  // Check if expression only contains allowed operators
+  // Check if expression only contains allowed operators and user-defined identifiers
   // This is a basic check - more sophisticated parsing would be needed for production
-  // Note: operatorPattern could be used for more sophisticated validation in the future
 
   // Extract potential operator names (words starting with capital letter)
   const potentialOperators = expression.match(/\b[A-Z][a-zA-Z0-9_]*\b/g) || [];
 
-  // Check if all operators are in the allowed list
+  // Check each potential operator
   for (const op of potentialOperators) {
-    if (
-      !ALLOWED_Z3_OPERATORS.includes(op as never) &&
-      !['Bool', 'Int', 'Real', 'Array', 'BitVec'].includes(op)
-    ) {
-      // Allow sort names and common terms
-      if (!/^[A-Z][a-z]+$/.test(op)) {
-        // If it looks like an operator but isn't allowed, reject
-        return false;
-      }
+    // Allow whitelisted Z3 operators
+    if (ALLOWED_Z3_OPERATORS.includes(op as never)) {
+      continue;
     }
+
+    // Allow built-in types
+    if (['Bool', 'Int', 'Real', 'Array', 'BitVec'].includes(op)) {
+      continue;
+    }
+
+    // Allow user-defined identifiers (predicates, functions, constants)
+    // These should start with uppercase and contain only alphanumeric chars and underscores
+    if (/^[A-Z][a-zA-Z0-9_]*$/.test(op)) {
+      continue;
+    }
+
+    // Reject anything else (potentially malicious operators)
+    return false;
   }
 
   return true;

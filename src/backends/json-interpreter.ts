@@ -164,12 +164,15 @@ export class Z3JSONInterpreter {
       }
     }
 
-    // Add verification queries
+    // Add verification queries (negated for proof by refutation)
+    // We check if NOT(query) is satisfiable:
+    // - If UNSAT, then query must be true
+    // - If SAT, then query is false (we found a counterexample)
     for (const [queryName, query] of Object.entries(program.verifications)) {
       const smt2Expr = this.expressionToSMT2(query);
       // Add as comment for tracking
       smt2Lines.push(`; Verification: ${queryName}`);
-      smt2Lines.push(`(assert ${smt2Expr})`);
+      smt2Lines.push(`(assert (not ${smt2Expr}))`);
     }
 
     // Add check-sat and get-model commands
