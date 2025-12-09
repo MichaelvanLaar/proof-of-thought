@@ -430,8 +430,11 @@ export interface Backend {
 
   /**
    * Explain verification result in natural language
+   * @param result - The verification result from Z3
+   * @param question - The original question asked by the user
+   * @param context - Additional context provided with the question
    */
-  explain(result: VerificationResult): Promise<string>;
+  explain(result: VerificationResult, question: string, context: string): Promise<string>;
 }
 
 /**

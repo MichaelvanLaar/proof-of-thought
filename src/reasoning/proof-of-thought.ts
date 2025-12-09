@@ -270,7 +270,7 @@ export class ProofOfThought {
         description: 'Generating natural language explanation',
       });
 
-      const answer = await this.backend.explain(verificationResult);
+      const answer = await this.backend.explain(verificationResult, question, context ?? '');
 
       proof.push({
         step: ++stepCounter,

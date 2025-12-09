@@ -183,8 +183,8 @@ export class SMT2Backend implements Backend {
   /**
    * Explain verification result in natural language
    */
-  async explain(result: VerificationResult): Promise<string> {
-    const explanationPrompt = this.buildExplanationPrompt(result);
+  async explain(result: VerificationResult, question: string, context: string): Promise<string> {
+    const explanationPrompt = this.buildExplanationPrompt(result, question, context);
 
     try {
       const response = await this.config.client.chat.completions.create({
@@ -224,6 +224,7 @@ Your task is to:
 4. Ensure the formula can be checked for satisfiability
 
 SMT-LIB 2.0 Syntax Rules:
+- DO NOT use (set-logic ...) declarations - let Z3 choose automatically
 - declare-sort: Always include arity: (declare-sort SortName 0) for 0-arity sorts
 - declare-const: (declare-const name Type)
 - declare-fun: (declare-fun name (ArgType1 ArgType2...) ReturnType)
@@ -237,6 +238,7 @@ Guidelines:
 - Add the query as a final assertion (usually negated to check validity)
 - To prove "If A then B", assert A and (not B), then check-sat. If unsat, the implication is valid.
 - Use quantifiers (forall/exists) only when necessary
+- NEVER include (set-logic ...) - this can cause compatibility issues
 - Return ONLY the SMT2 formula, wrapped in a code block
 
 Example 1 (Simple arithmetic):
@@ -284,20 +286,47 @@ Generate a complete SMT-LIB 2.0 formula that can be checked with Z3 solver.`;
   /**
    * Build explanation prompt from verification result
    */
-  private buildExplanationPrompt(result: VerificationResult): string {
-    let prompt = `Explain this logical reasoning result in simple terms:
+  private buildExplanationPrompt(
+    result: VerificationResult,
+    question: string,
+    context: string
+  ): string {
+    // Construct the explanation prompt with full context
+    let prompt = `You are explaining the result of a logical reasoning verification to a non-technical user.
 
-Result: ${result.result.toUpperCase()}
+IMPORTANT CONTEXT:
+We used "proof by refutation" - we tested if the NEGATION of the conclusion leads to a contradiction.
+- If UNSAT (unsatisfiable): The negation is impossible, so the original answer is TRUE/YES
+- If SAT (satisfiable): The negation is possible, so the original answer is FALSE/NO or UNKNOWN
+
+Original Question: ${question}
+Context: ${context || 'None'}
+Verification Result: ${result.result.toUpperCase()}
 `;
 
     if (result.model && Object.keys(result.model).length > 0) {
-      prompt += `\nModel values:\n`;
+      prompt += `\nCounter-example values:\n`;
       for (const [key, value] of Object.entries(result.model)) {
         prompt += `  ${key} = ${JSON.stringify(value)}\n`;
       }
     }
 
-    prompt += `\nProvide a clear, concise explanation of what this means.`;
+    prompt += `
+Your task:
+1. First, clearly state whether the answer to the original question is YES/NO/TRUE/FALSE
+2. Then explain WHY in simple, non-technical language
+3. Mention that we used "proof by contradiction" if relevant
+
+DO NOT just explain what SAT/UNSAT means technically. Instead, directly answer the user's question.
+
+Example:
+Question: "Is Socrates mortal?"
+Result: UNSAT
+Good answer: "Yes, Socrates is mortal. We proved this by showing that assuming the opposite (Socrates is not mortal) leads to a logical contradiction with the given facts."
+
+Bad answer: "UNSAT means unsatisfiable..."
+
+Provide a clear, direct answer:`;
 
     return prompt;
   }

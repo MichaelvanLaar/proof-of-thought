@@ -191,14 +191,19 @@ describe('JSONBackend', () => {
       const z3Adapter = createMockZ3Adapter();
       const backend = new JSONBackend({ client, z3Adapter });
 
-      const explanation = await backend.explain({
-        result: 'sat',
-        model: { Socrates: 'Entity', Mortal: 'true' },
-        rawOutput: 'sat',
-        executionTime: 100,
-      });
+      const explanation = await backend.explain(
+        {
+          result: 'sat',
+          model: { Socrates: 'Entity', Mortal: 'true' },
+          rawOutput: 'sat',
+          executionTime: 100,
+        },
+        'Is Socrates mortal?',
+        'All humans are mortal'
+      );
 
-      expect(explanation).toContain('satisfiable');
+      expect(explanation).toContain('No');
+      expect(explanation).toContain('counter-example');
       expect(explanation).toContain('Socrates');
     });
 
@@ -207,13 +212,18 @@ describe('JSONBackend', () => {
       const z3Adapter = createMockZ3Adapter();
       const backend = new JSONBackend({ client, z3Adapter });
 
-      const explanation = await backend.explain({
-        result: 'sat',
-        rawOutput: 'sat',
-        executionTime: 100,
-      });
+      const explanation = await backend.explain(
+        {
+          result: 'sat',
+          rawOutput: 'sat',
+          executionTime: 100,
+        },
+        'Is this true?',
+        'Some context'
+      );
 
-      expect(explanation).toContain('satisfiable');
+      expect(explanation).toContain('No');
+      expect(explanation).toContain('false');
     });
 
     it('should explain unsat result', async () => {
@@ -221,13 +231,19 @@ describe('JSONBackend', () => {
       const z3Adapter = createMockZ3Adapter();
       const backend = new JSONBackend({ client, z3Adapter });
 
-      const explanation = await backend.explain({
-        result: 'unsat',
-        rawOutput: 'unsat',
-        executionTime: 100,
-      });
+      const explanation = await backend.explain(
+        {
+          result: 'unsat',
+          rawOutput: 'unsat',
+          executionTime: 100,
+        },
+        'Is Socrates mortal?',
+        'All humans are mortal'
+      );
 
-      expect(explanation).toContain('unsatisfiable');
+      expect(explanation).toContain('Yes');
+      expect(explanation).toContain('true');
+      expect(explanation).toContain('contradiction');
     });
 
     it('should explain unknown result', async () => {
@@ -235,13 +251,18 @@ describe('JSONBackend', () => {
       const z3Adapter = createMockZ3Adapter();
       const backend = new JSONBackend({ client, z3Adapter });
 
-      const explanation = await backend.explain({
-        result: 'unknown',
-        rawOutput: 'unknown',
-        executionTime: 100,
-      });
+      const explanation = await backend.explain(
+        {
+          result: 'unknown',
+          rawOutput: 'unknown',
+          executionTime: 100,
+        },
+        'Is this provable?',
+        ''
+      );
 
-      expect(explanation).toContain('unknown');
+      expect(explanation).toContain('Unknown');
+      expect(explanation).toContain('could not be determined');
     });
   });
 

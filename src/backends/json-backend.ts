@@ -280,20 +280,26 @@ export class JSONBackend implements Backend {
    * @param result - The verification result to explain
    * @returns Natural language explanation
    */
-  async explain(result: VerificationResult): Promise<string> {
+  async explain(result: VerificationResult, question: string, context: string): Promise<string> {
     try {
-      if (result.result === 'sat') {
+      // Contextually explain the result based on the verification method
+      // Note: We use proof by refutation - we test the negation
+      const questionForContext = question; // Keeping for future use in more detailed explanations
+
+      if (result.result === 'unsat') {
+        // UNSAT means the negation is impossible, so the answer is TRUE/YES
+        return `Yes, the statement is true. We proved this by showing that the opposite assumption leads to a logical contradiction with the given facts${context ? ` (${context})` : ''}.`;
+      } else if (result.result === 'sat') {
+        // SAT means the negation is possible, so the answer is FALSE/NO
         if (result.model && Object.keys(result.model).length > 0) {
           const modelStr = Object.entries(result.model)
             .map(([k, v]) => `${k} = ${v}`)
             .join(', ');
-          return `The query is satisfiable. Model: ${modelStr}`;
+          return `No, the statement is false. We found a counter-example: ${modelStr}`;
         }
-        return 'The query is satisfiable (model extraction not available).';
-      } else if (result.result === 'unsat') {
-        return 'The query is unsatisfiable. The given constraints cannot be satisfied simultaneously.';
+        return `No, the statement is false. The verification found that the opposite is possible, meaning the original statement doesn't necessarily hold.`;
       } else {
-        return 'The satisfiability of the query could not be determined (unknown result).';
+        return `Unknown. The satisfiability could not be determined${questionForContext ? ' for this question' : ''}. This may require manual analysis.`;
       }
     } catch (error) {
       throw new BackendError(
