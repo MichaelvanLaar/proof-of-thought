@@ -80,18 +80,64 @@ Demonstrates Decomposed Prompting for breaking down complex questions:
 npx tsx examples/decomposed-usage.ts
 ```
 
+### Postprocessing Examples
+
+Additional postprocessing examples in the `postprocessing/` directory:
+
+#### self-refine-example.ts
+
+Demonstrates Self-Refine with integrated postprocessing pipeline:
+- Automatic iterative refinement through self-critique
+- Convergence detection and similarity tracking
+- Custom critique prompts and configuration
+
+**Run it**:
+```bash
+npx tsx examples/postprocessing/self-refine-example.ts
+```
+
+#### decomposed-example.ts
+
+Demonstrates Decomposed Prompting with integrated pipeline:
+- Automatic question decomposition into sub-questions
+- Sequential solving with dependency tracking
+- Sub-question combination and synthesis
+
+**Run it**:
+```bash
+npx tsx examples/postprocessing/decomposed-example.ts
+```
+
+#### least-to-most-example.ts
+
+Demonstrates Least-to-Most with integrated pipeline:
+- Progressive problem-solving from simple to complex
+- Level-based reasoning with context building
+- Custom progression prompts
+
+**Run it**:
+```bash
+npx tsx examples/postprocessing/least-to-most-example.ts
+```
+
+### Backend Examples
+
+Examples in the `backends/` directory demonstrate both backend types:
+
+- **smt2-example.ts**: SMT2 backend with formal logic
+- **json-example.ts**: JSON DSL backend with structured reasoning
+
 ## Coming Soon
 
 More examples will be added for:
 - Batch processing
-- Additional postprocessing methods (least-to-most)
 - Custom Z3 configuration
 - Browser usage
-- Advanced logical reasoning
+- Advanced logical reasoning patterns
 
 ## Notes
 
 - All examples require a valid OpenAI API key
 - Z3 solver must be available (native binary or via npm package)
-- Examples use the SMT2 backend (JSON backend coming soon)
-- Verbose logging is enabled by default for educational purposes
+- Both SMT2 and JSON backends are fully supported
+- Verbose logging is enabled by default in examples for educational purposes
