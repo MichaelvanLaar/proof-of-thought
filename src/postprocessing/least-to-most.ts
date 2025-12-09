@@ -4,6 +4,7 @@
  */
 
 import type OpenAI from 'openai';
+import { getTokenLimitParam } from '../utils/openai-compat.js';
 import type { LeastToMostConfig, ReasoningResponse } from '../types/index.js';
 import { PostprocessingError } from '../types/errors.js';
 
@@ -163,7 +164,7 @@ Output ONLY the numbered list, no explanations.`;
       const completion = await this.client.chat.completions.create({
         model: 'gpt-5.1',
         temperature: 0.3,
-        max_tokens: 1024,
+        ...getTokenLimitParam('gpt-5.1', 1024),
         messages: [
           {
             role: 'user',
@@ -263,7 +264,7 @@ Provide ONLY the final synthesized answer, no explanations of the process.`;
       const completion = await this.client.chat.completions.create({
         model: 'gpt-5.1',
         temperature: 0.2,
-        max_tokens: 2048,
+        ...getTokenLimitParam('gpt-5.1', 2048),
         messages: [
           {
             role: 'user',

@@ -4,6 +4,7 @@
  */
 
 import type OpenAI from 'openai';
+import { getTokenLimitParam } from '../utils/openai-compat.js';
 import type { DecomposedConfig, ReasoningResponse } from '../types/index.js';
 import { PostprocessingError } from '../types/errors.js';
 
@@ -147,7 +148,7 @@ export class DecomposedPrompting {
         },
       ],
       temperature: 0.3, // Lower temperature for consistent decomposition
-      max_tokens: 2000,
+      ...getTokenLimitParam('gpt-5.1', 2000),
     });
 
     const content = response.choices[0]?.message?.content;
@@ -314,7 +315,7 @@ Based on these sub-answers, provide a comprehensive answer to the original quest
         },
       ],
       temperature: 0.3,
-      max_tokens: 2000,
+      ...getTokenLimitParam('gpt-5.1', 2000),
     });
 
     const finalAnswer = response.choices[0]?.message?.content;

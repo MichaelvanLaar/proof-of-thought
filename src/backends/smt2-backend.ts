@@ -6,6 +6,7 @@ import type OpenAI from 'openai';
 import type { Backend, Formula, VerificationResult, SMT2Formula } from '../types/index.js';
 import type { Z3Adapter } from '../types/index.js';
 import { BackendError, TranslationError, ValidationError, LLMError } from '../types/errors.js';
+import { getTokenLimitParam } from '../utils/openai-compat.js';
 
 /**
  * Configuration for SMT2 Backend
@@ -121,7 +122,7 @@ export class SMT2Backend implements Backend {
           },
         ],
         temperature: this.config.temperature,
-        max_tokens: this.config.maxTokens,
+        ...getTokenLimitParam(this.config.model, this.config.maxTokens),
       });
 
       const content = response.choices[0]?.message?.content;
@@ -200,7 +201,7 @@ export class SMT2Backend implements Backend {
           },
         ],
         temperature: 0.3,
-        max_tokens: 500,
+        ...getTokenLimitParam(this.config.model, 500),
       });
 
       return response.choices[0]?.message?.content ?? 'Unable to generate explanation';

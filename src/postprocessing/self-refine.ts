@@ -4,6 +4,7 @@
  */
 
 import type OpenAI from 'openai';
+import { getTokenLimitParam } from '../utils/openai-compat.js';
 import type { SelfRefineConfig, ReasoningResponse } from '../types/index.js';
 import { PostprocessingError } from '../types/errors.js';
 
@@ -189,7 +190,7 @@ export class SelfRefine {
         },
       ],
       temperature: 0.3,
-      max_tokens: 1000,
+      ...getTokenLimitParam('gpt-5.1', 1000),
     });
 
     return response.choices[0]?.message?.content ?? 'Unable to generate critique';
@@ -235,7 +236,7 @@ Improved Answer:`;
         },
       ],
       temperature: 0.3,
-      max_tokens: 1000,
+      ...getTokenLimitParam('gpt-5.1', 1000),
     });
 
     return response.choices[0]?.message?.content ?? previousAnswer;

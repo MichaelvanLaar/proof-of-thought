@@ -15,6 +15,7 @@ import { BackendError, TranslationError, Z3Error } from '../types/errors.js';
 import { Z3JSONInterpreter } from './json-interpreter.js';
 import { validateJSONProgramSafe } from './json-dsl-validators.js';
 import type { JSONProgram } from './json-dsl-types.js';
+import { getTokenLimitParam } from '../utils/openai-compat.js';
 
 /**
  * JSON DSL Instructions for LLM translation
@@ -183,7 +184,7 @@ export class JSONBackend implements Backend {
       const completion = await this.config.client.chat.completions.create({
         model: this.config.model,
         temperature: this.config.temperature,
-        max_tokens: this.config.maxTokens,
+        ...getTokenLimitParam(this.config.model, this.config.maxTokens),
         messages: [
           {
             role: 'system',

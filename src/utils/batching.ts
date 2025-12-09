@@ -8,6 +8,7 @@
  */
 
 import type OpenAI from 'openai';
+import { getTokenLimitParam } from '../utils/openai-compat.js';
 import type { Z3Adapter, VerificationResult } from '../types/index.js';
 
 /**
@@ -302,7 +303,7 @@ export class LLMBatcher {
         model: request.model,
         messages: request.messages,
         temperature: request.temperature ?? 0.7,
-        max_tokens: request.maxTokens ?? 2000,
+        ...getTokenLimitParam(request.model, request.maxTokens ?? 2000),
       });
 
       const content = completion.choices[0]?.message?.content || '';
