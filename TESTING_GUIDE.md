@@ -4,7 +4,32 @@ This guide will walk you through testing the package in both Node.js and browser
 
 ## Prerequisites
 
-### 1. OpenAI API Key
+### 1. Install Native Z3 (Required)
+
+**⚠️ Important:** Native Z3 is required for the beta release. The WASM fallback is incomplete and returns "unknown" for all queries.
+
+```bash
+# Quick install script (Linux/macOS)
+./install-z3.sh
+
+# Or install manually:
+# macOS:
+brew install z3
+
+# Linux (Ubuntu/Debian):
+sudo apt-get install z3
+
+# Windows:
+choco install z3
+```
+
+Verify installation:
+```bash
+z3 --version
+# Should show: Z3 version 4.x.x
+```
+
+### 2. OpenAI API Key
 
 You'll need an OpenAI API key to test the reasoning functionality:
 
@@ -14,7 +39,7 @@ export OPENAI_API_KEY="sk-your-key-here"
 
 Add this to your `~/.bashrc` or `~/.zshrc` to make it persistent.
 
-### 2. Verify Build
+### 3. Verify Build
 
 Make sure the package is built:
 

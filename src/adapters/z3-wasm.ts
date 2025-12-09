@@ -4,6 +4,13 @@
  * This adapter provides Z3 theorem proving using the z3-solver npm package.
  * Works in both Node.js and browser environments via WebAssembly.
  *
+ * ⚠️ CURRENT STATUS (v0.1.0 Beta):
+ * The WASM adapter is included but the SMT2-to-Z3-API translation layer is incomplete.
+ * Currently returns "unknown" for all queries. Native Z3 is required for proper functionality.
+ *
+ * This implementation provides the architecture for future WASM support.
+ * Full SMT2 parsing and execution is planned for v0.2.0.
+ *
  * Note: Requires z3-solver package to be installed.
  */
 

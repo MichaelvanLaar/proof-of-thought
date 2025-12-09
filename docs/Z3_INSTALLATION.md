@@ -20,22 +20,42 @@ This guide provides platform-specific instructions for installing the Z3 theorem
 
 Z3 is a high-performance theorem prover from Microsoft Research. **proof-of-thought** uses Z3 for formal verification of logical formulas.
 
-### ⚡ TL;DR: It Just Works
+### ⚡ TL;DR: Native Z3 Required (Beta)
 
-**No manual installation required!** When you install proof-of-thought, the z3-solver package is automatically included as a dependency. The library uses intelligent adapter selection:
+**⚠️ Important for v0.1.0 Beta:** Native Z3 installation is currently **required** for proper functionality.
 
-1. **Tries native Z3 first** (if installed on your system) - ~10x faster
-2. **Falls back to WASM automatically** (via z3-solver package) - always available
-3. **Works in browsers** automatically via WebAssembly
+While the library includes z3-solver as a dependency, the WASM adapter's SMT2 parsing layer is not yet complete and will return "unknown" for all queries. Native Z3 works perfectly and is required for the beta release.
+
+**Quick Install:**
+```bash
+# macOS
+brew install z3
+
+# Linux (Ubuntu/Debian)
+sudo apt-get install z3
+
+# Windows
+choco install z3
+```
 
 ### Installation Options
 
-For better performance, you can optionally install native Z3:
+1. **System package manager** - ✅ **Required for beta** - Fully functional
+2. **npm package (z3-solver)** - ⚠️ Included but incomplete (returns "unknown")
+3. **WASM (browser)** - 📋 Planned for future releases
+4. **Manual download** - Alternative to package managers
 
-1. **npm package (z3-solver)** - ✅ Already included as dependency
-2. **System package manager** - Optional, for ~10x faster native execution
-3. **WASM (browser)** - ✅ Already included, works automatically
-4. **Manual download** - For custom installations
+### Current WASM Status
+
+The z3-solver package is included as a dependency for future use, but:
+
+- ✅ Package loads successfully
+- ✅ Basic initialization works
+- ⚠️ SMT2 formula parsing is incomplete
+- ❌ Returns "unknown" for all verification queries
+- 📋 Full WASM support targeted for v0.2.0
+
+**For now, please install native Z3 to use proof-of-thought.**
 
 ## Quick Install
 

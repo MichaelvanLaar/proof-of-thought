@@ -265,30 +265,33 @@ npm run build
 
 ### Z3 Solver
 
-**proof-of-thought works out-of-the-box** with automatic Z3 adapter selection:
+**⚠️ IMPORTANT: Native Z3 Required for Beta Release**
 
-- **Automatic Fallback**: Tries native Z3 first, falls back to WASM (z3-solver) if not available
-- **WASM Included**: The z3-solver package is included as a dependency
-- **No Manual Setup Required**: Just `npm install` and it works!
-
-#### For Better Performance (Optional)
-
-Install native Z3 for ~10x faster execution:
+Due to incomplete WASM implementation, **native Z3 installation is currently required** for proper functionality:
 
 ```bash
 # macOS
 brew install z3
 
-# Ubuntu/Debian
+# Linux (Ubuntu/Debian)
 sudo apt-get install z3
 
+# Or use the helper script:
+./install-z3.sh
+
 # Windows
-Download from https://github.com/Z3Prover/z3/releases
+choco install z3
+# Or download from: https://github.com/Z3Prover/z3/releases
 ```
 
-**Note**: Native Z3 is automatically detected and preferred when available. If not found, the library seamlessly falls back to the included WASM implementation.
+**Current Status:**
+- ✅ **Native Z3**: Fully functional with all features
+- ⚠️ **WASM Fallback**: Included but returns "unknown" for queries (implementation incomplete)
+- 📋 **Roadmap**: Full WASM support planned for future releases
 
-See [Z3 Installation Guide](docs/Z3_INSTALLATION.md) for details.
+The library includes z3-solver as a dependency for future WASM support, but the SMT2-to-WASM translation layer is not yet complete. For now, install native Z3 for verification to work correctly.
+
+See [Z3 Installation Guide](docs/Z3_INSTALLATION.md) for detailed instructions.
 
 ## 🔧 Configuration
 
