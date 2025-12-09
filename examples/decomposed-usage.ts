@@ -122,8 +122,8 @@ async function main() {
   console.log('\n📝 Example 3: Complex Multi-Part Problem\n');
 
   const question3 =
-    'If all doctors are professionals, and all professionals have licenses, and John is a doctor, does John have a license?';
-  const context3 = 'Multi-step transitive logical reasoning.';
+    'If no reptiles are mammals, and all snakes are reptiles, can a snake be a mammal?';
+  const context3 = 'Logical reasoning with negation and universal statements.';
 
   console.log(`Question: ${question3}`);
   console.log(`Context: ${context3}\n`);
