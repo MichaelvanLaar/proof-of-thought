@@ -279,7 +279,9 @@ export class ProofOfThought {
       });
 
       if (this.config.verbose) {
-        logger.debug(`Answer: ${answer}`);
+        // Show a brief preview instead of the full answer (it will be shown in the final summary)
+        const preview = answer.length > 100 ? answer.substring(0, 100) + '...' : answer;
+        logger.debug(`Answer preview: ${preview}`);
       }
 
       // Build initial response
