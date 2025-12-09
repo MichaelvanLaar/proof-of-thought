@@ -140,7 +140,7 @@ export class Z3JSONInterpreter {
     // Add knowledge base assertions
     if (program.knowledge_base) {
       for (const assertion of program.knowledge_base) {
-        const smt2Expr = this.expressionToSMT2(assertion);
+        const smt2Expr = this.expressionToSMT2(assertion, program);
         smt2Lines.push(`(assert ${smt2Expr})`);
       }
     }
@@ -148,8 +148,8 @@ export class Z3JSONInterpreter {
     // Add rules as assertions
     if (program.rules) {
       for (const rule of program.rules) {
-        const antecedent = this.expressionToSMT2(rule.antecedent);
-        const consequent = this.expressionToSMT2(rule.consequent);
+        const antecedent = this.expressionToSMT2(rule.antecedent, program);
+        const consequent = this.expressionToSMT2(rule.consequent, program);
         const implication = `(=> ${antecedent} ${consequent})`;
 
         if (rule.variables && rule.variables.length > 0) {
@@ -169,7 +169,7 @@ export class Z3JSONInterpreter {
     // - If UNSAT, then query must be true
     // - If SAT, then query is false (we found a counterexample)
     for (const [queryName, query] of Object.entries(program.verifications)) {
-      const smt2Expr = this.expressionToSMT2(query);
+      const smt2Expr = this.expressionToSMT2(query, program);
       // Add as comment for tracking
       smt2Lines.push(`; Verification: ${queryName}`);
       smt2Lines.push(`(assert (not ${smt2Expr}))`);
@@ -207,33 +207,143 @@ export class Z3JSONInterpreter {
 
   /**
    * Convert JSON DSL expression to SMT2
-   * This performs basic conversion - more sophisticated parsing would be needed for production
+   * Properly parses the expression tree and converts to SMT2 syntax
    */
-  private expressionToSMT2(expr: string): string {
-    // Replace ForAll/Exists with SMT2 syntax
-    let smt2Expr = expr;
+  private expressionToSMT2(expr: string, program?: JSONProgram): string {
+    return this.parseAndConvertExpression(expr.trim(), program);
+  }
 
-    // ForAll(x, ...) -> (forall ((x Sort)) ...)
-    // This is a simplified conversion - proper parsing would be better
-    smt2Expr = smt2Expr.replace(/ForAll\s*\(/g, '(forall ');
-    smt2Expr = smt2Expr.replace(/Exists\s*\(/g, '(exists ');
+  /**
+   * Parse and convert a JSON DSL expression to SMT2
+   */
+  private parseAndConvertExpression(expr: string, program?: JSONProgram): string {
+    // Handle special quantifier cases
+    if (expr.startsWith('ForAll(') || expr.startsWith('Exists(')) {
+      return this.convertQuantifier(expr, program);
+    }
 
-    // Implies(a, b) -> (=> a b)
-    smt2Expr = smt2Expr.replace(/Implies\s*\(/g, '(=> ');
+    // Handle logical operators
+    const logicalOps: Record<string, string> = {
+      Implies: '=>',
+      And: 'and',
+      Or: 'or',
+      Not: 'not',
+      If: 'ite',
+      Eq: '=',
+      Distinct: 'distinct',
+    };
 
-    // And(...) -> (and ...)
-    smt2Expr = smt2Expr.replace(/And\s*\(/g, '(and ');
+    for (const [dslOp, smt2Op] of Object.entries(logicalOps)) {
+      if (expr.startsWith(`${dslOp}(`)) {
+        const args = this.extractArgs(expr.substring(dslOp.length));
+        const convertedArgs = args.map((arg) => this.parseAndConvertExpression(arg, program));
+        return `(${smt2Op} ${convertedArgs.join(' ')})`;
+      }
+    }
 
-    // Or(...) -> (or ...)
-    smt2Expr = smt2Expr.replace(/Or\s*\(/g, '(or ');
+    // Handle function application: Func(arg1, arg2) -> (Func arg1 arg2)
+    const funcMatch = expr.match(/^(\w+)\((.*)\)$/);
+    if (funcMatch) {
+      const funcName = funcMatch[1];
+      const argsStr = funcMatch[2];
+      if (!funcName) {
+        throw new ValidationError(`Invalid function name in expression: ${expr}`);
+      }
+      if (argsStr && argsStr.trim()) {
+        const args = this.extractArgs(`(${argsStr})`);
+        const convertedArgs = args.map((arg) => this.parseAndConvertExpression(arg, program));
+        return `(${funcName} ${convertedArgs.join(' ')})`;
+      } else {
+        // No arguments - just a constant
+        return funcName;
+      }
+    }
 
-    // Not(...) -> (not ...)
-    smt2Expr = smt2Expr.replace(/Not\s*\(/g, '(not ');
+    // Handle atoms (variables, constants, literals)
+    return expr;
+  }
 
-    // If(cond, then, else) -> (ite cond then else)
-    smt2Expr = smt2Expr.replace(/If\s*\(/g, '(ite ');
+  /**
+   * Convert ForAll/Exists quantifiers
+   * ForAll(x, body) -> (forall ((x Type)) body)
+   */
+  private convertQuantifier(expr: string, program?: JSONProgram): string {
+    const isForAll = expr.startsWith('ForAll(');
+    const quantifier = isForAll ? 'forall' : 'exists';
+    const argsStart = expr.indexOf('(') + 1;
 
-    return smt2Expr;
+    // Extract variable and body
+    const args = this.extractArgs(expr.substring(argsStart - 1));
+    if (args.length !== 2) {
+      throw new ValidationError(
+        `Quantifier must have exactly 2 arguments: variable and body, got ${args.length}`
+      );
+    }
+
+    const varExpr = args[0];
+    const body = args[1];
+
+    if (!varExpr || !body) {
+      throw new ValidationError(`Invalid quantifier expression: ${expr}`);
+    }
+
+    // Parse variable (could be single var or list)
+    const variables = varExpr.split(/\s+/).filter((v) => v.length > 0);
+
+    // For each variable, we need to determine its sort
+    // For now, we'll assume all quantified variables are of the first declared sort
+    // (In a more sophisticated implementation, we'd need type inference)
+    const defaultSort = program ? Object.keys(program.sorts)[0] : 'Entity';
+
+    const varBindings = variables.map((v) => `(${v} ${defaultSort})`).join(' ');
+    const convertedBody = this.parseAndConvertExpression(body, program);
+
+    return `(${quantifier} (${varBindings}) ${convertedBody})`;
+  }
+
+  /**
+   * Extract arguments from a parenthesized expression
+   * Handles nested parentheses and commas correctly
+   * E.g., "(a, Func(b, c), d)" -> ["a", "Func(b, c)", "d"]
+   */
+  private extractArgs(expr: string): string[] {
+    if (!expr.startsWith('(') || !expr.endsWith(')')) {
+      return [expr];
+    }
+
+    const content = expr.substring(1, expr.length - 1).trim();
+    if (!content) {
+      return [];
+    }
+
+    const args: string[] = [];
+    let current = '';
+    let depth = 0;
+
+    for (let i = 0; i < content.length; i++) {
+      const char = content[i];
+
+      if (char === '(') {
+        depth++;
+        current += char;
+      } else if (char === ')') {
+        depth--;
+        current += char;
+      } else if (char === ',' && depth === 0) {
+        // Top-level comma - split here
+        args.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+
+    // Push the last argument
+    if (current.trim()) {
+      args.push(current.trim());
+    }
+
+    return args;
   }
 
   /**

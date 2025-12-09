@@ -8,6 +8,7 @@ export default [
   eslint.configs.recommended,
   {
     files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: ['**/*.test.ts', '**/*.spec.ts'],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
@@ -84,6 +85,59 @@ export default [
     },
   },
   prettierConfig,
+  {
+    // Test files configuration (without project requirement)
+    files: ['**/*.test.ts', '**/*.spec.ts'],
+    languageOptions: {
+      parser: tsparser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        // Don't require project for test files since they're excluded from tsconfig
+      },
+      globals: {
+        // Node.js globals
+        console: 'readonly',
+        process: 'readonly',
+        Buffer: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        NodeJS: 'readonly',
+        setImmediate: 'readonly',
+        // Test globals
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        vi: 'readonly',
+        vitest: 'readonly',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+      prettier: prettier,
+    },
+    rules: {
+      // Use same rules as main config
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/no-explicit-any': 'error',
+      'prettier/prettier': 'error',
+      // Allow console in tests
+      'no-console': 'off',
+    },
+  },
   {
     ignores: [
       'dist/**',
