@@ -33,7 +33,7 @@ You should see output confirming all bundles were created successfully.
 The fastest way to verify everything works:
 
 ```bash
-node examples/basic-usage.ts
+npx tsx examples/basic-usage.ts
 ```
 
 **What to look for:**
@@ -72,17 +72,17 @@ ProofOfThought - Basic Usage Example
 
 1. **SMT2 Backend** (formal logic):
    ```bash
-   node examples/backends/smt2-example.ts
+   npx tsx examples/backends/smt2-example.ts
    ```
 
 2. **JSON Backend** (structured reasoning):
    ```bash
-   node examples/backends/json-example.ts
+   npx tsx examples/backends/json-example.ts
    ```
 
 3. **Self-Refine Postprocessing** (iterative improvement):
    ```bash
-   node examples/postprocessing/self-refine-example.ts
+   npx tsx examples/postprocessing/self-refine-example.ts
    ```
 
 ### What Could Go Wrong?
@@ -276,7 +276,7 @@ npm test
 
 # 3. Run basic example (requires API key, takes ~30 seconds)
 export OPENAI_API_KEY="your-key-here"
-node examples/basic-usage.ts
+npx tsx examples/basic-usage.ts
 
 # 4. Check browser bundle loads
 python3 -m http.server 8000 &
