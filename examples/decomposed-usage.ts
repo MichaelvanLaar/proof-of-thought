@@ -19,7 +19,7 @@
  */
 
 import OpenAI from 'openai';
-import { ProofOfThought } from '../src/reasoning/proof-of-thought.js';
+import { ProofOfThought } from '../src/index.js';
 import { DecomposedPrompting } from '../src/postprocessing/decomposed.js';
 
 async function main() {

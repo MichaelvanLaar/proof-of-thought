@@ -7,9 +7,9 @@
  * Test: curl -X POST http://localhost:3000/reason -H "Content-Type: application/json" -d '{"question":"Is Socrates mortal?","context":"All humans are mortal. Socrates is human."}'
  */
 
-import express, { Request, Response } from 'express';
+import express, { type Request, type Response } from 'express';
 import OpenAI from 'openai';
-import { ProofOfThought } from '../../src/reasoning/proof-of-thought.js';
+import { ProofOfThought } from '../../src/index.js';
 
 const app = express();
 const port = process.env.PORT || 3000;

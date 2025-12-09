@@ -18,7 +18,7 @@
  */
 
 import OpenAI from 'openai';
-import { ProofOfThought } from '../src/reasoning/proof-of-thought.js';
+import { ProofOfThought } from '../src/index.js';
 import { SelfRefine } from '../src/postprocessing/self-refine.js';
 
 async function main() {
@@ -48,7 +48,7 @@ async function main() {
   });
 
   console.log('🔬 Self-Refine Postprocessing Example\n');
-  console.log('=' .repeat(80));
+  console.log('='.repeat(80));
 
   // Example 1: Refining a simple logical deduction
   console.log('\n📝 Example 1: Syllogistic Reasoning\n');

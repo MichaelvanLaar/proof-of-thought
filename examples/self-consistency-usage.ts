@@ -18,7 +18,7 @@
  */
 
 import OpenAI from 'openai';
-import { ProofOfThought } from '../src/reasoning/proof-of-thought.js';
+import { ProofOfThought } from '../src/index.js';
 import { SelfConsistency } from '../src/postprocessing/self-consistency.js';
 import type { ReasoningResponse } from '../src/types/index.js';
 
