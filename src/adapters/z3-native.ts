@@ -179,15 +179,30 @@ export class Z3NativeAdapter extends AbstractZ3Adapter {
 
         const executionTime = Date.now() - startTime;
 
+        // Z3 may exit with code 1 if get-model fails on unsat/unknown results
+        // Check if we got a valid sat/unsat/unknown result first
         if (code !== 0) {
-          reject(
-            new Z3Error(`Z3 exited with code ${code}: ${stderr}`, stdout, {
-              exitCode: code,
-              stderr,
+          // Try to parse output anyway - Z3 often prints sat/unsat before erroring on get-model
+          try {
+            const result = this.parseSMT2Output(stdout);
+            // If we successfully parsed a result, ignore the exit code
+            resolve({
+              ...result,
               executionTime,
-            })
-          );
-          return;
+              rawOutput: stdout,
+            });
+            return;
+          } catch (_parseError) {
+            // If parsing also failed, reject with the original error
+            reject(
+              new Z3Error(`Z3 exited with code ${code}: ${stderr}`, stdout, {
+                exitCode: code,
+                stderr,
+                executionTime,
+              })
+            );
+            return;
+          }
         }
 
         try {
