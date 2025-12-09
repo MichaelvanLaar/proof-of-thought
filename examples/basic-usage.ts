@@ -56,13 +56,13 @@ Socrates is a human.`
       console.log(`  ${step.step}. ${step.description}`);
     });
 
-    // Example 2: Mathematical reasoning
-    console.log('\n\n📝 Example 2: Mathematical Reasoning');
+    // Example 2: Logical reasoning with sets
+    console.log('\n\n📝 Example 2: Logical Reasoning with Sets');
     console.log('-'.repeat(60));
 
     const response2 = await pot.query(
-      'If x > 5 and y > 10, is x + y > 15?',
-      'x and y are integers'
+      'If all mammals are warm-blooded, and all dogs are mammals, is a dog warm-blooded?',
+      'Classical syllogistic logic with universal quantifiers.'
     );
 
     console.log('\n✅ Answer:', response2.answer);

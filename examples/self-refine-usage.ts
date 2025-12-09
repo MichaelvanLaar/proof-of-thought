@@ -82,12 +82,12 @@ async function main() {
       console.log(`   ${step.step}. ${step.description}`);
     });
 
-  // Example 2: Refining mathematical reasoning
+  // Example 2: Refining logical reasoning with quantifiers
   console.log('\n\n' + '='.repeat(80));
-  console.log('\n📝 Example 2: Mathematical Reasoning\n');
+  console.log('\n📝 Example 2: Logical Reasoning with Quantifiers\n');
 
-  const question2 = 'If x > 5 and y < 3, is x + y always greater than 7?';
-  const context2 = 'x and y are real numbers.';
+  const question2 = 'If all cats are animals, and some animals are pets, does that mean all cats are pets?';
+  const context2 = 'Logical reasoning with universal and existential quantifiers.';
 
   console.log(`Question: ${question2}`);
   console.log(`Context: ${context2}`);
