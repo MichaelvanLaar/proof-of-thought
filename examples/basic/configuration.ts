@@ -28,7 +28,7 @@ async function main() {
   const pot2 = new ProofOfThought({
     client,
     backend: 'json', // Use JSON backend instead of SMT2
-    model: 'gpt-4', // Use GPT-4 instead of default
+    model: 'gpt-5.1', // Explicitly specify model (default is also 'gpt-5.1')
     temperature: 0.5, // Add some randomness
     maxTokens: 2048, // Limit response size
     z3Timeout: 60000, // 60 second timeout for Z3

@@ -27,8 +27,8 @@ async function main() {
   const pot = new ProofOfThought({
     client,
     backend: 'smt2', // Use SMT-LIB 2.0 backend
-    model: 'gpt-4o',
     verbose: true, // Enable verbose logging
+    // model defaults to 'gpt-5.1'
   });
 
   console.log('='.repeat(60));
