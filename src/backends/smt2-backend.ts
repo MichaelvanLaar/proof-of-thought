@@ -222,20 +222,44 @@ Your task is to:
 3. Generate a complete SMT-LIB 2.0 formula that represents the logical problem
 4. Ensure the formula can be checked for satisfiability
 
+SMT-LIB 2.0 Syntax Rules:
+- declare-sort: Always include arity: (declare-sort SortName 0) for 0-arity sorts
+- declare-const: (declare-const name Type)
+- declare-fun: (declare-fun name (ArgType1 ArgType2...) ReturnType)
+- Use built-in types: Int, Bool, Real, String
+- For logic with quantifiers, prefer built-in types over custom sorts when possible
+- Assertions: (assert formula)
+- Commands: (check-sat) and optionally (get-model)
+
 Guidelines:
-- Use appropriate SMT-LIB 2.0 syntax
-- Declare all constants and functions
-- Use proper types (Int, Bool, String, etc.)
 - Add assertions for all given facts
-- Add the query as a final assertion (possibly negated for checking validity)
-- Include (check-sat) and (get-model) commands
-- Be precise and complete
+- Add the query as a final assertion (usually negated to check validity)
+- To prove "If A then B", assert A and (not B), then check-sat. If unsat, the implication is valid.
+- Use quantifiers (forall/exists) only when necessary
 - Return ONLY the SMT2 formula, wrapped in a code block
 
-Example format:
+Example 1 (Simple arithmetic):
 \`\`\`smt2
 (declare-const x Int)
 (assert (> x 0))
+(check-sat)
+(get-model)
+\`\`\`
+
+Example 2 (Logical reasoning with predicates):
+\`\`\`smt2
+(declare-fun Human (String) Bool)
+(declare-fun Mortal (String) Bool)
+
+;; All humans are mortal
+(assert (forall ((x String)) (=> (Human x) (Mortal x))))
+
+;; Socrates is human
+(assert (Human "Socrates"))
+
+;; Query: Is Socrates mortal? (negated to check validity)
+(assert (not (Mortal "Socrates")))
+
 (check-sat)
 (get-model)
 \`\`\``;
