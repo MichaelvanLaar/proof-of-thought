@@ -11,6 +11,17 @@
  * 3. Building context from previous answers
  * 4. Combining all sub-answers into a comprehensive final answer
  *
+ * IMPORTANT: ProofOfThought is designed for LOGICAL REASONING, not arithmetic computation.
+ * Good questions involve:
+ * - Logical deductions (if-then statements)
+ * - Set relationships (all, some, none)
+ * - Syllogistic reasoning (Socrates is human, all humans are mortal)
+ * - Boolean logic (and, or, not)
+ *
+ * Avoid questions that are purely:
+ * - Arithmetic calculations (2 + 2, what is 1/3 of 12)
+ * - Algebraic evaluations (if x = 5, what is 2x - 3)
+ *
  * Prerequisites:
  * - Set OPENAI_API_KEY environment variable
  * - Install Z3 solver (brew install z3, apt-get install z3, or npm install z3-solver)
@@ -43,12 +54,12 @@ async function main() {
   console.log('🔬 Decomposed Prompting Example\n');
   console.log('='.repeat(80));
 
-  // Example 1: Mathematical Word Problem
-  console.log('\n📝 Example 1: Mathematical Word Problem\n');
+  // Example 1: Multi-Step Logical Reasoning
+  console.log('\n📝 Example 1: Multi-Step Logical Deduction\n');
 
   const question1 =
-    'Alice has 12 apples. She gives 1/3 of them to Bob. Bob then gives half of what he received to Carol. How many apples does Carol have?';
-  const context1 = 'Word problem involving fractions and sequential operations.';
+    'If all birds can fly, and all penguins are birds, and Tux is a penguin, can Tux fly?';
+  const context1 = 'Logical reasoning with universal and particular statements.';
 
   console.log(`Question: ${question1}`);
   console.log(`Context: ${context1}\n`);
@@ -130,11 +141,11 @@ async function main() {
 
   // Example 4: Inspecting the Decomposition Process
   console.log('\n\n' + '='.repeat(80));
-  console.log('\n📝 Example 4: Detailed Decomposition Trace\n');
+  console.log('\n📝 Example 4: Detailed Decomposition Trace (Logical Reasoning)\n');
 
   const question4 =
-    'If x = 5 and y = x + 3, what is the value of 2y - x?';
-  const context4 = 'Algebraic evaluation problem.';
+    'If all students who study hard pass exams, and Alice studies hard, and Bob does not study hard, and Carol studies hard, who among them will definitely pass the exam?';
+  const context4 = 'Logical deduction with multiple individuals and conditional statements.';
 
   console.log(`Question: ${question4}`);
   console.log(`Context: ${context4}\n`);
