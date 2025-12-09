@@ -122,8 +122,8 @@ async function main() {
   console.log('\n📝 Example 3: Complex Multi-Part Problem\n');
 
   const question3 =
-    'A train leaves Station A at 60 mph heading toward Station B, 180 miles away. At the same time, another train leaves Station B heading toward Station A at 40 mph. When will they meet, and how far from Station A?';
-  const context3 = 'Classic relative motion problem.';
+    'If all doctors are professionals, and all professionals have licenses, and John is a doctor, does John have a license?';
+  const context3 = 'Multi-step transitive logical reasoning.';
 
   console.log(`Question: ${question3}`);
   console.log(`Context: ${context3}\n`);
@@ -144,8 +144,8 @@ async function main() {
   console.log('\n📝 Example 4: Detailed Decomposition Trace (Logical Reasoning)\n');
 
   const question4 =
-    'If all students who study hard pass exams, and Alice studies hard, and Bob does not study hard, and Carol studies hard, who among them will definitely pass the exam?';
-  const context4 = 'Logical deduction with multiple individuals and conditional statements.';
+    'If all mammals are warm-blooded, and all whales are mammals, is a whale warm-blooded?';
+  const context4 = 'Multi-step logical deduction requiring chain of reasoning.';
 
   console.log(`Question: ${question4}`);
   console.log(`Context: ${context4}\n`);
@@ -172,8 +172,8 @@ async function main() {
   console.log('\n📝 Example 5: Custom Configuration\n');
 
   const question5 =
-    'What are the prime factors of 84, and are any of them also factors of 60?';
-  const context5 = 'Number theory problem.';
+    'If all birds can fly, and penguins are birds, and penguins cannot fly, is there a contradiction?';
+  const context5 = 'Logical consistency check with conflicting statements.';
 
   console.log(`Question: ${question5}`);
   console.log(`Context: ${context5}`);
@@ -198,8 +198,8 @@ async function main() {
   console.log('\n📝 Example 6: Decomposed vs Direct Approach\n');
 
   const question6 =
-    'If a rectangle has length 8 and width 5, what is its perimeter, area, and diagonal length?';
-  const context6 = 'Geometry problem with multiple calculations.';
+    'If all scientists are educated, and some educated people are rich, can we conclude that some scientists are rich?';
+  const context6 = 'Logical reasoning with existential and universal quantifiers.';
 
   console.log(`Question: ${question6}\n`);
 
