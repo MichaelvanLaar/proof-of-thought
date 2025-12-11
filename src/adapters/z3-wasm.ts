@@ -4,12 +4,11 @@
  * This adapter provides Z3 theorem proving using the z3-solver npm package.
  * Works in both Node.js and browser environments via WebAssembly.
  *
- * ⚠️ CURRENT STATUS (v0.1.0 Beta):
- * The WASM adapter is included but the SMT2-to-Z3-API translation layer is incomplete.
- * Currently returns "unknown" for all queries. Native Z3 is required for proper functionality.
- *
- * This implementation provides the architecture for future WASM support.
- * Full SMT2 parsing and execution is planned for v0.2.0.
+ * Features:
+ * - Full SMT2 parsing and execution via z3-solver JavaScript API
+ * - Support for common SMT2 constructs (Int, Bool, Real, arithmetic, logic)
+ * - Works in browsers without native Z3 installation
+ * - Automatic fallback option in Node.js when native Z3 unavailable
  *
  * Note: Requires z3-solver package to be installed.
  */
@@ -18,6 +17,8 @@ import type { VerificationResult } from '../types/index.js';
 import { AbstractZ3Adapter } from './z3-adapter.js';
 import { Z3NotAvailableError, Z3Error } from '../types/errors.js';
 import { logger } from '../utils/logger.js';
+import { parseSMT2, SMT2ParseError, SMT2UnsupportedError } from './smt2-parser.js';
+import { executeSMT2Commands } from './smt2-executor.js';
 
 /**
  * Configuration for Z3 WASM adapter
@@ -98,81 +99,34 @@ export class Z3WASMAdapter extends AbstractZ3Adapter {
     const startTime = Date.now();
 
     try {
-      // Parse and add SMT2 formulas
-      // Note: z3-solver doesn't have direct SMT2 string parsing in all versions
-      // We need to execute the SMT2 commands
-
-      // Split formula into lines and process each command
-      const lines = formula.trim().split('\n');
-      const commands: string[] = [];
-      let buffer = '';
-      let parenCount = 0;
-
-      // Parse SMT2 commands (handle multi-line commands)
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith(';')) continue; // Skip comments and empty lines
-
-        buffer += ' ' + trimmed;
-
-        // Count parentheses to detect complete commands
-        for (const char of trimmed) {
-          if (char === '(') parenCount++;
-          if (char === ')') parenCount--;
-        }
-
-        if (parenCount === 0 && buffer.trim()) {
-          commands.push(buffer.trim());
-          buffer = '';
-        }
+      if (this.config.verbose) {
+        logger.debug('Parsing SMT2 formula...');
       }
 
-      if (buffer.trim()) {
-        commands.push(buffer.trim());
-      }
-
-      // Process commands
-      let hasCheckSat = false;
-      let hasAssertions = false;
-
-      for (const cmd of commands) {
-        if (cmd.startsWith('(declare-')) {
-          hasAssertions = true;
-          // Variable declarations are handled differently
-          // We'll parse these manually if needed
-        } else if (cmd.startsWith('(assert')) {
-          hasAssertions = true;
-          // Extract the assertion content
-          const assertContent = cmd.slice(7, -1).trim(); // Remove (assert and )
-
-          // For now, we'll use a simplified approach
-          // In a full implementation, we'd need a proper SMT2 parser
-          logger.debug(`Processing assertion: ${assertContent.substring(0, 100)}...`);
-        } else if (cmd.startsWith('(check-sat)')) {
-          hasCheckSat = true;
-        }
-      }
-
-      // If no check-sat command, add one
-      if (!hasCheckSat && hasAssertions) {
-        logger.debug('No check-sat found, assuming check for satisfiability');
-      }
-
-      // For now, return a placeholder result since full SMT2 parsing is complex
-      // In a production implementation, you'd need a proper SMT2 -> z3-solver API translator
-      const result: VerificationResult = {
-        result: 'unknown',
-        rawOutput: 'Z3 WASM execution requires full SMT2 parser implementation',
-        executionTime: Date.now() - startTime,
-      };
+      // Parse SMT2 formula into AST
+      const commands = parseSMT2(formula);
 
       if (this.config.verbose) {
-        logger.debug(`Z3 WASM execution completed in ${result.executionTime}ms`);
+        logger.debug(`Parsed ${commands.length} SMT2 commands`);
+      }
+
+      // Execute parsed commands using z3-solver API
+      const result = await executeSMT2Commands(commands, this.z3, this.config.timeout);
+
+      if (this.config.verbose) {
+        logger.debug(`Z3 WASM execution completed: ${result.result} in ${result.executionTime}ms`);
       }
 
       return result;
     } catch (error) {
       const executionTime = Date.now() - startTime;
+
+      // Preserve parsing and unsupported construct errors
+      if (error instanceof SMT2ParseError || error instanceof SMT2UnsupportedError) {
+        throw error;
+      }
+
+      // Wrap other errors as Z3Error
       throw new Z3Error(
         `Z3 WASM execution failed: ${error instanceof Error ? error.message : String(error)}`,
         undefined,

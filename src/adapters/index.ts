@@ -14,3 +14,12 @@ export {
   getZ3InstallationInstructions,
   type RuntimeEnvironment,
 } from './utils.js';
+export {
+  parseSMT2,
+  SMT2ParseError,
+  SMT2UnsupportedError,
+  type SMT2Command,
+  type SMT2Expr,
+  type SMT2Type,
+} from './smt2-parser.js';
+export { executeSMT2Commands } from './smt2-executor.js';

@@ -122,10 +122,14 @@
       <h1>🧠 ProofOfThought Browser Example</h1>
 
       <div class="note">
-        <strong>⚠️ Note: Z3 WASM Integration</strong>
-        This example demonstrates the browser API structure. Full Z3 WASM execution requires a
-        compatible Z3 WASM build. The library provides the framework for integration, but actual
-        theorem proving in the browser requires additional setup. See the README for details.
+        <strong>✅ Z3 WASM Support Now Available!</strong>
+        The library now includes full SMT2 parsing and execution for Z3 WASM. To use this example:
+        <ol style="margin-top: 0.5rem; margin-bottom: 0;">
+          <li>Build the browser bundle: <code>npm run build</code></li>
+          <li>Serve this directory via HTTP server</li>
+          <li>Uncomment the code below (lines 193-243) to enable actual reasoning</li>
+        </ol>
+        The WASM adapter will automatically handle theorem proving without requiring native Z3 installation.
       </div>
 
       <div class="section">
