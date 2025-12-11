@@ -330,6 +330,9 @@ The library supports two Z3 execution modes with different performance character
 ```typescript
 // Tries native Z3 first, falls back to WASM automatically
 const adapter = await createZ3Adapter();
+
+// Or prefer WASM over native (useful for consistent behavior across environments)
+const adapter = await createZ3Adapter({ preferWasm: true });
 ```
 
 **Performance Tips:**

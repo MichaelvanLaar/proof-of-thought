@@ -19,6 +19,7 @@ npm install @michaelvanlaar/proof-of-thought
 - ✅ All four postprocessing methods (Self-Refine, Self-Consistency, Decomposed Prompting, Least-to-Most)
 - ✅ OpenAI and Azure OpenAI support
 - ✅ Comprehensive test coverage (>80%)
+- ✅ Full Z3 WASM support with automatic fallback (NEW!)
 
 ### TypeScript Native
 
@@ -32,6 +33,8 @@ npm install @michaelvanlaar/proof-of-thought
 - 🖥️ **Node.js**: Full support for Node.js 18+
 - 🌐 **Browser**: WASM-based Z3 solver for client-side reasoning
 - 📱 Works in all modern browsers (Chrome, Firefox, Safari, Edge)
+- 🔄 **Automatic Fallback**: Native Z3 → WASM → Error with instructions
+- ⚙️ **Flexible Configuration**: Option to prefer WASM for consistent behavior
 
 ### Performance Optimizations
 

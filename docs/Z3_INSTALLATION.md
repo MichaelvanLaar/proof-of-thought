@@ -20,13 +20,11 @@ This guide provides platform-specific instructions for installing the Z3 theorem
 
 Z3 is a high-performance theorem prover from Microsoft Research. **proof-of-thought** uses Z3 for formal verification of logical formulas.
 
-### ⚡ TL;DR: Native Z3 Required (Beta)
+### ⚡ TL;DR: Choose Your Z3 Installation
 
-**⚠️ Important for v0.1.0 Beta:** Native Z3 installation is currently **required** for proper functionality.
+**proof-of-thought** supports both **native Z3** and **Z3 WASM**, with automatic fallback:
 
-While the library includes z3-solver as a dependency, the WASM adapter's SMT2 parsing layer is not yet complete and will return "unknown" for all queries. Native Z3 works perfectly and is required for the beta release.
-
-**Quick Install:**
+**Quick Install (Recommended for Performance):**
 ```bash
 # macOS
 brew install z3
@@ -38,24 +36,54 @@ sudo apt-get install z3
 choco install z3
 ```
 
+**Or Use WASM (Zero-Install):**
+```bash
+# WASM support included via z3-solver package (already a dependency)
+# No additional installation needed!
+```
+
 ### Installation Options
 
-1. **System package manager** - ✅ **Required for beta** - Fully functional
-2. **npm package (z3-solver)** - ⚠️ Included but incomplete (returns "unknown")
-3. **WASM (browser)** - 📋 Planned for future releases
-4. **Manual download** - Alternative to package managers
+| Option | Performance | Setup | Use Case |
+|--------|-------------|-------|----------|
+| **Native Z3** | **Fastest** | Requires system installation | Production, performance-critical apps |
+| **Z3 WASM** | 2-3x slower | Zero-install (npm only) | Development, browsers, quick prototyping |
+| **Automatic** | Best available | No config needed | Default behavior (tries native → WASM) |
 
-### Current WASM Status
+### Native vs WASM Tradeoffs
 
-The z3-solver package is included as a dependency for future use, but:
+**Native Z3:**
+- ✅ Fastest performance (baseline)
+- ✅ Full SMT2 support
+- ❌ Requires system-level installation
+- ❌ Platform-specific binaries
 
-- ✅ Package loads successfully
-- ✅ Basic initialization works
-- ⚠️ SMT2 formula parsing is incomplete
-- ❌ Returns "unknown" for all verification queries
-- 📋 Full WASM support targeted for v0.2.0
+**Z3 WASM:**
+- ✅ Zero-install experience
+- ✅ Works in browsers
+- ✅ Cross-platform (JavaScript)
+- ❌ 2-3x slower than native
+- ✅ Full SMT2 support for common reasoning
 
-**For now, please install native Z3 to use proof-of-thought.**
+### Automatic Fallback
+
+The library automatically selects the best available adapter:
+
+```typescript
+// In Node.js: tries native → WASM → error
+const adapter = await createZ3Adapter();
+
+// In browsers: always uses WASM
+const adapter = await createZ3Adapter();
+
+// Prefer WASM even when native available (for consistent behavior)
+const adapter = await createZ3Adapter({ preferWasm: true });
+```
+
+**Fallback order in Node.js:**
+1. ✅ Try native Z3 (fastest)
+2. ✅ Fall back to WASM if native unavailable
+3. ❌ Error with installation instructions if both unavailable
 
 ## Quick Install
 

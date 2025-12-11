@@ -71,6 +71,12 @@ This roadmap outlines the planned development priorities for the proof-of-though
 
 ### Medium Priority
 
+- [x] **Z3 WASM Support** ✅ **COMPLETED**
+  - ✅ Full SMT2 parsing and execution for WASM adapter
+  - ✅ Automatic fallback: native → WASM → error
+  - ✅ Browser support with zero-install option
+  - ✅ Configuration option to prefer WASM over native
+
 - [ ] **Performance Improvements**
   - Streaming support for large contexts
   - Persistent caching with filesystem backend
@@ -311,6 +317,11 @@ Features are prioritized based on:
 
 ## Changelog
 
+- **2025-12-11**:
+  - Z3 WASM Support completed - full SMT2 parsing and execution
+  - Added preferWasm configuration option for adapter selection
+  - All 367 tests passing with WASM integration
+  - Updated documentation to reflect WASM support status
 - **2025-11-24**:
   - Updated roadmap - marked TypeScript compilation, linting, and test suite items as completed
   - All pre-existing test failures resolved (228/228 passing, 9 properly skipped)

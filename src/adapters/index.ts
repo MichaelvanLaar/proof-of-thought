@@ -13,6 +13,7 @@ export {
   validateZ3Version,
   getZ3InstallationInstructions,
   type RuntimeEnvironment,
+  type Z3AdapterConfig,
 } from './utils.js';
 export {
   parseSMT2,

@@ -45,6 +45,18 @@ export function isBrowser(): boolean {
 }
 
 /**
+ * Configuration options for Z3 adapter creation
+ */
+export interface Z3AdapterConfig {
+  /** Timeout for Z3 operations in milliseconds */
+  timeout?: number;
+  /** Path to Z3 binary (native adapter only) */
+  z3Path?: string;
+  /** Prefer WASM adapter over native even when native is available (Node.js only) */
+  preferWasm?: boolean;
+}
+
+/**
  * Create appropriate Z3 adapter for current environment with automatic fallback
  *
  * Tries native Z3 first in Node.js, falls back to WASM if not available.
@@ -53,10 +65,7 @@ export function isBrowser(): boolean {
  * @param config - Configuration options
  * @returns Z3 adapter instance for the current environment
  */
-export async function createZ3Adapter(config?: {
-  timeout?: number;
-  z3Path?: string;
-}): Promise<Z3Adapter> {
+export async function createZ3Adapter(config?: Z3AdapterConfig): Promise<Z3Adapter> {
   const env = detectEnvironment();
 
   if (env === 'browser') {
@@ -65,30 +74,59 @@ export async function createZ3Adapter(config?: {
     return new Z3WASMAdapter({ timeout: config?.timeout });
   }
 
-  // Node.js: Try native first, fall back to WASM
-  try {
-    const { Z3NativeAdapter } = await import('./z3-native.js');
-    const nativeAdapter = new Z3NativeAdapter(config);
+  // Node.js: Choose adapter based on preference
+  const preferWasm = config?.preferWasm ?? false;
 
-    // Check if native Z3 is available
-    if (await nativeAdapter.isAvailable()) {
-      return nativeAdapter;
+  if (preferWasm) {
+    // Try WASM first if preferred
+    try {
+      const { Z3WASMAdapter } = await import('./z3-wasm.js');
+      const wasmAdapter = new Z3WASMAdapter({ timeout: config?.timeout });
+
+      if (await wasmAdapter.isAvailable()) {
+        return wasmAdapter;
+      }
+    } catch (_error) {
+      // WASM adapter failed, try native as fallback
     }
-  } catch (_error) {
-    // Native adapter import or initialization failed, try WASM
-  }
 
-  // Fall back to WASM adapter
-  try {
-    const { Z3WASMAdapter } = await import('./z3-wasm.js');
-    const wasmAdapter = new Z3WASMAdapter({ timeout: config?.timeout });
+    // Fall back to native if WASM not available
+    try {
+      const { Z3NativeAdapter } = await import('./z3-native.js');
+      const nativeAdapter = new Z3NativeAdapter(config);
 
-    // Check if WASM is available
-    if (await wasmAdapter.isAvailable()) {
-      return wasmAdapter;
+      if (await nativeAdapter.isAvailable()) {
+        return nativeAdapter;
+      }
+    } catch (_error) {
+      // Native adapter also failed
     }
-  } catch (_error) {
-    // WASM adapter also failed
+  } else {
+    // Try native first (default behavior)
+    try {
+      const { Z3NativeAdapter } = await import('./z3-native.js');
+      const nativeAdapter = new Z3NativeAdapter(config);
+
+      // Check if native Z3 is available
+      if (await nativeAdapter.isAvailable()) {
+        return nativeAdapter;
+      }
+    } catch (_error) {
+      // Native adapter import or initialization failed, try WASM
+    }
+
+    // Fall back to WASM adapter
+    try {
+      const { Z3WASMAdapter } = await import('./z3-wasm.js');
+      const wasmAdapter = new Z3WASMAdapter({ timeout: config?.timeout });
+
+      // Check if WASM is available
+      if (await wasmAdapter.isAvailable()) {
+        return wasmAdapter;
+      }
+    } catch (_error) {
+      // WASM adapter also failed
+    }
   }
 
   // If both failed, throw error
