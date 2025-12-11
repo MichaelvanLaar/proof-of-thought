@@ -22,21 +22,35 @@ self.addEventListener('fetch', function (event) {
   event.respondWith(
     fetch(event.request)
       .then(function (response) {
-        // Clone the response and add COOP/COEP headers
-        const newHeaders = new Headers(response.headers);
-        newHeaders.set('Cross-Origin-Embedder-Policy', 'require-corp');
-        newHeaders.set('Cross-Origin-Opener-Policy', 'same-origin');
+        // Check if this is a navigation request (HTML page)
+        if (event.request.mode === 'navigate' || event.request.destination === 'document') {
+          // For navigation requests, add COOP/COEP headers
+          const newHeaders = new Headers(response.headers);
 
-        const moddedResponse = new Response(response.body, {
-          status: response.status,
-          statusText: response.statusText,
-          headers: newHeaders,
-        });
+          // Use credentialless instead of require-corp for better CDN compatibility
+          newHeaders.set('Cross-Origin-Embedder-Policy', 'credentialless');
+          newHeaders.set('Cross-Origin-Opener-Policy', 'same-origin');
 
-        return moddedResponse;
+          const moddedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: newHeaders,
+          });
+
+          console.log('[SW] Applied COOP/COEP headers to navigation request:', event.request.url);
+          return moddedResponse;
+        }
+
+        // For other requests, return as-is
+        return response;
       })
       .catch(function (e) {
-        console.error('Service worker fetch error:', e);
+        console.error('[SW] Fetch error:', e);
+        // Return a basic error response
+        return new Response('Service Worker fetch failed', {
+          status: 500,
+          statusText: 'Service Worker Error'
+        });
       })
   );
 });
