@@ -17,6 +17,8 @@ export {
 } from './utils.js';
 export {
   parseSMT2,
+  clearParseCache,
+  getParseCacheSize,
   SMT2ParseError,
   SMT2UnsupportedError,
   type SMT2Command,

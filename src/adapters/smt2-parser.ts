@@ -344,7 +344,54 @@ class Parser {
 }
 
 /**
- * Parse SMT2 formula string into AST
+ * Simple LRU cache for parsed formulas
+ */
+class ParseCache {
+  private cache = new Map<string, SMT2Command[]>();
+  private readonly maxSize: number;
+
+  constructor(maxSize = 100) {
+    this.maxSize = maxSize;
+  }
+
+  get(key: string): SMT2Command[] | undefined {
+    const value = this.cache.get(key);
+    if (value !== undefined) {
+      // Move to end (most recently used)
+      this.cache.delete(key);
+      this.cache.set(key, value);
+    }
+    return value;
+  }
+
+  set(key: string, value: SMT2Command[]): void {
+    // Remove oldest entry if at capacity
+    if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value;
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
+    }
+    this.cache.set(key, value);
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+
+  get size(): number {
+    return this.cache.size;
+  }
+}
+
+// Global parse cache (module-level singleton)
+const parseCache = new ParseCache(100);
+
+/**
+ * Parse SMT2 formula string into AST with caching
+ *
+ * This function caches parsed formulas to improve performance for repeated queries.
+ * The cache uses an LRU eviction policy with a maximum size of 100 entries.
  *
  * @param formula - SMT-LIB 2.0 formula as string
  * @returns Array of parsed commands
@@ -352,8 +399,34 @@ class Parser {
  * @throws {SMT2UnsupportedError} If unsupported SMT2 construct
  */
 export function parseSMT2(formula: string): SMT2Command[] {
+  // Check cache first
+  const cached = parseCache.get(formula);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  // Parse and cache
   const tokenizer = new Tokenizer(formula);
   const tokens = tokenizer.getTokens();
   const parser = new Parser(tokens);
-  return parser.parse();
+  const commands = parser.parse();
+
+  parseCache.set(formula, commands);
+  return commands;
+}
+
+/**
+ * Clear the formula parse cache
+ * Useful for testing or to free memory
+ */
+export function clearParseCache(): void {
+  parseCache.clear();
+}
+
+/**
+ * Get the current size of the parse cache
+ * Useful for monitoring cache usage
+ */
+export function getParseCacheSize(): number {
+  return parseCache.size;
 }
