@@ -83,7 +83,12 @@ async function buildAll() {
       treeShaking: true,
       define: {
         'process.env.NODE_ENV': '"development"',
+        'process.platform': '"browser"',
+        'process.version': '"v18.0.0"',
+        'process.versions': '{}',
+        'global': 'globalThis',
       },
+      inject: ['./scripts/process-shim.js'],
     });
     console.log('✅ Browser bundle (development) complete');
     console.log(`   Size: ${(browserDevResult.metafile.outputs['dist/browser.js'].bytes / 1024).toFixed(2)} KB\n`);
@@ -111,7 +116,12 @@ async function buildAll() {
       treeShaking: true,
       define: {
         'process.env.NODE_ENV': '"production"',
+        'process.platform': '"browser"',
+        'process.version': '"v18.0.0"',
+        'process.versions': '{}',
+        'global': 'globalThis',
       },
+      inject: ['./scripts/process-shim.js'],
       legalComments: 'none',
       charset: 'utf8',
     });
