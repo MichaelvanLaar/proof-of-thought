@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,7 +6,10 @@
     <title>ProofOfThought Browser Example</title>
     <style>
       body {
-        font-family: system-ui, -apple-system, sans-serif;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
         max-width: 900px;
         margin: 0 auto;
         padding: 2rem;
@@ -122,14 +125,16 @@
       <h1>🧠 ProofOfThought Browser Example</h1>
 
       <div class="note">
-        <strong>✅ Z3 WASM Support Now Available!</strong>
-        The library now includes full SMT2 parsing and execution for Z3 WASM. To use this example:
-        <ol style="margin-top: 0.5rem; margin-bottom: 0;">
-          <li>Build the browser bundle: <code>npm run build</code></li>
-          <li>Serve this directory via HTTP server</li>
-          <li>Uncomment the code below (lines 193-243) to enable actual reasoning</li>
+        <strong>✅ Fully Functional Browser Example!</strong>
+        This example demonstrates proof-of-thought with Z3 WASM in the browser. To use:
+        <ol style="margin-top: 0.5rem; margin-bottom: 0">
+          <li>Make sure the browser bundle is built: <code>npm run build</code></li>
+          <li>Serve this directory via HTTP server (e.g., <code>python -m http.server 8000</code>)</li>
+          <li>Navigate to <code>http://localhost:8000/examples/browser/</code></li>
+          <li>Enter your OpenAI API key and try the example!</li>
         </ol>
-        The WASM adapter will automatically handle theorem proving without requiring native Z3 installation.
+        The example loads OpenAI SDK from CDN and uses the local browser bundle. The WASM adapter
+        will automatically handle theorem proving without requiring native Z3 installation.
       </div>
 
       <div class="section">
@@ -149,10 +154,9 @@
 
       <div class="section">
         <label for="context">Context:</label>
-        <textarea
-          id="context"
-          placeholder="Enter context for the question"
-        >All humans are mortal. Socrates is human.</textarea>
+        <textarea id="context" placeholder="Enter context for the question">
+All humans are mortal. Socrates is human.</textarea
+        >
       </div>
 
       <div class="section">
@@ -163,11 +167,19 @@
       <div id="result"></div>
     </div>
 
-    <script type="module">
-      // This would normally import from the browser bundle:
-      // import { ProofOfThought, Z3WASMAdapter, DEFAULT_Z3_WASM_URLS } from './dist/browser.js';
+    <!-- Load OpenAI SDK from CDN -->
+    <script type="importmap">
+      {
+        "imports": {
+          "openai": "https://cdn.jsdelivr.net/npm/openai@4.28.0/+esm"
+        }
+      }
+    </script>
 
-      // For demonstration, we'll show the intended API usage:
+    <script type="module">
+      // Import from browser bundle (built with npm run build)
+      import { ProofOfThought, Z3WASMAdapter, DEFAULT_Z3_WASM_URLS } from '../../dist/browser.js';
+      import OpenAI from 'openai';
 
       window.runReasoning = async function () {
         const statusEl = document.getElementById('status');
@@ -193,18 +205,16 @@
         resultEl.innerHTML = '';
 
         try {
-          // Example API usage (would work with actual imports):
-          /*
           // Create OpenAI client
           const client = new OpenAI({
             apiKey: apiKey,
-            dangerouslyAllowBrowser: true // Required for browser usage
+            dangerouslyAllowBrowser: true, // Required for browser usage
           });
 
           // Create Z3 WASM adapter with CDN
           const z3Adapter = new Z3WASMAdapter({
             wasmUrl: DEFAULT_Z3_WASM_URLS.jsdelivr,
-            timeout: 30000
+            timeout: 30000,
           });
 
           // Create ProofOfThought instance
@@ -213,7 +223,7 @@
             z3Adapter,
             backend: 'smt2',
             postprocessing: ['self-refine'],
-            verbose: true
+            verbose: true,
           });
 
           statusEl.innerHTML = '<div class="status info">Running reasoning...</div>';
@@ -229,9 +239,13 @@
               <p><strong>Verified:</strong> ${result.isVerified ? '✅ Yes' : '❌ No'}</p>
               <p><strong>Backend:</strong> ${result.backend}</p>
               <p><strong>Execution Time:</strong> ${result.executionTime}ms</p>
-              ${result.postprocessingMetrics ? `
+              ${
+                result.postprocessingMetrics
+                  ? `
                 <p><strong>Postprocessing:</strong> ${result.postprocessingMetrics.methodsApplied.join(', ')}</p>
-              ` : ''}
+              `
+                  : ''
+              }
               <details>
                 <summary><strong>Proof Steps:</strong></summary>
                 <pre>${JSON.stringify(result.proof, null, 2)}</pre>
@@ -244,47 +258,6 @@
           `;
 
           statusEl.innerHTML = '<div class="status success">✅ Reasoning completed!</div>';
-          */
-
-          // For now, show demo response
-          statusEl.innerHTML =
-            '<div class="status info">Demo mode - showing example structure</div>';
-          resultEl.innerHTML = `
-            <div class="result">
-              <h3>Example Response Structure</h3>
-              <p>This demonstrates the API that would be used with a fully integrated Z3 WASM build:</p>
-              <pre>
-// Create Z3 WASM adapter
-const z3Adapter = new Z3WASMAdapter({
-  wasmUrl: DEFAULT_Z3_WASM_URLS.jsdelivr,  // or .unpkg, or .local
-  timeout: 30000
-});
-
-// Create ProofOfThought instance
-const pot = new ProofOfThought({
-  client: openaiClient,
-  z3Adapter,
-  backend: 'smt2',
-  postprocessing: ['self-refine', 'self-consistency'],
-  verbose: true
-});
-
-// Run reasoning
-const result = await pot.query(
-  "${question}",
-  "${context}"
-);
-
-// Result will include:
-// - answer: string
-// - isVerified: boolean
-// - proof: ReasoningStep[]
-// - backend: 'smt2' | 'json'
-// - executionTime: number
-// - postprocessingMetrics: {...}
-              </pre>
-            </div>
-          `;
         } catch (error) {
           statusEl.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
           console.error('Reasoning error:', error);
