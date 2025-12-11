@@ -375,7 +375,8 @@ Provide a clear, direct answer:`;
     }
 
     // Check formula size to prevent DoS attacks
-    const formulaSize = Buffer.byteLength(formula, 'utf8');
+    // Use TextEncoder for browser compatibility (works in both Node.js and browsers)
+    const formulaSize = new TextEncoder().encode(formula).length;
     if (formulaSize > this.config.maxFormulaSize) {
       throw new ValidationError(
         `Formula size (${formulaSize} bytes) exceeds maximum allowed size (${this.config.maxFormulaSize} bytes)`,
