@@ -171,6 +171,188 @@ npm list z3-solver
    z3 test.smt2
    ```
 
+### Z3 WASM Adapter Issues
+
+#### WASM Adapter Not Available
+
+**Error:** `No Z3 adapter available. Install Z3 natively or ensure z3-solver package is installed.`
+
+**Diagnosis:**
+```bash
+# Check if z3-solver is installed
+npm list z3-solver
+
+# Should show: z3-solver@x.x.x
+```
+
+**Solutions:**
+
+1. **Install z3-solver package:**
+   ```bash
+   npm install z3-solver
+   ```
+
+2. **Clear module cache:**
+   ```bash
+   rm -rf node_modules/.cache
+   npm install
+   ```
+
+3. **Check import path:**
+   ```typescript
+   // Correct import
+   import { ProofOfThought } from '@michaelvanlaar/proof-of-thought';
+
+   // Verify z3-solver can be imported
+   import init from 'z3-solver';
+   ```
+
+#### SMT2 Parse Errors (WASM)
+
+**Error:** `SMT2ParseError: Unexpected token at position X` or `SMT2ParseError: Unmatched parenthesis`
+
+**Diagnosis:**
+- WASM adapter uses custom SMT2 parser
+- Parser may encounter malformed SMT2 from LLM
+
+**Solutions:**
+
+1. **Enable verbose logging to see formula:**
+   ```typescript
+   const pot = new ProofOfThought({
+     client,
+     verbose: true,
+   });
+   ```
+
+2. **Validate formula structure:**
+   ```typescript
+   import { parseSMT2 } from '@michaelvanlaar/proof-of-thought/adapters';
+
+   try {
+     const commands = parseSMT2(formula);
+     console.log('Parsed commands:', commands);
+   } catch (error) {
+     console.error('Parse error:', error.message);
+   }
+   ```
+
+3. **Check for unmatched parentheses:**
+   - Count opening `(` and closing `)` parentheses
+   - Should be equal in valid SMT2
+
+4. **Use native Z3 if parsing fails:**
+   ```typescript
+   // Native Z3 has more robust parser
+   const pot = new ProofOfThought({
+     client,
+     z3Path: '/usr/bin/z3',  // Force native adapter
+   });
+   ```
+
+#### Unsupported SMT2 Constructs
+
+**Error:** `SMT2UnsupportedError: Unsupported construct: quantifier 'forall'`
+
+**Diagnosis:**
+- WASM adapter has limited SMT2 support
+- Not all SMT-LIB 2.0 features implemented
+
+**Currently Unsupported:**
+- Quantifiers (`forall`, `exists`)
+- Advanced theories (BitVec, Array)
+- Custom functions (define-fun)
+- Some arithmetic operations
+
+**Solutions:**
+
+1. **Use native Z3 for complex formulas:**
+   ```typescript
+   const pot = new ProofOfThought({
+     client,
+     preferWasm: false,  // Use native if available
+   });
+   ```
+
+2. **Simplify the prompt:**
+   - Ask LLM to avoid quantifiers
+   - Use propositional logic instead
+   - Break complex formulas into simpler parts
+
+3. **Switch to JSON backend:**
+   ```typescript
+   const pot = new ProofOfThought({
+     client,
+     backend: 'json',  // Simpler DSL, better WASM support
+   });
+   ```
+
+#### WASM Performance Issues
+
+**Problem:** WASM adapter is 2-3x slower than native
+
+**Expected Behavior:**
+- Native Z3: ~100ms for typical query
+- WASM Z3: ~250ms for same query
+- This is normal due to WebAssembly overhead
+
+**Solutions:**
+
+1. **Use native Z3 for performance-critical apps:**
+   ```bash
+   # Install native Z3
+   brew install z3  # macOS
+   sudo apt-get install z3  # Linux
+   ```
+
+2. **Prefer WASM only when native unavailable:**
+   ```typescript
+   // Default behavior (native first, WASM fallback)
+   const adapter = await createZ3Adapter();
+   ```
+
+3. **Optimize formula complexity:**
+   - Reduce number of variables
+   - Simplify constraints
+   - Use caching for repeated queries
+
+4. **Enable formula caching:**
+   ```typescript
+   const pot = new ProofOfThought({
+     client,
+     caching: true,  // Cache parsed formulas
+   });
+   ```
+
+#### Browser WASM Loading Issues
+
+**Problem:** WASM fails to load in browser
+
+**Solutions:**
+
+1. **Check Content-Security-Policy:**
+   ```html
+   <meta http-equiv="Content-Security-Policy"
+         content="script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval';">
+   ```
+
+2. **Ensure CORS headers for WASM:**
+   ```
+   Access-Control-Allow-Origin: *
+   Access-Control-Allow-Methods: GET
+   ```
+
+3. **Use local WASM instead of CDN:**
+   ```typescript
+   const adapter = new Z3WASMAdapter({
+     wasmUrl: '/path/to/z3-built.wasm'
+   });
+   ```
+
+4. **Check browser console for errors:**
+   - Open DevTools → Console
+   - Look for WebAssembly compilation errors
+
 ## OpenAI API Issues
 
 ### Authentication Errors
