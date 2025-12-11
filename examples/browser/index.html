@@ -181,12 +181,24 @@ All humans are mortal. Socrates is human.</textarea
     <!-- Register service worker for COOP/COEP headers (required for SharedArrayBuffer) -->
     <script>
       if ('serviceWorker' in navigator) {
+        // Register the service worker
         navigator.serviceWorker.register('./sw.js').then(
           function (registration) {
             console.log('COOP/COEP Service Worker registered', registration.scope);
-            // Reload on first registration to enable headers
-            if (registration.active && !navigator.serviceWorker.controller) {
-              window.location.reload();
+
+            // Check if we need to reload to activate the service worker
+            if (!navigator.serviceWorker.controller) {
+              console.log('Service worker not controlling page yet. Reloading to activate...');
+              // Add a flag to prevent infinite reload loop
+              if (!sessionStorage.getItem('sw-reload-attempted')) {
+                sessionStorage.setItem('sw-reload-attempted', 'true');
+                window.location.reload();
+              } else {
+                console.warn('Service worker reload attempted but not activated. Headers may not be set.');
+              }
+            } else {
+              console.log('✓ Service worker is controlling the page');
+              sessionStorage.removeItem('sw-reload-attempted');
             }
           },
           function (err) {
@@ -202,6 +214,14 @@ All humans are mortal. Socrates is human.</textarea
       // Import from browser bundle (built with npm run build)
       import { ProofOfThought, Z3WASMAdapter } from '../../dist/browser.js';
       import OpenAI from 'openai';
+
+      // Check if SharedArrayBuffer is available (required for z3-solver)
+      if (typeof SharedArrayBuffer === 'undefined') {
+        console.warn('SharedArrayBuffer not available. Service worker may not be active yet.');
+        console.warn('Please refresh the page if you see errors about Mutex or threading.');
+      } else {
+        console.log('✓ SharedArrayBuffer is available - z3-solver threading will work');
+      }
 
       window.runReasoning = async function () {
         const statusEl = document.getElementById('status');
@@ -219,6 +239,13 @@ All humans are mortal. Socrates is human.</textarea
 
         if (!question) {
           statusEl.innerHTML = '<div class="status error">Please enter a question</div>';
+          return;
+        }
+
+        // Check if SharedArrayBuffer is available (required for z3-solver)
+        if (typeof SharedArrayBuffer === 'undefined') {
+          statusEl.innerHTML = '<div class="status error">SharedArrayBuffer is not available. Please refresh the page to activate the service worker, then try again.</div>';
+          button.disabled = false;
           return;
         }
 
