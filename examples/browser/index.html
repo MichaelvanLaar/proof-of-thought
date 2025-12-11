@@ -167,18 +167,19 @@ All humans are mortal. Socrates is human.</textarea
       <div id="result"></div>
     </div>
 
-    <!-- Load OpenAI SDK from CDN -->
+    <!-- Load dependencies from CDN -->
     <script type="importmap">
       {
         "imports": {
-          "openai": "https://cdn.jsdelivr.net/npm/openai@4.28.0/+esm"
+          "openai": "https://cdn.jsdelivr.net/npm/openai@4.28.0/+esm",
+          "z3-solver": "https://cdn.jsdelivr.net/npm/z3-solver@4.12.2/build/browser.js"
         }
       }
     </script>
 
     <script type="module">
       // Import from browser bundle (built with npm run build)
-      import { ProofOfThought, Z3WASMAdapter, DEFAULT_Z3_WASM_URLS } from '../../dist/browser.js';
+      import { ProofOfThought, Z3WASMAdapter } from '../../dist/browser.js';
       import OpenAI from 'openai';
 
       window.runReasoning = async function () {
@@ -211,10 +212,11 @@ All humans are mortal. Socrates is human.</textarea
             dangerouslyAllowBrowser: true, // Required for browser usage
           });
 
-          // Create Z3 WASM adapter with CDN
+          // Create Z3 WASM adapter
+          // z3-solver is loaded from CDN via importmap
           const z3Adapter = new Z3WASMAdapter({
-            wasmUrl: DEFAULT_Z3_WASM_URLS.jsdelivr,
             timeout: 30000,
+            verbose: true,
           });
 
           // Create ProofOfThought instance
