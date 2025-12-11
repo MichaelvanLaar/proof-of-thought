@@ -131,10 +131,11 @@
           <li>Make sure the browser bundle is built: <code>npm run build</code></li>
           <li>Serve this directory via HTTP server (e.g., <code>python -m http.server 8000</code>)</li>
           <li>Navigate to <code>http://localhost:8000/examples/browser/</code></li>
+          <li>On first load, the page will automatically reload to enable SharedArrayBuffer support</li>
           <li>Enter your OpenAI API key and try the example!</li>
         </ol>
-        The example loads OpenAI SDK from CDN and uses the local browser bundle. The WASM adapter
-        will automatically handle theorem proving without requiring native Z3 installation.
+        The example uses a service worker to enable COOP/COEP headers required for SharedArrayBuffer.
+        The WASM adapter will automatically handle theorem proving without requiring native Z3 installation.
       </div>
 
       <div class="section">
@@ -174,6 +175,26 @@ All humans are mortal. Socrates is human.</textarea
           "openai": "https://cdn.jsdelivr.net/npm/openai@4.28.0/+esm",
           "z3-solver": "https://cdn.jsdelivr.net/npm/z3-solver@4.12.2/+esm"
         }
+      }
+    </script>
+
+    <!-- Register service worker for COOP/COEP headers (required for SharedArrayBuffer) -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').then(
+          function (registration) {
+            console.log('COOP/COEP Service Worker registered', registration.scope);
+            // Reload on first registration to enable headers
+            if (registration.active && !navigator.serviceWorker.controller) {
+              window.location.reload();
+            }
+          },
+          function (err) {
+            console.error('COOP/COEP Service Worker failed to register', err);
+          }
+        );
+      } else {
+        console.warn('Service Worker not supported - SharedArrayBuffer may not be available');
       }
     </script>
 
