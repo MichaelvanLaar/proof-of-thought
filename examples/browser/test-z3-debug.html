@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Z3 Debug Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 { margin-top: 0; color: #333; }
+    h3 { margin-bottom: 0.5rem; }
+    .test-case {
+      margin: 1.5rem 0;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .test-case pre {
+      background: #f8f9fa;
+      padding: 0.5rem;
+      overflow-x: auto;
+      font-size: 0.85rem;
+    }
+    .status {
+      padding: 0.5rem 1rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    .info { background: #d1ecf1; color: #0c5460; }
+    .warning { background: #fff3cd; color: #856404; }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-right: 0.5rem;
+    }
+    button:hover { background: #0056b3; }
+    button:disabled { background: #6c757d; cursor: not-allowed; }
+    #log {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      max-height: 400px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Z3 Direct Test</h1>
+    <p>This page tests Z3 solver directly to debug the "unknown" result issue.</p>
+
+    <div id="sabStatus"></div>
+
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="clearLog()">Clear Log</button>
+
+    <h3>Console Log:</h3>
+    <div id="log">Click "Run All Tests" to start...</div>
+
+    <div id="results"></div>
+  </div>
+
+  <!-- Global shim -->
+  <script>
+    if (typeof global === 'undefined') {
+      window.global = globalThis;
+    }
+  </script>
+
+  <!-- Load Z3 WASM -->
+  <script src="https://cdn.jsdelivr.net/npm/z3-solver@4.15.4/build/z3-built.js"></script>
+
+  <script>
+    if (typeof initZ3 !== 'undefined') {
+      if (typeof global !== 'undefined') global.initZ3 = initZ3;
+      if (typeof globalThis !== 'undefined') globalThis.initZ3 = initZ3;
+    }
+  </script>
+
+  <!-- Service Worker registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').then(
+        function (registration) {
+          console.log('[Main] Service Worker registered');
+          navigator.serviceWorker.ready.then(function() {
+            if (!navigator.serviceWorker.controller) {
+              const reloadCount = parseInt(sessionStorage.getItem('z3-test-reload') || '0');
+              if (reloadCount < 2) {
+                sessionStorage.setItem('z3-test-reload', String(reloadCount + 1));
+                location.reload();
+              }
+            } else {
+              sessionStorage.removeItem('z3-test-reload');
+            }
+          });
+        }
+      );
+    }
+  </script>
+
+  <!-- No importmap needed for z3-solver - we use initZ3 directly -->
+
+  <script type="module">
+    const logEl = document.getElementById('log');
+    const resultsEl = document.getElementById('results');
+    const sabStatusEl = document.getElementById('sabStatus');
+
+    function log(msg, type = 'info') {
+      const timestamp = new Date().toISOString().split('T')[1].slice(0, 12);
+      const colors = {
+        info: '#61afef',
+        success: '#98c379',
+        error: '#e06c75',
+        warn: '#e5c07b'
+      };
+      logEl.innerHTML += `<span style="color:${colors[type] || colors.info}">[${timestamp}] ${msg}</span>\n`;
+      logEl.scrollTop = logEl.scrollHeight;
+      console.log(`[${type}] ${msg}`);
+    }
+
+    window.clearLog = function() {
+      logEl.innerHTML = '';
+    };
+
+    // Check SharedArrayBuffer
+    const sabAvailable = typeof SharedArrayBuffer !== 'undefined';
+    sabStatusEl.innerHTML = sabAvailable
+      ? '<div class="status success">SharedArrayBuffer is available</div>'
+      : '<div class="status error">SharedArrayBuffer is NOT available - Z3 will not work!</div>';
+
+    window.runAllTests = async function() {
+      if (!sabAvailable) {
+        log('SharedArrayBuffer not available. Please reload after service worker is active.', 'error');
+        return;
+      }
+
+      log('Starting Z3 tests...', 'info');
+      resultsEl.innerHTML = '';
+
+      try {
+        // Initialize Z3 using initZ3 directly (loaded from z3-built.js)
+        log('Checking for initZ3...', 'info');
+        if (typeof initZ3 === 'undefined') {
+          throw new Error('initZ3 not found. Make sure z3-built.js is loaded.');
+        }
+
+        log('Initializing Z3 via initZ3...', 'info');
+        const Z3 = await initZ3();
+
+        log('Z3 low-level API loaded', 'success');
+        log('Using Z3 SMT2 string evaluation API directly', 'info');
+
+        // Helper function to evaluate SMT2 using low-level API
+        async function evalSMT2(smt2Code) {
+          // Create a Z3 context
+          const cfg = Z3._Z3_mk_config();
+          const ctx = Z3._Z3_mk_context(cfg);
+          Z3._Z3_del_config(cfg);
+
+          try {
+            // Evaluate SMT2 string
+            const resultPtr = await Z3._async_Z3_eval_smtlib2_string(ctx, smt2Code);
+            const result = Z3.UTF8ToString(resultPtr);
+            return result.trim();
+          } finally {
+            Z3._Z3_del_context(ctx);
+          }
+        }
+
+        log('Z3 initialized successfully!', 'success');
+
+        // Test 1: Simple SAT
+        await runTest('Simple SAT (x > 0)', async () => {
+          const smt2 = `
+(declare-const x Int)
+(assert (> x 0))
+(check-sat)
+`;
+          const result = await evalSMT2(smt2);
+          return { result, expected: 'sat' };
+        });
+
+        // Test 2: Simple UNSAT
+        await runTest('Simple UNSAT (x > 10 AND x < 5)', async () => {
+          const smt2 = `
+(declare-const x Int)
+(assert (> x 10))
+(assert (< x 5))
+(check-sat)
+`;
+          const result = await evalSMT2(smt2);
+          return { result, expected: 'unsat' };
+        });
+
+        // Test 3: Boolean UNSAT (P AND NOT P)
+        await runTest('Boolean UNSAT (P AND NOT P)', async () => {
+          const smt2 = `
+(declare-const P Bool)
+(assert P)
+(assert (not P))
+(check-sat)
+`;
+          const result = await evalSMT2(smt2);
+          return { result, expected: 'unsat' };
+        });
+
+        // Test 4: Modus Ponens (valid argument - should be UNSAT)
+        await runTest('Modus Ponens: P, P=>Q |- Q (should be UNSAT)', async () => {
+          const smt2 = `
+(declare-const P Bool)
+(declare-const Q Bool)
+(assert P)
+(assert (=> P Q))
+(assert (not Q))
+(check-sat)
+`;
+          const result = await evalSMT2(smt2);
+          return { result, expected: 'unsat' };
+        });
+
+        // Test 5: Socrates example (should be UNSAT)
+        await runTest('Socrates: Human=>Mortal, Human |- Mortal (should be UNSAT)', async () => {
+          const smt2 = `
+(declare-const socrates_is_human Bool)
+(declare-const socrates_is_mortal Bool)
+(assert (=> socrates_is_human socrates_is_mortal))
+(assert socrates_is_human)
+(assert (not socrates_is_mortal))
+(check-sat)
+`;
+          const result = await evalSMT2(smt2);
+          return { result, expected: 'unsat' };
+        });
+
+        // Test 6: SAT with model
+        await runTest('SAT with model request', async () => {
+          const smt2 = `
+(declare-const x Int)
+(declare-const y Int)
+(assert (> x 0))
+(assert (< y 10))
+(assert (= (+ x y) 15))
+(check-sat)
+(get-model)
+`;
+          const result = await evalSMT2(smt2);
+          // Result should contain "sat" and model info
+          const hasSat = result.includes('sat');
+          const hasModel = result.includes('model') || result.includes('define-fun');
+          return {
+            result: hasSat ? 'sat' : 'unknown',
+            expected: 'sat',
+            debug: { rawOutput: result.substring(0, 500), hasModel }
+          };
+        });
+
+        // Test 7: Complex logic (should be UNSAT)
+        await runTest('Complex: (A=>B), (B=>C), A, NOT C (should be UNSAT)', async () => {
+          const smt2 = `
+(declare-const A Bool)
+(declare-const B Bool)
+(declare-const C Bool)
+(assert (=> A B))
+(assert (=> B C))
+(assert A)
+(assert (not C))
+(check-sat)
+`;
+          const result = await evalSMT2(smt2);
+          return { result, expected: 'unsat' };
+        });
+
+        log('All tests completed!', 'success');
+
+      } catch (error) {
+        log('Error: ' + error.message, 'error');
+        console.error(error);
+      }
+    };
+
+    async function runTest(name, testFn) {
+      log(`Running: ${name}...`, 'info');
+
+      const testDiv = document.createElement('div');
+      testDiv.className = 'test-case';
+
+      try {
+        const { result, expected, reason, debug } = await testFn();
+        const passed = String(result).toLowerCase() === expected;
+
+        testDiv.innerHTML = `
+          <h3>${passed ? '' : ''} ${name}</h3>
+          <div class="status ${passed ? 'success' : 'error'}">
+            Result: <strong>${result}</strong> (expected: ${expected})
+            ${reason ? '<br>Reason: ' + reason : ''}
+          </div>
+          ${debug ? '<pre>Debug: ' + JSON.stringify(debug, null, 2) + '</pre>' : ''}
+        `;
+
+        log(`  Result: ${result} (expected: ${expected}) - ${passed ? 'PASS' : 'FAIL'}`, passed ? 'success' : 'error');
+        if (reason) {
+          log(`  Reason: ${reason}`, 'warn');
+        }
+
+      } catch (error) {
+        testDiv.innerHTML = `
+          <h3>${name}</h3>
+          <div class="status error">Error: ${error.message}</div>
+        `;
+        log(`  Error: ${error.message}`, 'error');
+      }
+
+      resultsEl.appendChild(testDiv);
+    }
+  </script>
+</body>
+</html>

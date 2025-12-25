@@ -118,6 +118,52 @@
         display: block;
         margin-bottom: 0.5rem;
       }
+      .answer-section {
+        margin: 1rem 0;
+      }
+      .answer-content {
+        margin-top: 0.5rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-left: 3px solid #007bff;
+        border-radius: 4px;
+        line-height: 1.6;
+      }
+      .answer-content p {
+        margin: 0.5rem 0;
+      }
+      .answer-content p:first-child {
+        margin-top: 0;
+      }
+      .answer-content p:last-child {
+        margin-bottom: 0;
+      }
+      .answer-content strong {
+        color: #0056b3;
+        font-weight: 600;
+      }
+      .answer-content code {
+        background: #e9ecef;
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 0.9em;
+      }
+      .answer-content pre {
+        background: #282c34;
+        color: #abb2bf;
+        padding: 1rem;
+        border-radius: 4px;
+        overflow-x: auto;
+        margin: 0.75rem 0;
+      }
+      .answer-content pre code {
+        background: transparent;
+        padding: 0;
+        color: inherit;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
     </style>
   </head>
   <body>
@@ -168,46 +214,121 @@ All humans are mortal. Socrates is human.</textarea
       <div id="result"></div>
     </div>
 
+    <!-- Global shim for z3-solver browser compatibility -->
+    <!-- z3-solver browser.js expects global.initZ3 but browsers have window/globalThis -->
+    <script>
+      // Create global shim before loading z3-built.js
+      if (typeof global === 'undefined') {
+        window.global = globalThis;
+      }
+    </script>
+
+    <!-- Load Z3 WASM build locally to avoid CORS issues with Web Workers -->
+    <!-- This sets window.initZ3 which becomes global.initZ3 via the shim above -->
+    <script src="./z3-built.js"></script>
+
+    <!-- Verify initZ3 is available -->
+    <script>
+      if (typeof initZ3 === 'undefined') {
+        console.error('❌ initZ3 not defined after loading z3-built.js');
+      } else {
+        console.log('✅ initZ3 loaded successfully');
+        // Ensure it's available on global/globalThis for z3-solver
+        if (typeof global !== 'undefined') global.initZ3 = initZ3;
+        if (typeof globalThis !== 'undefined') globalThis.initZ3 = initZ3;
+      }
+    </script>
+
     <!-- Load dependencies from CDN -->
+    <!-- z3-solver provides high-level API that wraps initZ3 (loaded above) with Context, Solver, etc. -->
     <script type="importmap">
       {
         "imports": {
           "openai": "https://cdn.jsdelivr.net/npm/openai@4.28.0/+esm",
-          "z3-solver": "https://cdn.jsdelivr.net/npm/z3-solver@4.12.2/+esm"
+          "z3-solver": "https://cdn.jsdelivr.net/npm/z3-solver@4.15.4/+esm"
         }
       }
     </script>
 
     <!-- Register service worker for COOP/COEP headers (required for SharedArrayBuffer) -->
     <script>
+      // Diagnostic function to check SharedArrayBuffer availability
+      function checkSharedArrayBuffer() {
+        const available = typeof SharedArrayBuffer !== 'undefined';
+        const crossOriginIsolated = self.crossOriginIsolated || false;
+
+        console.log('=== SharedArrayBuffer Diagnostics ===');
+        console.log('SharedArrayBuffer available:', available);
+        console.log('crossOriginIsolated:', crossOriginIsolated);
+        console.log('Service Worker controller:', navigator.serviceWorker.controller ? 'Active' : 'None');
+
+        if (!available) {
+          console.warn('⚠️ SharedArrayBuffer is NOT available');
+          console.warn('This usually means COOP/COEP headers are not set correctly');
+          console.warn('Check that:');
+          console.warn('  1. Service worker is active (see above)');
+          console.warn('  2. Page has been reloaded after service worker activation');
+          console.warn('  3. Browser supports COOP/COEP headers');
+        } else {
+          console.log('✅ SharedArrayBuffer is available!');
+        }
+
+        return { available, crossOriginIsolated };
+      }
+
       if ('serviceWorker' in navigator) {
         // Register the service worker
         navigator.serviceWorker.register('./sw.js').then(
           function (registration) {
-            console.log('COOP/COEP Service Worker registered', registration.scope);
+            console.log('[Main] Service Worker registered:', registration.scope);
 
-            // Check if we need to reload to activate the service worker
-            if (!navigator.serviceWorker.controller) {
-              console.log('Service worker not controlling page yet. Reloading to activate...');
-              // Add a flag to prevent infinite reload loop
-              if (!sessionStorage.getItem('sw-reload-attempted')) {
-                sessionStorage.setItem('sw-reload-attempted', 'true');
-                window.location.reload();
+            // Wait for the service worker to be ready
+            navigator.serviceWorker.ready.then(function () {
+              console.log('[Main] Service Worker is ready');
+
+              // Check if we need to reload to activate the service worker
+              if (!navigator.serviceWorker.controller) {
+                console.log('[Main] No controller yet. Reloading to activate...');
+                // Add a flag to prevent infinite reload loop
+                const reloadCount = parseInt(sessionStorage.getItem('sw-reload-count') || '0');
+                if (reloadCount < 2) {
+                  sessionStorage.setItem('sw-reload-count', String(reloadCount + 1));
+                  window.location.reload();
+                } else {
+                  console.error('[Main] Service worker failed to activate after 2 reloads');
+                  console.error('Please try:');
+                  console.error('  1. Clear browser cache and reload');
+                  console.error('  2. Unregister service workers in DevTools > Application > Service Workers');
+                  console.error('  3. Hard reload (Ctrl+Shift+R or Cmd+Shift+R)');
+                }
               } else {
-                console.warn('Service worker reload attempted but not activated. Headers may not be set.');
+                console.log('[Main] ✓ Service worker is controlling the page');
+                sessionStorage.removeItem('sw-reload-count');
+
+                // Check SharedArrayBuffer availability
+                setTimeout(checkSharedArrayBuffer, 100);
               }
-            } else {
-              console.log('✓ Service worker is controlling the page');
-              sessionStorage.removeItem('sw-reload-attempted');
-            }
+            });
           },
           function (err) {
-            console.error('COOP/COEP Service Worker failed to register', err);
+            console.error('[Main] Service Worker registration failed:', err);
           }
         );
+
+        // Listen for service worker updates
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          console.log('[Main] Service worker controller changed - reloading page');
+          window.location.reload();
+        });
       } else {
-        console.warn('Service Worker not supported - SharedArrayBuffer may not be available');
+        console.error('[Main] Service Workers not supported in this browser');
+        console.error('SharedArrayBuffer will not be available');
       }
+
+      // Run diagnostics on page load
+      window.addEventListener('load', function () {
+        setTimeout(checkSharedArrayBuffer, 500);
+      });
     </script>
 
     <script type="module">
@@ -215,12 +336,84 @@ All humans are mortal. Socrates is human.</textarea
       import { ProofOfThought, Z3WASMAdapter } from '../../dist/browser.js';
       import OpenAI from 'openai';
 
-      // Check if SharedArrayBuffer is available (required for z3-solver)
-      if (typeof SharedArrayBuffer === 'undefined') {
-        console.warn('SharedArrayBuffer not available. Service worker may not be active yet.');
-        console.warn('Please refresh the page if you see errors about Mutex or threading.');
-      } else {
-        console.log('✓ SharedArrayBuffer is available - z3-solver threading will work');
+      // Comprehensive SharedArrayBuffer check
+      const sabAvailable = typeof SharedArrayBuffer !== 'undefined';
+      const coiStatus = self.crossOriginIsolated || false;
+
+      console.log('=== Module Initialization ===');
+      console.log('SharedArrayBuffer:', sabAvailable ? '✅ Available' : '❌ Not Available');
+      console.log('Cross-Origin Isolated:', coiStatus ? '✅ Yes' : '❌ No');
+
+      if (!sabAvailable) {
+        console.error('⚠️ CRITICAL: SharedArrayBuffer is not available!');
+        console.error('Z3 WASM requires SharedArrayBuffer to function.');
+        console.error('');
+        console.error('Troubleshooting steps:');
+        console.error('1. Check browser console for service worker messages');
+        console.error('2. Verify service worker is active in DevTools > Application > Service Workers');
+        console.error('3. Try unregistering all service workers and hard reload');
+        console.error('4. Ensure you\'re using a modern browser (Chrome 92+, Firefox 89+, Safari 15.2+)');
+        console.error('5. Check that the page is served over HTTP (not file://)');
+      }
+
+      /**
+       * Convert basic markdown to HTML
+       * Handles: **bold**, *italic*, `code`, code blocks, and line breaks
+       */
+      function markdownToHtml(text) {
+        if (!text) return '';
+
+        // Store code blocks temporarily to protect them from other conversions
+        const codeBlocks = [];
+        let codeBlockIndex = 0;
+
+        // Extract code blocks (```language\ncode\n```)
+        let html = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, language, code) => {
+          const placeholder = `__CODE_BLOCK_${codeBlockIndex}__`;
+          codeBlocks.push({ language: language || '', code: code.trim() });
+          codeBlockIndex++;
+          return placeholder;
+        });
+
+        // Escape HTML to prevent XSS
+        html = html
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+
+        // Convert markdown syntax (order matters!)
+        html = html
+          // Bold: **text** or __text__ (do this first before italic)
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/__(.+?)__/g, '<strong>$1</strong>')
+          // Inline code: `code` (do this before italic to avoid conflicts)
+          .replace(/`(.+?)`/g, '<code>$1</code>')
+          // Italic: *text* or _text_ (single asterisk/underscore, not part of bold)
+          .replace(/\*([^*]+?)\*/g, '<em>$1</em>')
+          .replace(/_([^_]+?)_/g, '<em>$1</em>')
+          // Line breaks: double newline -> paragraph break, single newline -> <br>
+          .replace(/\n\n+/g, '</p><p>')
+          .replace(/\n/g, '<br>');
+
+        // Wrap in paragraph if not already
+        if (!html.startsWith('<p>')) {
+          html = '<p>' + html + '</p>';
+        }
+
+        // Restore code blocks (after escaping, so code is safe)
+        codeBlocks.forEach((block, index) => {
+          const placeholder = `__CODE_BLOCK_${index}__`;
+          // Escape the code content for HTML
+          const escapedCode = block.code
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+          const codeBlockHtml = `<pre><code class="language-${block.language}">${escapedCode}</code></pre>`;
+          html = html.replace(placeholder, codeBlockHtml);
+        });
+
+        return html;
       }
 
       window.runReasoning = async function () {
@@ -285,7 +478,10 @@ All humans are mortal. Socrates is human.</textarea
           resultEl.innerHTML = `
             <div class="result">
               <h3>Result</h3>
-              <p><strong>Answer:</strong> ${result.answer}</p>
+              <div class="answer-section">
+                <strong>Answer:</strong>
+                <div class="answer-content">${markdownToHtml(result.answer)}</div>
+              </div>
               <p><strong>Verified:</strong> ${result.isVerified ? '✅ Yes' : '❌ No'}</p>
               <p><strong>Backend:</strong> ${result.backend}</p>
               <p><strong>Execution Time:</strong> ${result.executionTime}ms</p>

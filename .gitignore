@@ -159,3 +159,7 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+
+# Z3 WASM files (users download these locally)
+examples/browser/z3-built.js
+examples/browser/z3-built.wasm

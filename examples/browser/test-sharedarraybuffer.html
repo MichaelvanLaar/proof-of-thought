@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SharedArrayBuffer Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-top: 0;
+      color: #333;
+    }
+    .status {
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .detail {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-left: 4px solid #007bff;
+      margin: 1rem 0;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 1rem;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔬 SharedArrayBuffer Diagnostic Test</h1>
+    <p>This page tests whether SharedArrayBuffer is available, which is required for Z3 WASM to function.</p>
+
+    <div id="results"></div>
+
+    <button onclick="runTest()">Re-run Test</button>
+    <button onclick="unregisterSW()">Unregister Service Workers</button>
+    <button onclick="location.reload(true)">Hard Reload</button>
+  </div>
+
+  <script>
+    function unregisterSW() {
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        let count = registrations.length;
+        for(let registration of registrations) {
+          registration.unregister();
+        }
+        alert(`Unregistered ${count} service worker(s). Click OK to reload.`);
+        sessionStorage.clear();
+        location.reload();
+      });
+    }
+
+    function runTest() {
+      const resultsDiv = document.getElementById('results');
+      let html = '';
+
+      // Test 1: Protocol check
+      html += '<h3>Test 1: Protocol Check</h3>';
+      const protocol = location.protocol;
+      if (protocol === 'http:' || protocol === 'https:') {
+        html += '<div class="status success">✅ Protocol: ' + protocol + ' (OK)</div>';
+      } else {
+        html += '<div class="status error">❌ Protocol: ' + protocol + ' (Must be http: or https:)</div>';
+        html += '<div class="detail">File:// protocol is not supported. Please use a web server.</div>';
+      }
+
+      // Test 2: Service Worker support
+      html += '<h3>Test 2: Service Worker Support</h3>';
+      if ('serviceWorker' in navigator) {
+        html += '<div class="status success">✅ Service Workers are supported</div>';
+      } else {
+        html += '<div class="status error">❌ Service Workers are NOT supported</div>';
+        html += '<div class="detail">Your browser does not support Service Workers. Try updating your browser.</div>';
+      }
+
+      // Test 3: Service Worker status
+      html += '<h3>Test 3: Service Worker Status</h3>';
+      if (navigator.serviceWorker.controller) {
+        html += '<div class="status success">✅ Service Worker is active and controlling this page</div>';
+        html += '<div class="detail">Scope: ' + navigator.serviceWorker.controller.scriptURL + '</div>';
+      } else {
+        html += '<div class="status error">❌ No Service Worker controller</div>';
+        html += '<div class="detail">Service worker is not controlling this page. It may need to reload.</div>';
+      }
+
+      // Test 4: SharedArrayBuffer availability
+      html += '<h3>Test 4: SharedArrayBuffer Availability</h3>';
+      if (typeof SharedArrayBuffer !== 'undefined') {
+        html += '<div class="status success">✅ SharedArrayBuffer is AVAILABLE!</div>';
+        html += '<div class="detail">Z3 WASM should work correctly.</div>';
+      } else {
+        html += '<div class="status error">❌ SharedArrayBuffer is NOT available</div>';
+        html += '<div class="detail">This means COOP/COEP headers are not set correctly.</div>';
+      }
+
+      // Test 5: Cross-origin isolation
+      html += '<h3>Test 5: Cross-Origin Isolation</h3>';
+      const isolated = self.crossOriginIsolated || false;
+      if (isolated) {
+        html += '<div class="status success">✅ Page is cross-origin isolated</div>';
+      } else {
+        html += '<div class="status error">❌ Page is NOT cross-origin isolated</div>';
+        html += '<div class="detail">COOP/COEP headers are missing or incorrect.</div>';
+      }
+
+      // Test 6: Browser info
+      html += '<h3>Browser Information</h3>';
+      html += '<div class="detail">' + navigator.userAgent + '</div>';
+
+      // Test 7: Get service worker registrations
+      html += '<h3>Service Worker Registrations</h3>';
+      const regDiv = document.createElement('div');
+      regDiv.className = 'detail';
+      regDiv.textContent = 'Loading...';
+
+      navigator.serviceWorker.getRegistrations().then(regs => {
+        if (regs.length === 0) {
+          regDiv.innerHTML = 'No service workers registered';
+        } else {
+          regDiv.innerHTML = 'Found ' + regs.length + ' service worker(s):<br>';
+          regs.forEach((reg, i) => {
+            regDiv.innerHTML += '<br>[' + i + '] Scope: ' + reg.scope;
+            regDiv.innerHTML += '<br>[' + i + '] State: ' + (reg.active ? reg.active.state : 'none');
+          });
+        }
+      });
+
+      html += regDiv.outerHTML;
+
+      // Recommendations
+      html += '<h3>Recommendations</h3>';
+      if (typeof SharedArrayBuffer === 'undefined') {
+        html += '<div class="detail">';
+        html += '<strong>SharedArrayBuffer is not available. Try these steps:</strong><br><br>';
+        html += '1. Check that sw.js is in the same directory as this file<br>';
+        html += '2. Open DevTools (F12) > Console and look for service worker messages<br>';
+        html += '3. Go to DevTools > Application > Service Workers<br>';
+        html += '4. Click "Unregister" if a service worker is listed<br>';
+        html += '5. Clear site data: Application > Storage > Clear site data<br>';
+        html += '6. Hard reload this page (Ctrl+Shift+R or Cmd+Shift+R)<br>';
+        html += '7. Wait for automatic reload after service worker registration<br><br>';
+        html += '<strong>If still not working:</strong><br>';
+        html += '• Try a different browser (Chrome/Edge 92+, Firefox 89+)<br>';
+        html += '• Check TROUBLESHOOTING.md for more solutions<br>';
+        html += '• Consider using server-side COOP/COEP headers instead<br>';
+        html += '</div>';
+      } else {
+        html += '<div class="detail" style="background: #d4edda; border-color: #c3e6cb;">';
+        html += '<strong>✅ Everything looks good!</strong><br><br>';
+        html += 'SharedArrayBuffer is available. You can now use the main example.<br>';
+        html += 'Go to <a href="index.html">index.html</a> to try the full application.';
+        html += '</div>';
+      }
+
+      resultsDiv.innerHTML = html;
+    }
+
+    // Set up global shim for z3-solver compatibility
+    if (typeof global === 'undefined') {
+      window.global = globalThis;
+    }
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').then(
+        function (registration) {
+          console.log('[Test] Service Worker registered:', registration.scope);
+
+          navigator.serviceWorker.ready.then(function() {
+            if (!navigator.serviceWorker.controller) {
+              console.log('[Test] Reloading to activate service worker...');
+              const reloadCount = parseInt(sessionStorage.getItem('test-reload-count') || '0');
+              if (reloadCount < 2) {
+                sessionStorage.setItem('test-reload-count', String(reloadCount + 1));
+                location.reload();
+              }
+            } else {
+              console.log('[Test] Service worker is active');
+              sessionStorage.removeItem('test-reload-count');
+              runTest();
+            }
+          });
+        },
+        function (err) {
+          console.error('[Test] Service Worker registration failed:', err);
+          runTest();
+        }
+      );
+    } else {
+      runTest();
+    }
+
+    // Run test on load
+    window.addEventListener('load', function() {
+      setTimeout(runTest, 500);
+    });
+  </script>
+</body>
+</html>

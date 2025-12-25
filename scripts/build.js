@@ -75,7 +75,7 @@ async function buildAll() {
       external: [
         'openai', // Let bundlers handle OpenAI SDK
         'child_process', // Node.js built-in, not available in browser
-        'z3-solver', // Native Z3 package, only used in Node.js
+        // z3-solver has a browser-specific entry point, include it for WASM support
       ],
       sourcemap: true,
       minify: false,
@@ -105,7 +105,7 @@ async function buildAll() {
       external: [
         'openai',
         'child_process', // Node.js built-in, not available in browser
-        'z3-solver', // Native Z3 package, only used in Node.js
+        // z3-solver has a browser-specific entry point, include it for WASM support
       ],
       sourcemap: true,
       minify: true,

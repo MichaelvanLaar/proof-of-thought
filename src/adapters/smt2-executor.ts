@@ -31,6 +31,9 @@ interface ExecutionContext {
  * @param timeout - Timeout in milliseconds
  * @returns Verification result with sat/unsat/unknown and model
  */
+// Counter for unique context names to avoid conflicts
+let contextCounter = 0;
+
 export async function executeSMT2Commands(
   commands: SMT2Command[],
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,14 +43,26 @@ export async function executeSMT2Commands(
   const startTime = Date.now();
 
   try {
-    // Create Z3 context and solver using correct z3-solver API
+    // Create Z3 context with unique name to avoid conflicts between queries
     const { Context } = Z3;
-    const z3Context = Context('main');
+    const contextName = `ctx_${Date.now()}_${++contextCounter}`;
+    const z3Context = new Context(contextName);
     const solver = new z3Context.Solver();
 
-    // Set timeout on solver
+    // Set timeout on solver with robust error handling
     if (timeout > 0) {
-      solver.set('timeout', timeout);
+      try {
+        // Try string parameter format first (most common)
+        solver.set('timeout', timeout);
+      } catch (_e) {
+        // Fall back to object format if string format fails
+        try {
+          solver.set({ timeout });
+        } catch (_e2) {
+          // Timeout setting not supported, continue without it
+          // This can happen in some browser WASM configurations
+        }
+      }
     }
 
     const ctx: ExecutionContext = {
@@ -109,6 +124,7 @@ export async function executeSMT2Commands(
 
     // Check satisfiability
     let checkResult: string;
+    let reasonUnknown: string | undefined;
     try {
       checkResult = await solver.check();
     } catch (error) {
@@ -124,9 +140,21 @@ export async function executeSMT2Commands(
 
     const executionTime = Date.now() - startTime;
 
+    // Normalize result comparison (handle potential variations in case/whitespace)
+    const normalizedResult = String(checkResult).toLowerCase().trim();
     let result: 'sat' | 'unsat' | 'unknown' = 'unknown';
-    if (checkResult === 'sat') result = 'sat';
-    else if (checkResult === 'unsat') result = 'unsat';
+    if (normalizedResult === 'sat') result = 'sat';
+    else if (normalizedResult === 'unsat') result = 'unsat';
+    else {
+      // Try to get reason for unknown result
+      try {
+        if (typeof solver.reason_unknown === 'function') {
+          reasonUnknown = solver.reason_unknown();
+        }
+      } catch (_e) {
+        // reason_unknown might not be available
+      }
+    }
 
     // Extract model if sat and model requested
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -142,10 +170,16 @@ export async function executeSMT2Commands(
       }
     }
 
+    // Build raw output with reason if unknown
+    let rawOutput = checkResult;
+    if (result === 'unknown' && reasonUnknown) {
+      rawOutput = `${checkResult} (reason: ${reasonUnknown})`;
+    }
+
     const verificationResult: VerificationResult = {
       result,
       model,
-      rawOutput: checkResult,
+      rawOutput,
       executionTime,
     };
 

@@ -1,20 +1,21 @@
 /**
- * Service Worker for enabling COOP/COEP headers
- * Required for SharedArrayBuffer support in z3-solver
+ * Alternative Service Worker using require-corp instead of credentialless
+ * Use this if you're having issues with SharedArrayBuffer availability
  *
- * Based on: https://dev.to/stefnotch/enabling-coop-coep-without-touching-the-server-2d3n
+ * Note: require-corp is more strict and may block some CDN resources
+ * that don't have proper CORS headers.
  */
 
 self.addEventListener('install', function (event) {
-  console.log('[SW] Installing service worker...');
+  console.log('[SW-RC] Installing service worker (require-corp mode)...');
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating service worker...');
+  console.log('[SW-RC] Activating service worker (require-corp mode)...');
   event.waitUntil(
     self.clients.claim().then(() => {
-      console.log('[SW] Service worker activated and claimed clients');
+      console.log('[SW-RC] Service worker activated and claimed clients');
     })
   );
 });
@@ -32,16 +33,14 @@ self.addEventListener('fetch', function (event) {
     fetch(event.request)
       .then(function (response) {
         // Apply COOP/COEP headers to same-origin requests
-        // This is necessary for SharedArrayBuffer support
         if (isSameOrigin) {
           const newHeaders = new Headers(response.headers);
 
-          // Try credentialless first (better CDN compatibility)
-          // Fall back to require-corp if browser doesn't support it
-          newHeaders.set('Cross-Origin-Embedder-Policy', 'credentialless');
+          // Use require-corp for maximum compatibility
+          newHeaders.set('Cross-Origin-Embedder-Policy', 'require-corp');
           newHeaders.set('Cross-Origin-Opener-Policy', 'same-origin');
 
-          // Also set CORP header for extra compatibility
+          // Set CORP header for all same-origin resources
           if (!newHeaders.has('Cross-Origin-Resource-Policy')) {
             newHeaders.set('Cross-Origin-Resource-Policy', 'same-origin');
           }
@@ -53,7 +52,7 @@ self.addEventListener('fetch', function (event) {
           });
 
           const requestType = event.request.mode === 'navigate' ? 'navigation' : event.request.destination || 'other';
-          console.log(`[SW] Applied COOP/COEP headers to ${requestType}:`, event.request.url);
+          console.log(`[SW-RC] Applied COOP/COEP (require-corp) to ${requestType}:`, event.request.url);
 
           return moddedResponse;
         }
@@ -62,8 +61,7 @@ self.addEventListener('fetch', function (event) {
         return response;
       })
       .catch(function (e) {
-        console.error('[SW] Fetch error:', e);
-        // Return a basic error response
+        console.error('[SW-RC] Fetch error:', e);
         return new Response('Service Worker fetch failed', {
           status: 500,
           statusText: 'Service Worker Error',

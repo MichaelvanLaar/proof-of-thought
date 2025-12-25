@@ -225,19 +225,24 @@ Your task is to:
 
 SMT-LIB 2.0 Syntax Rules:
 - DO NOT use (set-logic ...) declarations - let Z3 choose automatically
-- declare-sort: Always include arity: (declare-sort SortName 0) for 0-arity sorts
 - declare-const: (declare-const name Type)
 - declare-fun: (declare-fun name (ArgType1 ArgType2...) ReturnType)
-- Use built-in types: Int, Bool, Real, String
-- For logic with quantifiers, prefer built-in types over custom sorts when possible
+- ONLY use built-in types: Int, Bool, Real
+- DO NOT use String type - it is not supported
 - Assertions: (assert formula)
 - Commands: (check-sat) and optionally (get-model)
+
+IMPORTANT - Representing Entities:
+- For named entities (people, objects), use Bool constants to represent properties
+- Example: For "Socrates is human", declare (declare-const socrates_is_human Bool)
+- For classes/categories, use separate Bool constants for each entity's membership
+- DO NOT use String type or quantifiers over strings
 
 Guidelines:
 - Add assertions for all given facts
 - Add the query as a final assertion (usually negated to check validity)
 - To prove "If A then B", assert A and (not B), then check-sat. If unsat, the implication is valid.
-- Use quantifiers (forall/exists) only when necessary
+- Avoid quantifiers when possible - use direct Boolean logic instead
 - NEVER include (set-logic ...) - this can cause compatibility issues
 - Return ONLY the SMT2 formula, wrapped in a code block
 
@@ -249,22 +254,42 @@ Example 1 (Simple arithmetic):
 (get-model)
 \`\`\`
 
-Example 2 (Logical reasoning with predicates):
+Example 2 (Logical reasoning - "All humans are mortal. Socrates is human. Is Socrates mortal?"):
 \`\`\`smt2
-(declare-fun Human (String) Bool)
-(declare-fun Mortal (String) Bool)
+;; Represent properties as Bool constants
+(declare-const socrates_is_human Bool)
+(declare-const socrates_is_mortal Bool)
 
-;; All humans are mortal
-(assert (forall ((x String)) (=> (Human x) (Mortal x))))
+;; Fact: All humans are mortal (for Socrates specifically)
+(assert (=> socrates_is_human socrates_is_mortal))
 
-;; Socrates is human
-(assert (Human "Socrates"))
+;; Fact: Socrates is human
+(assert socrates_is_human)
 
 ;; Query: Is Socrates mortal? (negated to check validity)
-(assert (not (Mortal "Socrates")))
+;; If this is UNSAT, then Socrates must be mortal
+(assert (not socrates_is_mortal))
 
 (check-sat)
 (get-model)
+\`\`\`
+
+Example 3 (Multiple entities - "All birds can fly. Tweety is a bird. Can Tweety fly?"):
+\`\`\`smt2
+;; Properties for Tweety
+(declare-const tweety_is_bird Bool)
+(declare-const tweety_can_fly Bool)
+
+;; All birds can fly (for Tweety)
+(assert (=> tweety_is_bird tweety_can_fly))
+
+;; Tweety is a bird
+(assert tweety_is_bird)
+
+;; Query: Can Tweety fly? (negated)
+(assert (not tweety_can_fly))
+
+(check-sat)
 \`\`\``;
   }
 
@@ -316,17 +341,36 @@ Your task:
 1. First, clearly state whether the answer to the original question is YES/NO/TRUE/FALSE
 2. Then explain WHY in simple, non-technical language
 3. Mention that we used "proof by contradiction" if relevant
+4. Use markdown formatting for readability
+
+FORMATTING RULES:
+- Use **bold** for emphasis on key points (e.g., **Yes**, **No**, important terms)
+- Use \`inline code\` for logical formulas, variable names, or technical terms (e.g., \`socrates_is_mortal\`)
+- Use triple backticks for multi-line code blocks if needed (not common in explanations)
+- DO NOT use placeholders like "CODEBLOCK0" - write the actual content
+- Keep paragraphs short and well-structured
+- Use numbered lists for step-by-step reasoning
 
 DO NOT just explain what SAT/UNSAT means technically. Instead, directly answer the user's question.
 
-Example:
+Good example:
 Question: "Is Socrates mortal?"
 Result: UNSAT
-Good answer: "Yes, Socrates is mortal. We proved this by showing that assuming the opposite (Socrates is not mortal) leads to a logical contradiction with the given facts."
 
-Bad answer: "UNSAT means unsatisfiable..."
+**Yes, Socrates is mortal.**
 
-Provide a clear, direct answer:`;
+We proved this using proof by contradiction. Here's how:
+1. We assumed the opposite: Socrates is **not** mortal
+2. We combined this with the given facts (all humans are mortal, Socrates is human)
+3. This created a logical contradiction
+4. Since the assumption leads to a contradiction, Socrates **must** be mortal
+
+The SMT solver returned \`unsat\` (unsatisfiable), confirming the logical inconsistency of assuming Socrates is not mortal.
+
+Bad example:
+"UNSAT means unsatisfiable... CODEBLOCK0 shows..."
+
+Provide a clear, direct, well-formatted answer:`;
 
     return prompt;
   }
