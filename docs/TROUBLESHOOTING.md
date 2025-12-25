@@ -289,12 +289,17 @@ npm list z3-solver
 
 #### WASM Performance Issues
 
-**Problem:** WASM adapter is 2-3x slower than native
+**Problem:** WASM adapter performance varies by query type
 
-**Expected Behavior:**
-- Native Z3: ~100ms for typical query
-- WASM Z3: ~250ms for same query
-- This is normal due to WebAssembly overhead
+**Measured Behavior (v0.1.0 Benchmarks):**
+- **Average overhead**: 1.52x (WASM ~52% slower than native)
+- **Best cases**: WASM can be **faster** than native (0.2x-0.9x)
+  - Boolean logic: 89ms (WASM) vs 202ms (native) - 2.3x faster!
+  - Real arithmetic: 49ms (WASM) vs 267ms (native) - 5.4x faster!
+- **Worst case**: Simple arithmetic can be slower (6x overhead)
+- **Typical**: Most queries show 0.4x-2x overhead
+
+> See [Performance Benchmarks](../benchmarks/performance/README.md) for detailed results
 
 **Solutions:**
 
@@ -324,34 +329,100 @@ npm list z3-solver
    });
    ```
 
+#### "Context is not a constructor" Error (Browser)
+
+**Problem:** Error in browser console: `TypeError: Context is not a constructor`
+
+**Cause:** z3-solver not properly bundled in browser build (fixed in v0.1.0)
+
+**Solution for v0.1.0+:**
+This issue is fixed in v0.1.0. Make sure you're using the latest version:
+
+```bash
+npm install @michaelvanlaar/proof-of-thought@latest
+npm run build  # Rebuild browser bundle
+```
+
+**For older versions or custom builds:**
+
+1. **Ensure z3-solver is bundled (not external):**
+   ```javascript
+   // In your build config (esbuild, webpack, etc.)
+   external: [
+     'openai',
+     // 'z3-solver' should NOT be in external array for browser builds
+   ]
+   ```
+
+2. **Verify bundle includes z3-solver:**
+   ```bash
+   # Bundle should be ~500KB (includes z3-solver)
+   # If it's ~250KB, z3-solver is missing
+   ls -lh dist/browser.js
+   ```
+
+3. **Alternative: Load z3-built.js directly:**
+   ```html
+   <script src="./z3-built.js"></script>
+   <script>
+     if (typeof initZ3 !== 'undefined') {
+       globalThis.initZ3 = initZ3;
+     }
+   </script>
+   ```
+
 #### Browser WASM Loading Issues
 
 **Problem:** WASM fails to load in browser
 
 **Solutions:**
 
-1. **Check Content-Security-Policy:**
+1. **Ensure SharedArrayBuffer is available (required for Z3 WASM):**
+   ```javascript
+   // Test in browser console:
+   console.log(typeof SharedArrayBuffer);  // Should be "function"
+   ```
+
+   If undefined, add COOP/COEP headers:
+   ```
+   Cross-Origin-Opener-Policy: same-origin
+   Cross-Origin-Embedder-Policy: credentialless
+   ```
+
+   Use the provided service worker or Python server:
+   ```bash
+   cd examples/browser
+   python3 serve.py  # Includes proper headers
+   ```
+
+2. **Check Content-Security-Policy:**
    ```html
    <meta http-equiv="Content-Security-Policy"
          content="script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval';">
    ```
 
-2. **Ensure CORS headers for WASM:**
+3. **Ensure CORS headers for WASM:**
    ```
    Access-Control-Allow-Origin: *
    Access-Control-Allow-Methods: GET
    ```
 
-3. **Use local WASM instead of CDN:**
-   ```typescript
-   const adapter = new Z3WASMAdapter({
-     wasmUrl: '/path/to/z3-built.wasm'
-   });
+4. **Use local WASM instead of CDN (avoids CORS issues):**
+   ```bash
+   # Download Z3 WASM files locally
+   curl -o z3-built.js https://cdn.jsdelivr.net/npm/z3-solver@4.15.4/build/z3-built.js
+   curl -o z3-built.wasm https://cdn.jsdelivr.net/npm/z3-solver@4.15.4/build/z3-built.wasm
    ```
 
-4. **Check browser console for errors:**
+   Then load from local path:
+   ```html
+   <script src="./z3-built.js"></script>
+   ```
+
+5. **Check browser console for errors:**
    - Open DevTools → Console
    - Look for WebAssembly compilation errors
+   - Check Network tab for failed WASM requests
 
 ## OpenAI API Issues
 

@@ -324,7 +324,32 @@ The library supports two Z3 execution modes with different performance character
 | Adapter | Environment | Performance | Installation |
 |---------|-------------|-------------|--------------|
 | **Native Z3** | Node.js | **Fastest** (baseline) | Requires system Z3 binary |
-| **WASM Z3** | Node.js + Browser | 2-3x slower than native | Zero-install (npm package) |
+| **WASM Z3** | Node.js + Browser | **1.5x slower** on average | Zero-install (npm package) |
+
+**Benchmark Results (v0.1.0):**
+
+Based on comprehensive benchmarks comparing native Z3 vs WASM across 7 test cases:
+
+- **Average overhead**: 1.52x (WASM is ~52% slower than native)
+- **Best case**: 0.18x (WASM can be faster for certain query types!)
+- **Worst case**: 5.86x (simple arithmetic queries)
+- **Typical range**: 0.4x - 2.0x for most queries
+
+**Performance by Query Complexity:**
+
+| Query Type | Native | WASM | Overhead |
+|-----------|--------|------|----------|
+| Simple arithmetic | 111ms | 649ms | 5.86x |
+| Boolean logic | 202ms | 89ms | **0.44x** ✨ |
+| Mixed constraints | 170ms | 159ms | **0.93x** ✨ |
+| Complex nested | 257ms | 163ms | **0.64x** ✨ |
+| Real numbers | 267ms | 49ms | **0.18x** ✨ |
+| Large systems (10 vars) | 123ms | 231ms | 1.87x |
+| UNSAT constraints | 217ms | 153ms | **0.71x** ✨ |
+
+✨ = WASM performs better than or nearly equal to native Z3
+
+> Run your own benchmarks: `npx tsx benchmarks/performance/z3-adapter-comparison.ts`
 
 **Automatic Fallback (Node.js):**
 ```typescript

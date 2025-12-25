@@ -151,10 +151,11 @@ async function runSingle(
   formula: string,
   warmup = false
 ): Promise<{ executionTime: number; result: string }> {
-  const result = await adapter.verify(formula, 'test', 'test', {
-    timeout: 30000,
-    verbose: false,
-  });
+  // Initialize adapter if needed
+  await adapter.initialize();
+
+  // Execute SMT2 formula
+  const result = await adapter.executeSMT2(formula);
 
   return {
     executionTime: result.executionTime,
@@ -303,7 +304,8 @@ async function main() {
     wasmAdapter = new Z3WASMAdapter({
       timeout: 30000,
     });
-    const available = await Z3WASMAdapter.isAvailable();
+    await wasmAdapter.initialize();
+    const available = await wasmAdapter.isAvailable();
     if (!available) {
       console.log('❌ Z3 WASM not available');
       console.log('   Install z3-solver: npm install z3-solver');

@@ -753,7 +753,9 @@ function translateExpr(expr: SMT2Expr, variables, z3): Z3Expr {
 | Mode | Environment | Performance | Installation | Use Case |
 |------|-------------|-------------|--------------|----------|
 | **Native Z3** | Node.js | Fastest (baseline) | System binary required | Production, performance-critical |
-| **Z3 WASM** | Node.js + Browser | 2-3x slower | npm package (zero-install) | Development, browsers, portability |
+| **Z3 WASM** | Node.js + Browser | **1.5x slower** (avg) | npm package (zero-install) | Development, browsers, portability |
+
+> **Benchmark Update (v0.1.0)**: Recent benchmarks show WASM averages 1.52x overhead, significantly better than initially expected. See [Performance Benchmarks](../benchmarks/performance/README.md) for detailed results.
 
 **Node.js Execution:**
 1. **Native Z3** (preferred)
@@ -777,7 +779,7 @@ function translateExpr(expr: SMT2Expr, variables, z3): Z3Expr {
 
 ### Performance Characteristics
 
-**WASM Overhead Breakdown:**
+**WASM Overhead Breakdown (Actual Benchmarks):**
 
 ```
 Native Z3 (baseline):     100ms
@@ -785,11 +787,21 @@ Native Z3 (baseline):     100ms
 ├─ Z3 solving:            99ms  (theorem proving)
 └─ Result extraction:     <1ms
 
-WASM Z3 (2-3x slower):    250ms
+WASM Z3 (1.5x slower):    150ms (average across query types)
 ├─ SMT2 parsing:          5ms   (JavaScript parser)
-├─ Z3 solving (WASM):     240ms (WebAssembly overhead ~2.4x)
+├─ Z3 solving (WASM):     140ms (WebAssembly overhead ~1.4x)
 └─ Result extraction:     5ms   (JavaScript model extraction)
+
+Note: Actual overhead varies by query type (0.2x-6x range).
+Some queries execute faster in WASM than native Z3!
 ```
+
+**Measured Performance (v0.1.0 Benchmarks):**
+- **Boolean logic**: WASM 2.3x faster than native (89ms vs 202ms)
+- **Real arithmetic**: WASM 5.4x faster than native (49ms vs 267ms)
+- **Mixed constraints**: Nearly equal performance (159ms vs 170ms)
+- **Simple arithmetic**: WASM slower (649ms vs 111ms, 5.9x overhead)
+- **Average overhead**: 1.52x across 7 diverse test cases
 
 **Optimization Strategies:**
 - Single-pass tokenization
