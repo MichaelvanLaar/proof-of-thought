@@ -112,7 +112,6 @@ Note: All implementation complete. The commented code (lines 197-247) contains f
 - [x] 7.1 Update `README.md` to remove "WASM incomplete" warnings
 - [x] 7.2 Update `README.md` to describe WASM support status accurately (including preferWasm option)
 - [x] 7.3 Update `TESTING_GUIDE.md` browser section - file removed (obsolete)
-- [x] 7.4 Update `ROADMAP.md` to mark WASM support as complete
 - [x] 7.5 Update `docs/ARCHITECTURE.md` with WASM implementation details - completed (added 280+ lines: SMT2 parser/executor architecture, performance breakdown, timeout handling)
 - [x] 7.6 Update `docs/TROUBLESHOOTING.md` with WASM-specific issues - completed (added 180+ lines: 6 WASM troubleshooting sections with solutions)
 - [x] 7.7 Update `docs/Z3_INSTALLATION.md` to clarify native vs WASM tradeoffs
@@ -216,7 +215,6 @@ Parser → Executor → Integration → Browser Example
 
 **Documentation (Section 7):**
 - ✅ README.md updated with WASM support details
-- ✅ ROADMAP.md marked WASM support as complete
 - ✅ RELEASE_NOTES.md updated for v0.1.0
 - ✅ Z3_INSTALLATION.md with native vs WASM comparison
 - ✅ ARCHITECTURE.md with 280+ lines of WASM architecture details
@@ -264,7 +262,6 @@ These tasks are not critical for the implementation and can be performed by user
 - src/adapters/utils.ts (added preferWasm config)
 - src/adapters/index.ts (exported new APIs)
 - README.md (added WASM support section)
-- ROADMAP.md (marked WASM complete)
 - RELEASE_NOTES.md (v0.1.0 updates)
 - docs/Z3_INSTALLATION.md (native vs WASM comparison)
 - docs/ARCHITECTURE.md (WASM architecture section)

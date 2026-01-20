@@ -23,7 +23,7 @@ I'm excited to announce the first beta release of **proof-of-thought** for TypeS
 - 📦 All four postprocessing methods (Self-Refine, Self-Consistency, Decomposed, Least-to-Most)
 - ⚡ Performance optimizations (caching, batching, lazy loading)
 
-**[See Release Notes](./RELEASE_NOTES.md)** | **[View Roadmap](./ROADMAP.md)** | **[Migration Guide](./docs/MIGRATION.md)**
+**[See Release Notes](./RELEASE_NOTES.md)** | **[Migration Guide](./docs/MIGRATION.md)**
 
 ## 📖 Overview
 
@@ -498,8 +498,6 @@ If you find **proof-of-thought** useful, please consider giving it a star ⭐️
 - [ ] Additional LLM provider support
 - [ ] Caching and result persistence
 - [ ] Distributed reasoning capabilities
-
-See [ROADMAP.md](ROADMAP.md) for details.
 
 ---
 

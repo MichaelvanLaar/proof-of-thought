@@ -330,7 +330,6 @@ For typical formulas (<1KB), parsing takes <10ms.
 - Core docs updated (README.md, browser example)
 - Additional updates deferred:
   - TESTING_GUIDE.md browser section
-  - ROADMAP.md status updates
   - docs/ARCHITECTURE.md WASM details
   - docs/TROUBLESHOOTING.md WASM issues
   - docs/Z3_INSTALLATION.md tradeoffs
@@ -567,7 +566,6 @@ export function createZ3Adapter(config?: Z3AdapterConfig): AbstractZ3Adapter {
 
 3. **Remaining Documentation** (Section 7):
    - Update TESTING_GUIDE.md browser section
-   - Update ROADMAP.md with completed status
    - Expand ARCHITECTURE.md with WASM details
    - Add WASM troubleshooting to TROUBLESHOOTING.md
 
