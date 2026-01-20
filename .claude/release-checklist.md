@@ -43,11 +43,54 @@ Determined version for this release: `_______`
 
 ## Documentation Updates
 
-### 4. Update RELEASE_NOTES.md
+### 4. Update CHANGELOG.md
+
+**IMPORTANT:** This file follows the [Keep a Changelog](https://keepachangelog.com/) format.
+
+- [ ] Move items from `[Unreleased]` section to new version section
+- [ ] Create new version section: `## [X.Y.Z] - YYYY-MM-DD`
+- [ ] Organize changes into categories:
+  - [ ] **Added** - New features
+  - [ ] **Changed** - Changes in existing functionality
+  - [ ] **Deprecated** - Soon-to-be removed features
+  - [ ] **Removed** - Removed features
+  - [ ] **Fixed** - Bug fixes
+  - [ ] **Security** - Security fixes
+- [ ] Update comparison links at bottom of file:
+  - [ ] Update `[unreleased]` link to compare new version with HEAD
+  - [ ] Add new version comparison link
+- [ ] Leave `[Unreleased]` section empty (or with placeholder) for future work
+
+**Format example:**
+```markdown
+## [Unreleased]
+
+### Added
+- (Empty - ready for next version's changes)
+
+## [0.2.0] - 2026-01-21
+
+### Added
+- Support for custom Z3 solver configurations
+- Streaming API for long-running queries
+
+### Fixed
+- Memory leak in WASM adapter (#123)
+- Type inference for complex formulas
+
+### Changed
+- Updated error messages for better clarity
+
+[unreleased]: https://github.com/MichaelvanLaar/proof-of-thought/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/MichaelvanLaar/proof-of-thought/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/MichaelvanLaar/proof-of-thought/releases/tag/v0.1.0
+```
+
+### 5. Update RELEASE_NOTES.md
 
 - [ ] Add new version section at the top of `RELEASE_NOTES.md`
 - [ ] Include version number and date
-- [ ] Document all changes:
+- [ ] Document all changes (can be more detailed than CHANGELOG.md):
   - [ ] **Breaking Changes** (if any) - mark with ⚠️
   - [ ] **New Features** - mark with ✨
   - [ ] **Bug Fixes** - mark with 🐛
@@ -56,6 +99,7 @@ Determined version for this release: `_______`
   - [ ] **Dependencies** - mark with 📦
 - [ ] Use conventional commits format with gitmoji
 - [ ] Reference related issues/PRs where applicable
+- [ ] Include examples and usage information where helpful
 
 **Format example:**
 ```markdown
@@ -64,20 +108,26 @@ Determined version for this release: `_______`
 ### ✨ New Features
 
 - Add support for custom Z3 solver configurations
+  - Configure timeout, memory limits, and solver strategies
+  - Example: `new ProofOfThought({ z3Config: { timeout: 10000 } })`
 - Implement streaming API for long-running queries
+  - Stream partial results as they become available
+  - Better UX for complex reasoning tasks
 
 ### 🐛 Bug Fixes
 
 - Fix memory leak in WASM adapter (#123)
+  - Properly cleanup Z3 contexts after use
 - Correct type inference for complex formulas
+  - Improved TypeScript type narrowing
 
 ### 📝 Documentation
 
-- Add advanced usage guide
-- Update API documentation for new features
+- Add advanced usage guide with real-world examples
+- Update API documentation for new Z3 configuration options
 ```
 
-### 5. Update README.md (if needed)
+### 6. Update README.md (if needed)
 
 - [ ] Update version badge if present
 - [ ] Add any new features to feature list
@@ -85,14 +135,14 @@ Determined version for this release: `_______`
 - [ ] Verify all links still work
 - [ ] Update benchmarks/performance numbers if changed
 
-### 6. Commit Documentation Changes
+### 7. Commit Documentation Changes
 
 **IMPORTANT: Do this BEFORE version bump!**
 
-- [ ] Stage documentation changes: `git add RELEASE_NOTES.md README.md`
+- [ ] Stage documentation changes: `git add CHANGELOG.md RELEASE_NOTES.md README.md`
 - [ ] Commit with conventional format:
   ```bash
-  git commit -m "📝 docs: update release notes for vX.Y.Z
+  git commit -m "📝 docs: update changelog and release notes for vX.Y.Z
 
   Prepare release vX.Y.Z with changelog and updated documentation.
 
@@ -101,7 +151,7 @@ Determined version for this release: `_______`
 
 ## Version Bump & Tagging
 
-### 7. Bump Version
+### 8. Bump Version
 
 **IMPORTANT:** `npm version` automatically:
 1. Updates `package.json` and `package-lock.json`
@@ -121,7 +171,7 @@ Or specify exact version:
 
 ## Testing & QA
 
-### 8. Final Pre-Publish Testing
+### 9. Final Pre-Publish Testing
 
 - [ ] Install locally: `npm pack` then `npm install -g michaelvanlaar-proof-of-thought-X.Y.Z.tgz`
 - [ ] Test basic functionality:
@@ -135,7 +185,7 @@ Or specify exact version:
 - [ ] Test TypeScript types work correctly
 - [ ] Verify tree-shaking works (check bundle size in a test app)
 
-### 9. Review Package Contents
+### 10. Review Package Contents
 
 - [ ] Check what will be published: `npm pack --dry-run`
 - [ ] Verify `.npmignore` or `files` in `package.json` is correct
@@ -144,7 +194,7 @@ Or specify exact version:
 
 ## Publishing
 
-### 10. Publish to npm
+### 11. Publish to npm
 
 **IMPORTANT:** The `prepublishOnly` script runs automatically:
 - `npm run clean` - Cleans dist folder
@@ -161,13 +211,13 @@ If `prepublishOnly` fails, **publishing is aborted**.
 **For scoped packages:** If this is the first publish or you need to change access:
 - [ ] Public publish: `npm publish --access public`
 
-### 11. Push to GitHub
+### 12. Push to GitHub
 
 - [ ] Push commits: `git push`
 - [ ] Push tags: `git push --tags`
 - [ ] Verify commits and tags appear on GitHub
 
-### 12. Create GitHub Release
+### 13. Create GitHub Release
 
 **Option A: Using GitHub CLI (gh)**
 
@@ -208,7 +258,7 @@ EOF
 
 ## Post-Release Verification
 
-### 13. Verify Release
+### 14. Verify Release
 
 - [ ] Package available on npm: `npm info @michaelvanlaar/proof-of-thought`
 - [ ] Correct version shown: `npm view @michaelvanlaar/proof-of-thought version`
@@ -216,7 +266,7 @@ EOF
 - [ ] GitHub release visible: https://github.com/MichaelvanLaar/proof-of-thought/releases
 - [ ] Git tag created: `git tag -l`
 
-### 14. Test Installation
+### 15. Test Installation
 
 In a clean directory:
 
@@ -231,7 +281,7 @@ node -e "console.log(require('@michaelvanlaar/proof-of-thought'))"
 - [ ] Package can be imported/required
 - [ ] TypeScript types work (if applicable)
 
-### 15. Announcement (Optional)
+### 16. Announcement (Optional)
 
 - [ ] Update project README.md with latest version info
 - [ ] Post announcement in GitHub Discussions
@@ -284,10 +334,12 @@ npm audit                           # Security audit
 npm run test:coverage              # Check test coverage
 
 # Documentation
-# 1. Update RELEASE_NOTES.md manually
-# 2. Commit documentation changes
-git add RELEASE_NOTES.md README.md
-git commit -m "📝 docs: update release notes for vX.Y.Z"
+# 1. Update CHANGELOG.md (move [Unreleased] items to new version)
+# 2. Update RELEASE_NOTES.md (add detailed release notes)
+# 3. Update README.md if needed
+# 4. Commit documentation changes
+git add CHANGELOG.md RELEASE_NOTES.md README.md
+git commit -m "📝 docs: update changelog and release notes for vX.Y.Z"
 
 # Version bump (choose one)
 npm version patch                   # 0.1.0 → 0.1.1
@@ -332,12 +384,12 @@ npm view @michaelvanlaar/proof-of-thought version
 1. If within 72 hours: `npm unpublish @michaelvanlaar/proof-of-thought@X.Y.Z`
 2. Otherwise: Deprecate and publish correct version
 
-### Forgot to update RELEASE_NOTES.md
+### Forgot to update CHANGELOG.md or RELEASE_NOTES.md
 
-**Problem:** Published without updating release notes
+**Problem:** Published without updating changelog or release notes
 
 **Solution:**
-1. Update `RELEASE_NOTES.md`
+1. Update `CHANGELOG.md` and/or `RELEASE_NOTES.md`
 2. Commit changes
 3. Update the GitHub release notes manually
 4. No need to republish package
@@ -356,9 +408,11 @@ npm version X.Y.Z                  # Try again
 ## Notes
 
 - Always run `npm run ci` before starting the release process
-- Always update `RELEASE_NOTES.md` BEFORE running `npm version`
+- Always update `CHANGELOG.md` and `RELEASE_NOTES.md` BEFORE running `npm version`
 - The `npm version` command automatically creates a commit and tag
 - The `prepublishOnly` script ensures the package is tested before publishing
-- Always use the same changelog text in both `RELEASE_NOTES.md` and GitHub release
+- `CHANGELOG.md` follows Keep a Changelog format (Added/Changed/Fixed/etc.)
+- `RELEASE_NOTES.md` provides detailed release notes with examples (can be more verbose)
+- GitHub release notes should match the content from `RELEASE_NOTES.md`
 - Use conventional commits and gitmoji for all commit messages
 - Consider using `--dry-run` flags to preview actions before executing them

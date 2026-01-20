@@ -64,7 +64,7 @@ This checklist covers the complete release workflow including:
 
 - Pre-release verification (tests, linting, build, security audit, coverage)
 - Version determination (semantic versioning guide)
-- Documentation updates (RELEASE_NOTES.md, README.md if needed)
+- Documentation updates (CHANGELOG.md, RELEASE_NOTES.md, README.md if needed)
 - Testing & QA (unit tests, coverage, browser testing, local installation testing)
 - Publishing to npm (with prepublishOnly hooks: clean + build + test)
 - GitHub release creation
@@ -73,17 +73,19 @@ This checklist covers the complete release workflow including:
 
 **Quick Reference Workflow:**
 
-1. **Update RELEASE_NOTES.md** - Add the new version section at the top with complete changelog (breaking changes, features, fixes, docs, deps)
-2. **Update README.md** - If needed (version badge, feature list, examples, benchmarks)
-3. **Commit documentation changes** - Commit RELEASE_NOTES.md and README.md BEFORE bumping version
-4. **Bump version** - Use `npm version patch|minor|major` (this updates package.json, package-lock.json, and creates a git commit + tag automatically)
-5. **Publish to npm** - Run `npm publish --dry-run` first, then `npm publish` (this runs prepublishOnly hook: clean + build + test)
-6. **Push to GitHub** - Run `git push && git push --tags` to push commits and the version tag
-7. **Create GitHub release** - Use `gh release create vX.Y.Z --title "vX.Y.Z" --notes "..."` with the same changelog text from RELEASE_NOTES.md
+1. **Update CHANGELOG.md** - Move items from [Unreleased] to new version section (follows Keep a Changelog format: Added/Changed/Fixed/etc.)
+2. **Update RELEASE_NOTES.md** - Add detailed release notes with examples and usage information
+3. **Update README.md** - If needed (version badge, feature list, examples, benchmarks)
+4. **Commit documentation changes** - Commit CHANGELOG.md, RELEASE_NOTES.md, and README.md BEFORE bumping version
+5. **Bump version** - Use `npm version patch|minor|major` (this updates package.json, package-lock.json, and creates a git commit + tag automatically)
+6. **Publish to npm** - Run `npm publish --dry-run` first, then `npm publish` (this runs prepublishOnly hook: clean + build + test)
+7. **Push to GitHub** - Run `git push && git push --tags` to push commits and the version tag
+8. **Create GitHub release** - Use `gh release create vX.Y.Z --title "vX.Y.Z" --notes "..."` with the same content from RELEASE_NOTES.md
 
 **Files that must be updated:**
 
-- `RELEASE_NOTES.md` - Add version section at top (do this FIRST, before version bump)
+- `CHANGELOG.md` - Move [Unreleased] items to new version section, update comparison links (do this FIRST, before version bump)
+- `RELEASE_NOTES.md` - Add detailed version section at top with examples (do this FIRST, before version bump)
 - `README.md` - Update if needed (version badge, features, examples, benchmarks)
 - `package.json` and `package-lock.json` - Automatically updated by `npm version`
 
@@ -100,8 +102,10 @@ All builds are automatically created by `npm run build` and verified by the `pre
 
 **Note:**
 
-- The `npm version` command automatically creates a git commit and tag, so commit RELEASE_NOTES.md changes BEFORE running it
-- Always use the same changelog text in both RELEASE_NOTES.md and the GitHub release description for consistency
+- The `npm version` command automatically creates a git commit and tag, so commit CHANGELOG.md and RELEASE_NOTES.md changes BEFORE running it
+- `CHANGELOG.md` follows the Keep a Changelog format with categories: Added, Changed, Deprecated, Removed, Fixed, Security
+- `RELEASE_NOTES.md` provides more detailed release notes with examples and usage information
+- GitHub release notes should match the content from `RELEASE_NOTES.md`
 - The `prepublishOnly` hook (`npm run clean && npm run build && npm run test`) runs automatically before publishing and will abort if any step fails
 - Use conventional commits and gitmoji for all commit messages
 
