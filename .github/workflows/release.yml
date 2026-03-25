@@ -8,7 +8,6 @@ on:
 permissions:
   contents: write   # Create GitHub release
   id-token: write   # OIDC token for npm Trusted Publishers
-  attestations: write # npm provenance attestations
 
 jobs:
   release:
@@ -28,6 +27,9 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Update npm
+        run: npm install -g npm@latest
+
       - name: Install Z3 solver
         run: |
           sudo apt-get update
@@ -40,16 +42,7 @@ jobs:
         run: npm run ci
 
       - name: Publish to npm
-        id: npm_publish
-        run: |
-          npm config delete //registry.npmjs.org/:_authToken
-          npm publish --provenance --access public --ignore-scripts
-        continue-on-error: true
-
-      - name: Check npm publish result
-        if: steps.npm_publish.outcome == 'failure'
-        run: |
-          echo "::warning::npm publish failed. If this version was already published manually, this is expected for the first release."
+        run: npm publish --provenance --access public
 
       - name: Extract release notes from RELEASE_NOTES.md
         id: release_notes
