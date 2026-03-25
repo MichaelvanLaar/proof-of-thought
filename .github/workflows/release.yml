@@ -26,6 +26,7 @@ jobs:
         with:
           node-version: '22.x'
           cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install Z3 solver
         run: |
@@ -40,7 +41,9 @@ jobs:
 
       - name: Publish to npm
         id: npm_publish
-        run: npm publish --provenance --access public --ignore-scripts
+        run: |
+          npm config delete //registry.npmjs.org/:_authToken
+          npm publish --provenance --access public --ignore-scripts
         continue-on-error: true
 
       - name: Check npm publish result
