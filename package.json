@@ -137,7 +137,7 @@
   },
   "dependencies": {
     "openai": "^4.0.0",
-    "z3-solver": "^4.12.5",
+    "z3-solver": "^4.16.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
