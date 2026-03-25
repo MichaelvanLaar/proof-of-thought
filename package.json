@@ -1,6 +1,6 @@
 {
   "name": "@michaelvanlaar/proof-of-thought",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypeScript port of ProofOfThought - Neurosymbolic program synthesis combining LLMs with Z3 theorem proving",
   "type": "module",
   "main": "./dist/index.cjs",
