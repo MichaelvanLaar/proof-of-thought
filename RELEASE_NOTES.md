@@ -1,5 +1,21 @@
 # Release Notes
 
+## v0.1.1 (2026-03-25)
+
+### 🔒 Security
+
+- Upgraded `z3-solver` from 4.12.5 to 4.16.0, resolving a medium supply chain risk (dynamic `eval()` usage in the WASM loader). Socket.dev supply chain score improves from 81 → 100.
+
+### 🐛 Bug Fixes
+
+- GitHub Actions release workflow no longer fails when a version was already published manually (e.g. the first-release bootstrapping scenario). A warning is emitted instead, and the GitHub release is always created.
+
+### ♻️ Changes
+
+- CI badge in README correctly links to `test.yml` instead of the non-existent `ci.yml`.
+
+---
+
 ## v0.1.0 (2026-03-25)
 
 ## 🎉 First Beta Release

@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - (Empty — ready for next version's changes)
 
+## [0.1.1] - 2026-03-25
+
+### Changed
+- Upgraded z3-solver from 4.12.5 to 4.16.0 (resolves medium supply chain risk, eval() usage)
+- CI badge in README now correctly links to test.yml workflow
+
+### Fixed
+- GitHub Actions release workflow no longer fails if a version was already published manually
+
 ## [0.1.0] - 2026-03-25
 
 ### Added
@@ -56,5 +65,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolved Z3 package fallback to CLI execution when API unavailable
 - Fixed missing type imports in reasoning module
 
-[unreleased]: https://github.com/MichaelvanLaar/proof-of-thought/compare/v0.1.0...HEAD
+[unreleased]: https://github.com/MichaelvanLaar/proof-of-thought/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/MichaelvanLaar/proof-of-thought/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/MichaelvanLaar/proof-of-thought/releases/tag/v0.1.0
