@@ -1,7 +1,7 @@
 # proof-of-thought - TypeScript Edition
 
 [![npm version](https://badge.fury.io/js/@michaelvanlaar%2Fproof-of-thought.svg)](https://www.npmjs.com/package/@michaelvanlaar/proof-of-thought)
-[![CI](https://github.com/MichaelvanLaar/proof-of-thought/actions/workflows/ci.yml/badge.svg)](https://github.com/MichaelvanLaar/proof-of-thought/actions/workflows/ci.yml)
+[![CI](https://github.com/MichaelvanLaar/proof-of-thought/actions/workflows/test.yml/badge.svg)](https://github.com/MichaelvanLaar/proof-of-thought/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/MichaelvanLaar/proof-of-thought/branch/main/graph/badge.svg)](https://codecov.io/gh/MichaelvanLaar/proof-of-thought)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
