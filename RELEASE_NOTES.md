@@ -1,4 +1,6 @@
-# proof-of-thought - TypeScript Edition - v0.1.0 Release Notes
+# Release Notes
+
+## v0.1.0 (2026-03-25)
 
 ## 🎉 First Beta Release
 
@@ -18,7 +20,7 @@ npm install @michaelvanlaar/proof-of-thought
 - ✅ SMT2 and JSON DSL backends
 - ✅ All four postprocessing methods (Self-Refine, Self-Consistency, Decomposed Prompting, Least-to-Most)
 - ✅ OpenAI and Azure OpenAI support
-- ✅ Comprehensive test coverage (>80%)
+- ✅ Comprehensive test coverage (367 tests passing, 97.6% pass rate)
 - ✅ Full Z3 WASM support with automatic fallback (NEW!)
 
 ### TypeScript Native
@@ -232,11 +234,6 @@ const result = await pot.query(question, context);
 See the [Migration Guide](./docs/MIGRATION.md) for complete details.
 
 ## 🐛 Known Issues
-
-### Build System
-
-- Some TypeScript compilation errors from earlier implementation phases need to be resolved
-- These don't affect runtime functionality but should be fixed before stable release
 
 ### Browser Limitations
 
