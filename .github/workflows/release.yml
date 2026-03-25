@@ -40,7 +40,14 @@ jobs:
         run: npm run ci
 
       - name: Publish to npm
+        id: npm_publish
         run: npm publish --provenance --access public --ignore-scripts
+        continue-on-error: true
+
+      - name: Check npm publish result
+        if: steps.npm_publish.outcome == 'failure'
+        run: |
+          echo "::warning::npm publish failed. If this version was already published manually, this is expected for the first release."
 
       - name: Extract release notes from RELEASE_NOTES.md
         id: release_notes
