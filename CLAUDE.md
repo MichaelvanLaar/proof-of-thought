@@ -1,30 +1,23 @@
 # Project Overview
 
-TypeScript port of ProofOfThought — neurosymbolic reasoning combining LLMs with Z3 theorem proving.
-Published as `@michaelvanlaar/proof-of-thought` on npm.
+@AGENTS.md
 
-## Stack
+## Commands
 
-TypeScript 5, Node.js 18+, Z3 solver (native + WASM), OpenAI SDK, Vitest, esbuild, ESLint/Prettier, Husky.
-
-## Architecture
-
-Two-layer design: high-level API (`src/reasoning/`) + backend layer (`src/backends/`).
-Dual Z3 adapters: native (Node.js) and WASM (browser) in `src/adapters/`.
-Postprocessing pipeline in `src/postprocessing/`.
-
-@openspec/project.md for full architecture context.
-
-## Key Conventions
-
-- Conventional Commits with gitmoji.
-- Strict TypeScript — no `any` types.
-- All public APIs documented with JSDoc.
-- Tests via Vitest; run `npm run ci` for full validation.
+```
+npm run ci          # Full validation: lint + typecheck + test:coverage + build
+npm test            # Run tests (Vitest)
+npm run lint        # ESLint
+npm run lint:fix    # ESLint with auto-fix
+npm run typecheck   # TypeScript type check
+npm run build       # Build all targets
+npm run format      # Prettier format
+npm run format:check
+```
 
 ## Publishing
 
-@.claude/release-checklist.md
+Use the `/release` skill for the full release workflow.
 
 ## GitHub Integration
 
@@ -35,3 +28,15 @@ Postprocessing pipeline in `src/postprocessing/`.
 
 This project uses OpenSpec for structured change management.
 See `openspec/config.yaml` for workflow configuration.
+@openspec/project.md for full architecture context.
+
+## Don't
+
+- Don't use `any` types — strict TypeScript throughout.
+- Don't commit secrets or credentials to git.
+- Don't use `--force` flags — fix the underlying issue instead.
+- Don't skip pre-commit hooks with `--no-verify`.
+
+## Compact Instructions
+
+When compacting, preserve: list of modified files, current test status, open TODOs, and key decisions made.

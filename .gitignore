@@ -163,3 +163,7 @@ temp/
 # Z3 WASM files (users download these locally)
 examples/browser/z3-built.js
 examples/browser/z3-built.wasm
+
+# Claude Code — personal files
+.claude/settings.local.json
+.claude/local.md
