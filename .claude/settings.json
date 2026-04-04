@@ -20,6 +20,11 @@
           {
             "type": "command",
             "command": "jq -r '.tool_input.file_path // empty' | xargs -I{} npx prettier --write '{}' 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | xargs -I{} sh -c 'case \"{}\" in *.json) python3 -m json.tool \"{}\" > /dev/null && echo \"JSON valid: {}\" ;; *.yml|*.yaml) python3 -c \"import yaml,sys; yaml.safe_load(open(sys.argv[1]))\" \"{}\" && echo \"YAML valid: {}\" ;; esac'",
+            "description": "Validate JSON/YAML syntax after edits"
           }
         ]
       }

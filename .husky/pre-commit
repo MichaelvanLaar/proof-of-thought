@@ -1,3 +1,6 @@
+# Keep CLAUDE.md config file table in sync
+node scripts/sync-config-table.js
+
 # Run linter on staged files
 npm run lint
 
