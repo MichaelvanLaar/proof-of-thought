@@ -74,3 +74,9 @@ For commits, use descriptive multi-line commit messages that summarize all chang
 ## Compact Instructions
 
 When compacting, preserve: list of modified files, current test status, open TODOs, and key decisions made.
+
+## Handoff
+
+Before ending a session, the user may invoke `/handoff` to create a machine-transfer summary.
+When resuming work, always check if HANDOFF.md exists in the project root. If it does, read it
+first and continue from where it left off. After confirming the context is restored, delete the file.
