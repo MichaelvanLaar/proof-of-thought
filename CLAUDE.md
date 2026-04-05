@@ -71,6 +71,11 @@ For commits, use descriptive multi-line commit messages that summarize all chang
 - Don't use `--force` flags — fix the underlying issue instead.
 - Don't skip pre-commit hooks with `--no-verify`.
 
+## Learnings
+
+When the user corrects a mistake or points out a recurring issue, append a one-line
+summary to .claude/learnings.md. Don't modify CLAUDE.md directly.
+
 ## Compact Instructions
 
 When compacting, preserve: list of modified files, current test status, open TODOs, and key decisions made.
