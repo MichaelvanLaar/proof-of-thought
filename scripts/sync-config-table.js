@@ -3,6 +3,7 @@
  * Keeps the "Key Config Files" table in CLAUDE.md in sync with the filesystem.
  * - Removes rows for files that no longer exist
  * - Appends rows for new config files with a placeholder description
+ * - Excludes gitignored files (they are per-machine, not part of the committed state)
  * Preserves all existing hand-written descriptions.
  * Invoked automatically by the pre-commit hook.
  */
@@ -53,6 +54,20 @@ const CONFIG_DOTFILES = new Set([
   '.node-version',
 ]);
 
+/**
+ * Check whether a path is gitignored.
+ * `git check-ignore -q` exits 0 if ignored, 1 if tracked/untracked-but-not-ignored.
+ * execSync throws on non-zero exit, so we catch and return false.
+ */
+function isGitignored(file) {
+  try {
+    execSync(`git check-ignore -q -- "${file}"`, { cwd: ROOT, stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function scanConfigFiles() {
   const files = [];
 
@@ -87,7 +102,9 @@ function scanConfigFiles() {
     }
   }
 
-  return files.sort();
+  // Filter out gitignored files (per-machine / personal files don't belong
+  // in the committed config table — they may not exist on other clones).
+  return files.filter((f) => !isGitignored(f)).sort();
 }
 
 function parseExistingDescriptions(content) {
