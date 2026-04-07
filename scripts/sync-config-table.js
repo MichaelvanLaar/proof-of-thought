@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Keeps the "Key Config Files" table in CLAUDE.md in sync with the filesystem.
+ * Keeps the "Key Config Files" table in .claude/config-files.md in sync with the filesystem.
  * - Removes rows for files that no longer exist
  * - Appends rows for new config files with a placeholder description
  * - Excludes gitignored files (they are per-machine, not part of the committed state)
@@ -13,7 +13,7 @@ import { join } from 'path';
 import { execSync } from 'child_process';
 
 const ROOT = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
-const CLAUDE_MD = join(ROOT, 'CLAUDE.md');
+const CONFIG_FILES_MD = join(ROOT, '.claude/config-files.md');
 
 // Root-level entries that are not config files
 const ROOT_EXCLUDE = new Set([
@@ -109,7 +109,7 @@ function scanConfigFiles() {
 
 function parseExistingDescriptions(content) {
   const map = new Map();
-  const sectionStart = content.indexOf('### Key Config Files');
+  const sectionStart = content.indexOf('# Key Config Files');
   if (sectionStart === -1) return map;
   const section = content.slice(sectionStart);
   // Match Prettier-aligned table rows: | `file` | description |
@@ -132,16 +132,16 @@ function buildTable(rows) {
 }
 
 function sync() {
-  const content = readFileSync(CLAUDE_MD, 'utf8');
+  const content = readFileSync(CONFIG_FILES_MD, 'utf8');
   const existing = parseExistingDescriptions(content);
   const scanned = scanConfigFiles();
 
   const updated = scanned.map((file) => [file, existing.get(file) ?? 'TODO: add description']);
 
-  // Replace table block (consecutive | lines after the section heading)
+  // Replace table block (consecutive | lines after the heading)
   const newTable = buildTable(updated);
   const newContent = content.replace(
-    /(### Key Config Files\n\n)((?:\|[^\n]*\n)+)/,
+    /(# Key Config Files\n\n)((?:\|[^\n]*\n)+)/,
     `$1${newTable}\n`
   );
 
@@ -150,9 +150,9 @@ function sync() {
     return;
   }
 
-  writeFileSync(CLAUDE_MD, newContent);
-  process.stdout.write('sync-config-table: updated CLAUDE.md\n');
-  execSync('git add CLAUDE.md', { cwd: ROOT });
+  writeFileSync(CONFIG_FILES_MD, newContent);
+  process.stdout.write('sync-config-table: updated .claude/config-files.md\n');
+  execSync('git add .claude/config-files.md', { cwd: ROOT });
 }
 
 sync();
