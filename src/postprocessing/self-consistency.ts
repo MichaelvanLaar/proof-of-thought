@@ -224,7 +224,7 @@ export class SelfConsistency {
       .toLowerCase()
       .trim()
       .replace(/\s+/g, ' ')
-      .replace(/[.,!?;:]+$/, ''); // Remove trailing punctuation
+      .replace(/(?<![.,!?;:])[.,!?;:]+$/, ''); // Remove trailing punctuation
   }
 
   /**

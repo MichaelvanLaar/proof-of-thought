@@ -175,13 +175,18 @@
         This example demonstrates proof-of-thought with Z3 WASM in the browser. To use:
         <ol style="margin-top: 0.5rem; margin-bottom: 0">
           <li>Make sure the browser bundle is built: <code>npm run build</code></li>
-          <li>Serve this directory via HTTP server (e.g., <code>python -m http.server 8000</code>)</li>
+          <li>
+            Serve this directory via HTTP server (e.g., <code>python -m http.server 8000</code>)
+          </li>
           <li>Navigate to <code>http://localhost:8000/examples/browser/</code></li>
-          <li>On first load, the page will automatically reload to enable SharedArrayBuffer support</li>
+          <li>
+            On first load, the page will automatically reload to enable SharedArrayBuffer support
+          </li>
           <li>Enter your OpenAI API key and try the example!</li>
         </ol>
-        The example uses a service worker to enable COOP/COEP headers required for SharedArrayBuffer.
-        The WASM adapter will automatically handle theorem proving without requiring native Z3 installation.
+        The example uses a service worker to enable COOP/COEP headers required for
+        SharedArrayBuffer. The WASM adapter will automatically handle theorem proving without
+        requiring native Z3 installation.
       </div>
 
       <div class="section">
@@ -202,8 +207,7 @@
       <div class="section">
         <label for="context">Context:</label>
         <textarea id="context" placeholder="Enter context for the question">
-All humans are mortal. Socrates is human.</textarea
-        >
+All humans are mortal. Socrates is human.</textarea>
       </div>
 
       <div class="section">
@@ -260,7 +264,10 @@ All humans are mortal. Socrates is human.</textarea
         console.log('=== SharedArrayBuffer Diagnostics ===');
         console.log('SharedArrayBuffer available:', available);
         console.log('crossOriginIsolated:', crossOriginIsolated);
-        console.log('Service Worker controller:', navigator.serviceWorker.controller ? 'Active' : 'None');
+        console.log(
+          'Service Worker controller:',
+          navigator.serviceWorker.controller ? 'Active' : 'None'
+        );
 
         if (!available) {
           console.warn('⚠️ SharedArrayBuffer is NOT available');
@@ -298,7 +305,9 @@ All humans are mortal. Socrates is human.</textarea
                   console.error('[Main] Service worker failed to activate after 2 reloads');
                   console.error('Please try:');
                   console.error('  1. Clear browser cache and reload');
-                  console.error('  2. Unregister service workers in DevTools > Application > Service Workers');
+                  console.error(
+                    '  2. Unregister service workers in DevTools > Application > Service Workers'
+                  );
                   console.error('  3. Hard reload (Ctrl+Shift+R or Cmd+Shift+R)');
                 }
               } else {
@@ -350,10 +359,26 @@ All humans are mortal. Socrates is human.</textarea
         console.error('');
         console.error('Troubleshooting steps:');
         console.error('1. Check browser console for service worker messages');
-        console.error('2. Verify service worker is active in DevTools > Application > Service Workers');
+        console.error(
+          '2. Verify service worker is active in DevTools > Application > Service Workers'
+        );
         console.error('3. Try unregistering all service workers and hard reload');
-        console.error('4. Ensure you\'re using a modern browser (Chrome 92+, Firefox 89+, Safari 15.2+)');
+        console.error(
+          "4. Ensure you're using a modern browser (Chrome 92+, Firefox 89+, Safari 15.2+)"
+        );
         console.error('5. Check that the page is served over HTTP (not file://)');
+      }
+
+      /**
+       * Escape HTML special characters to prevent XSS when inserting text via innerHTML
+       */
+      function escapeHtml(text) {
+        return String(text)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
       }
 
       /**
@@ -376,10 +401,7 @@ All humans are mortal. Socrates is human.</textarea
         });
 
         // Escape HTML to prevent XSS
-        html = html
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
+        html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
         // Convert markdown syntax (order matters!)
         html = html
@@ -437,7 +459,8 @@ All humans are mortal. Socrates is human.</textarea
 
         // Check if SharedArrayBuffer is available (required for z3-solver)
         if (typeof SharedArrayBuffer === 'undefined') {
-          statusEl.innerHTML = '<div class="status error">SharedArrayBuffer is not available. Please refresh the page to activate the service worker, then try again.</div>';
+          statusEl.innerHTML =
+            '<div class="status error">SharedArrayBuffer is not available. Please refresh the page to activate the service worker, then try again.</div>';
           button.disabled = false;
           return;
         }
@@ -483,29 +506,29 @@ All humans are mortal. Socrates is human.</textarea
                 <div class="answer-content">${markdownToHtml(result.answer)}</div>
               </div>
               <p><strong>Verified:</strong> ${result.isVerified ? '✅ Yes' : '❌ No'}</p>
-              <p><strong>Backend:</strong> ${result.backend}</p>
+              <p><strong>Backend:</strong> ${escapeHtml(result.backend)}</p>
               <p><strong>Execution Time:</strong> ${result.executionTime}ms</p>
               ${
                 result.postprocessingMetrics
                   ? `
-                <p><strong>Postprocessing:</strong> ${result.postprocessingMetrics.methodsApplied.join(', ')}</p>
+                <p><strong>Postprocessing:</strong> ${escapeHtml(result.postprocessingMetrics.methodsApplied.join(', '))}</p>
               `
                   : ''
               }
               <details>
                 <summary><strong>Proof Steps:</strong></summary>
-                <pre>${JSON.stringify(result.proof, null, 2)}</pre>
+                <pre>${escapeHtml(JSON.stringify(result.proof, null, 2))}</pre>
               </details>
               <details>
                 <summary><strong>Full Response:</strong></summary>
-                <pre>${JSON.stringify(result, null, 2)}</pre>
+                <pre>${escapeHtml(JSON.stringify(result, null, 2))}</pre>
               </details>
             </div>
           `;
 
           statusEl.innerHTML = '<div class="status success">✅ Reasoning completed!</div>';
         } catch (error) {
-          statusEl.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+          statusEl.innerHTML = `<div class="status error">❌ Error: ${escapeHtml(error.message)}</div>`;
           console.error('Reasoning error:', error);
         } finally {
           button.disabled = false;

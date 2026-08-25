@@ -141,7 +141,7 @@ export function parseZ3Version(versionString: string): {
   patch: number;
   full: string;
 } {
-  const match = versionString.match(/(\d+)\.(\d+)\.(\d+)/);
+  const match = versionString.match(/(\d{1,9})\.(\d{1,9})\.(\d{1,9})/);
 
   if (!match) {
     return { major: 0, minor: 0, patch: 0, full: versionString };
